@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmFresh - Multi-Vendor Farm Products Marketplace</title>
+    <meta name="description" content="An interactive mobile app simulator for the FarmFresh multi-vendor marketplace connecting customers directly with farmers.">
+    <link rel="stylesheet" href="styles.css">
+    <!-- FontAwesome for fallback icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <!-- Left Pane: Mobile App Simulator -->
+        <div class="simulator-pane">
+            <div class="phone-mockup">
+                <!-- Status bar notch -->
+                <div class="phone-notch"></div>
+                
+                <!-- Status bar with dynamic clock -->
+                <div class="phone-status-bar" id="phone-status-bar">
+                    <span id="phone-time">11:30</span>
+                    <div class="icons">
+                        <i class="fa-solid fa-signal"></i>
+                        <i class="fa-solid fa-wifi"></i>
+                        <i class="fa-solid fa-battery-three-quarters"></i>
+                    </div>
+                </div>
+
+                <!-- Live Push Notifications inside the phone -->
+                <div class="mock-push-notification" id="mock-notification">
+                    <div class="mock-push-icon">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                    <div class="mock-push-content">
+                        <div class="mock-push-title" id="notif-title">Notification</div>
+                        <div class="mock-push-body" id="notif-body">You have a new update.</div>
+                    </div>
+                </div>
+
+                <!-- App Viewport -->
+                <div class="app-viewport" id="app-viewport">
+
+                    <!-- SCREEN 1: Onboarding -->
+                    <div class="app-screen active screen-onboarding" id="screen-onboarding">
+                        <div class="onboarding-title-group">
+                            <h1 class="onboarding-title">Fresh Groceries<br>Delivered to <span class="accent-door">Door</span><br>Doorstep</h1>
+                            
+                            <div class="onboarding-badge-stats">
+                                <div class="stat-item">
+                                    <label>Items</label>
+                                    <p id="onboard-items-count">35</p>
+                                </div>
+                                <div class="divider"></div>
+                                <div class="stat-item">
+                                    <label>Total Price</label>
+                                    <p id="onboard-total-price">$97.50</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="onboarding-hero-container">
+                            <span class="save-badge">Save 50%</span>
+                            <img class="onboarding-hero-image" src="assets/onboarding_bag.jpg" alt="Fresh Groceries bag">
+                            <div class="quality-badge">
+                                <span>100%</span>
+                                <span style="font-weight: 500;">QUALITY</span>
+                            </div>
+                        </div>
+
+                        <div class="onboarding-footer">
+                            <button class="btn-back-circle" id="btn-onboard-back">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <button class="btn-primary-gradient" id="btn-onboard-start">
+                                Get Started <i class="fa-solid fa-arrow-right-long"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SCREEN 2: Customer Home -->
+                    <div class="app-screen" id="screen-customer-home">
+                        <header class="customer-header">
+                            <div class="header-location-picker">
+                                <div class="location-icon-container">
+                                    <i class="fa-solid fa-location-dot" style="color: var(--primary);"></i>
+                                </div>
+                                <div class="location-details">
+                                    <label>Location</label>
+                                    <select id="user-location-selector">
+                                        <option value="New York, US" selected>New York, US</option>
+                                        <option value="Santorini, Greece">Santorini, Greece</option>
+                                        <option value="Rome, Italy">Rome, Italy</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="profile-avatar">
+                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky" alt="User profile icon">
+                            </div>
+                        </header>
+
+                        <!-- Search Bar -->
+                        <div class="search-bar-container">
+                            <input class="search-input" type="text" id="product-search-input" placeholder="Search products...">
+                            <i class="fa-solid fa-sliders search-filter-icon"></i>
+                        </div>
+
+                        <!-- Categories -->
+                        <div class="categories-scroll" id="categories-container">
+                            <!-- Category Pills injected by Javascript -->
+                        </div>
+
+                        <!-- Popular Items Header -->
+                        <div class="section-title-bar">
+                            <h2 class="section-title">Popular Items</h2>
+                            <span class="section-link" id="btn-see-all-products">See All</span>
+                        </div>
+
+                        <!-- Products Grid -->
+                        <div class="products-grid" id="products-grid-container">
+                            <!-- Cards injected by Javascript -->
+                        </div>
+                    </div>
+
+                    <!-- SCREEN 3: Product Details -->
+                    <div class="app-screen" id="screen-customer-details">
+                        <div class="details-nav-header">
+                            <button class="btn-round-nav" id="btn-details-back">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <span class="section-title">Details</span>
+                            <button class="btn-round-nav">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                        </div>
+
+                        <div class="details-hero-img-container">
+                            <img id="details-product-img" src="assets/basket_vegetables.jpg" alt="Organic Vegetables Basket">
+                        </div>
+
+                        <div class="details-content-sheet">
+                            <div class="details-main-info">
+                                <h1 class="details-title" id="details-product-title">Organic Vegetable</h1>
+                                <span class="details-price" id="details-product-price">$7.20</span>
+                            </div>
+
+                            <div class="details-location">
+                                <i class="fa-solid fa-location-dot" style="color: var(--primary);"></i>
+                                <span id="details-product-origin">Santorini, Greece</span>
+                            </div>
+
+                            <h3 class="details-description-title">Description</h3>
+                            <p class="details-description-body" id="details-product-desc">
+                                Fresh organic vegetables grown locally without any artificial chemicals or pesticides. Hand-picked straight from the farm fields to ensure top freshness.
+                            </p>
+
+                            <!-- Nutritional facts grid -->
+                            <div class="details-nutrition-grid">
+                                <div class="nutrition-card">
+                                    <label>Calories</label>
+                                    <span id="nutrition-calories">320 kcal</span>
+                                </div>
+                                <div class="nutrition-card green-theme">
+                                    <label>Protein</label>
+                                    <span id="nutrition-protein">12 gram</span>
+                                </div>
+                                <div class="nutrition-card">
+                                    <label>Fat</label>
+                                    <span id="nutrition-fat">15 gram</span>
+                                </div>
+                                <div class="nutrition-card green-theme">
+                                    <label>Weight</label>
+                                    <span id="nutrition-weight">1.5 Kg</span>
+                                </div>
+                            </div>
+
+                            <div class="details-footer">
+                                <button class="btn-primary-gradient" id="btn-details-add-to-cart" style="width: 100%;">
+                                    Add To Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SCREEN 4: Cart -->
+                    <div class="app-screen" id="screen-customer-cart">
+                        <div class="cart-header">
+                            <h2 class="section-title">My Cart</h2>
+                            <span id="cart-item-badge" class="btn-action-small">0 items</span>
+                        </div>
+
+                        <!-- Scrollable list of items -->
+                        <div class="cart-items-container" id="cart-items-list-container">
+                            <!-- Injected dynamically -->
+                        </div>
+
+                        <!-- Checkout Details Card -->
+                        <div class="cart-checkout-summary">
+                            <div class="coupon-input-group">
+                                <input type="text" class="coupon-input" id="coupon-code-field" placeholder="Enter coupon (e.g. SAVE50)">
+                                <button class="btn-coupon-apply" id="btn-apply-coupon">Apply</button>
+                            </div>
+                            
+                            <div class="summary-row">
+                                <span>Subtotal</span>
+                                <span id="cart-summary-subtotal">$0.00</span>
+                            </div>
+                            <div class="summary-row" style="color: #C9184A;">
+                                <span>Discount</span>
+                                <span id="cart-summary-discount">-$0.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Delivery Fee</span>
+                                <span id="cart-summary-delivery">$3.99</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>Total Price</span>
+                                <span id="cart-summary-total">$0.00</span>
+                            </div>
+
+                            <button class="btn-primary-gradient" id="btn-cart-checkout" style="width: 100%; margin-top: 15px;">
+                                Place Order
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SCREEN 5: Order Tracking -->
+                    <div class="app-screen" id="screen-customer-tracking">
+                        <div class="cart-header">
+                            <h2 class="section-title">Order Status</h2>
+                            <span id="tracking-order-id" style="font-size: 11px; font-weight:600; color:var(--text-muted);">#ORD-1002</span>
+                        </div>
+
+                        <div class="tracking-card">
+                            <!-- Shareable verification code -->
+                            <div class="tracking-otp-badge">
+                                <label>Delivery Confirmation OTP</label>
+                                <span id="tracking-delivery-otp">5839</span>
+                            </div>
+
+                            <div style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Status Timeline</div>
+                            <div class="tracking-timeline" id="tracking-stepper-timeline">
+                                <div class="timeline-item completed" id="step-placed">
+                                    <h4>Order Placed</h4>
+                                    <p>We have received your order request.</p>
+                                </div>
+                                <div class="timeline-item" id="step-accepted">
+                                    <h4>Farmer Accepted</h4>
+                                    <p>The farm is preparing your fresh harvest.</p>
+                                </div>
+                                <div class="timeline-item" id="step-prepared">
+                                    <h4>Order Prepared</h4>
+                                    <p>Your vegetables are packed and ready for transport.</p>
+                                </div>
+                                <div class="timeline-item" id="step-transit">
+                                    <h4>Out for Delivery</h4>
+                                    <p>Our rider is carrying your package to your doorstep.</p>
+                                </div>
+                                <div class="timeline-item" id="step-completed">
+                                    <h4>Order Completed</h4>
+                                    <p>Order safely delivered and verified.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn-primary-gradient" id="btn-tracking-cancel" style="background: #E5EDE7; color: var(--text-main); box-shadow: none;">
+                            Back to Home
+                        </button>
+                    </div>
+
+                    <!-- SCREEN 6: Farmer Dashboard -->
+                    <div class="app-screen" id="screen-farmer-dashboard">
+                        <div class="cart-header">
+                            <h2 class="section-title">Farmer Console</h2>
+                            <span class="btn-action-small" style="background:#EAF6EC; color:#2E7D32;">Verified Profile</span>
+                        </div>
+
+                        <div class="dashboard-header">
+                            <div class="dashboard-title-row">
+                                <h3>Organico Farm</h3>
+                                <span style="font-size:11px; color:var(--text-muted);">ID: #FARM-82</span>
+                            </div>
+                            <div class="dashboard-stats-grid">
+                                <div class="stat-box">
+                                    <label>Total Earnings</label>
+                                    <span id="farmer-total-earnings">$0.00</span>
+                                </div>
+                                <div class="stat-box">
+                                    <label>Active Orders</label>
+                                    <span id="farmer-active-orders">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Incoming Orders -->
+                        <div style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Pending Client Orders</div>
+                        <div class="orders-list-container" id="farmer-orders-list">
+                            <!-- Injected Dynamically -->
+                        </div>
+
+                        <!-- Add Products Section -->
+                        <div style="font-size: 13px; font-weight: 700; margin: 20px 0 10px;">Add New Harvest Item</div>
+                        <div class="dashboard-header">
+                            <div class="input-field-group">
+                                <label for="form-new-pname">Product Name</label>
+                                <input type="text" class="input-box" id="form-new-pname" placeholder="e.g. Organic Broccoli">
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <div class="input-field-group" style="flex:1;">
+                                    <label for="form-new-price">Price ($)</label>
+                                    <input type="number" class="input-box" id="form-new-price" placeholder="e.g. 3.50" step="0.01">
+                                </div>
+                                <div class="input-field-group" style="flex:1;">
+                                    <label for="form-new-unit">Unit/Weight</label>
+                                    <input type="text" class="input-box" id="form-new-unit" placeholder="e.g. 500g or 1Kg">
+                                </div>
+                            </div>
+                            <div class="input-field-group">
+                                <label for="form-new-category">Category</label>
+                                <select class="input-box" id="form-new-category">
+                                    <option value="fruits">Fruits</option>
+                                    <option value="vegetables" selected>Vegetables</option>
+                                    <option value="dairy">Dairy Products</option>
+                                    <option value="meat">Fresh Meat</option>
+                                </select>
+                            </div>
+                            <button class="btn-primary-gradient" id="btn-farmer-add-product" style="width: 100%; height:40px; margin-top:5px;">
+                                Publish to Market
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SCREEN 7: Delivery Partner Dashboard -->
+                    <div class="app-screen" id="screen-delivery-dashboard">
+                        <div class="cart-header">
+                            <h2 class="section-title">Rider Console</h2>
+                            <span class="btn-action-small" style="background:#ECEFFC; color:#3F51B5;">On Duty</span>
+                        </div>
+
+                        <div class="dashboard-header">
+                            <div class="dashboard-title-row">
+                                <h3>Alex Rider</h3>
+                                <span style="font-size:11px; color:var(--text-muted);">Vehicle: E-Bike</span>
+                            </div>
+                            <div class="dashboard-stats-grid">
+                                <div class="stat-box">
+                                    <label>Delivery Payouts</label>
+                                    <span id="delivery-earnings">$0.00</span>
+                                </div>
+                                <div class="stat-box">
+                                    <label>Trips Completed</label>
+                                    <span id="delivery-trips">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Jobs board -->
+                        <div id="delivery-job-board-section">
+                            <div style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Available Pickup Offers</div>
+                            <div class="orders-list-container" id="delivery-jobs-list">
+                                <!-- Injected dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Active job tracking & verification -->
+                        <div id="delivery-active-job-section" style="display:none;">
+                            <div style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Active Transit Navigation</div>
+                            
+                            <!-- Simulated Map Visualizer -->
+                            <div class="simulated-map" id="rider-map">
+                                <div class="grid-lines"></div>
+                                <div class="route-line"></div>
+                                <span class="pin farm">🚜</span>
+                                <span class="pin customer">🏡</span>
+                                <span class="driver-icon" id="rider-driver-icon">🛵</span>
+                            </div>
+
+                            <div class="dashboard-header" style="margin-bottom: 10px;">
+                                <div id="delivery-info-text" style="font-size:12px; font-weight:600;">Driving to Customer...</div>
+                                <p style="font-size:10px; color:var(--text-muted); margin-top:2px;">Route: Organico Farm &rarr; Santorini Customer</p>
+                            </div>
+
+                            <div class="dashboard-header">
+                                <div class="input-field-group">
+                                    <label for="delivery-otp-confirm-input">Client Delivery Confirmation OTP</label>
+                                    <input type="text" class="input-box" id="delivery-otp-confirm-input" placeholder="Ask client for 4-digit code">
+                                </div>
+                                <button class="btn-primary-gradient" id="btn-delivery-submit-otp" style="width: 100%; height:42px;">
+                                    Verify and Complete Delivery
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SCREEN 8: Admin Panel -->
+                    <div class="app-screen" id="screen-admin-dashboard">
+                        <div class="cart-header">
+                            <h2 class="section-title">Admin Terminal</h2>
+                        </div>
+
+                        <div class="dashboard-header">
+                            <div class="dashboard-stats-grid" style="grid-template-columns: repeat(3, 1fr); gap: 6px;">
+                                <div class="stat-box" style="padding: 6px;">
+                                    <label style="font-size:8px;">Total Gross</label>
+                                    <span id="admin-total-sales" style="font-size:11px;">$0.00</span>
+                                </div>
+                                <div class="stat-box" style="padding: 6px;">
+                                    <label style="font-size:8px;">All Orders</label>
+                                    <span id="admin-total-orders" style="font-size:11px;">0</span>
+                                </div>
+                                <div class="stat-box" style="padding: 6px;">
+                                    <label style="font-size:8px;">Riders Active</label>
+                                    <span style="font-size:11px; color:#2E7D32;">1 Online</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System metrics chart container -->
+                        <div style="font-size: 12px; font-weight: 700; margin-bottom: 8px;">Order Sales Analytics</div>
+                        <div class="analytics-chart-container">
+                            <!-- Draw dynamic beautiful SVG chart detailing mock data -->
+                            <svg width="100%" height="80" viewBox="0 0 300 80" style="overflow: visible;">
+                                <path d="M 0,60 Q 50,40 100,55 T 200,25 T 300,10" fill="none" stroke="var(--primary)" stroke-width="3" />
+                                <circle cx="100" cy="55" r="4" fill="var(--primary)" />
+                                <circle cx="200" cy="25" r="4" fill="var(--primary)" />
+                                <circle cx="300" cy="10" r="4" fill="var(--primary)" />
+                                <text x="100" y="72" font-size="8" text-anchor="middle" fill="var(--text-muted)">Monday</text>
+                                <text x="200" y="72" font-size="8" text-anchor="middle" fill="var(--text-muted)">Tuesday</text>
+                                <text x="280" y="72" font-size="8" text-anchor="middle" fill="var(--text-muted)">Today</text>
+                            </svg>
+                        </div>
+
+                        <!-- User verification queues -->
+                        <div style="font-size: 12px; font-weight: 700; margin: 15px 0 8px;">Merchant Verification Queue</div>
+                        <div class="orders-list-container" id="admin-merchant-verification-list">
+                            <!-- Verification cards -->
+                        </div>
+                    </div>
+
+                    <!-- Bottom Nav Tab Bar (only active/visible on customer screens) -->
+                    <nav class="phone-bottom-nav" id="phone-bottom-navbar">
+                        <div class="nav-tab-item active" id="tab-home">
+                            <i class="fa-solid fa-house"></i>
+                            <span>Home</span>
+                        </div>
+                        <div class="nav-tab-item" id="tab-categories">
+                            <i class="fa-solid fa-list"></i>
+                            <span>Categories</span>
+                        </div>
+                        <div class="nav-tab-item" id="tab-cart">
+                            <i class="fa-solid fa-basket-shopping"></i>
+                            <span>Cart</span>
+                        </div>
+                        <div class="nav-tab-item" id="tab-tracking">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <span>Tracking</span>
+                        </div>
+                    </nav>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Pane: Developer Control Board & Live System Log -->
+        <div class="control-pane">
+            <div class="control-header">
+                <h2 class="control-title">FarmFresh Simulator Board</h2>
+                <div class="control-subtitle">Switch roles, place mock orders, and watch state updates live.</div>
+            </div>
+
+            <!-- Role Switcher -->
+            <div class="role-switcher-grid">
+                <button class="role-btn active" id="btn-role-customer" data-role="customer">
+                    <i class="fa-solid fa-circle-user" style="color: #34d399;"></i>
+                    <span>Customer View</span>
+                </button>
+                <button class="role-btn" id="btn-role-farmer" data-role="farmer">
+                    <i class="fa-solid fa-tractor" style="color: #fbbf24;"></i>
+                    <span>Farmer View</span>
+                </button>
+                <button class="role-btn" id="btn-role-delivery" data-role="delivery">
+                    <i class="fa-solid fa-motorcycle" style="color: #a78bfa;"></i>
+                    <span>Delivery View</span>
+                </button>
+                <button class="role-btn" id="btn-role-admin" data-role="admin">
+                    <i class="fa-solid fa-shield-halved" style="color: #60a5fa;"></i>
+                    <span>Admin View</span>
+                </button>
+            </div>
+
+            <!-- Logging Terminal -->
+            <div class="logger-section">
+                <div class="logger-title-row">
+                    <span class="logger-title">Live Transaction Ledger</span>
+                    <button class="btn-clear-logs" id="btn-clear-logs">Clear Logs</button>
+                </div>
+                <div class="logger-console" id="logger-console-output">
+                    <!-- Logs injected in real-time -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+</html>
