@@ -300,9 +300,18 @@
                             <!-- Injected Dynamically -->
                         </div>
 
+                    </div>
+
+                    <!-- SCREEN 6B: Farmer Products -->
+                    <div class="app-screen" id="screen-farmer-products">
+                        <div class="cart-header">
+                            <h2 class="section-title">Farm Products</h2>
+                            <span class="btn-action-small" style="background:#EAF6EC; color:#2E7D32;">Manage Catalog</span>
+                        </div>
+
                         <!-- Add Products Section -->
-                        <div style="font-size: 13px; font-weight: 700; margin: 20px 0 10px;">Add New Harvest Item</div>
-                        <div class="dashboard-header">
+                        <div style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Add New Harvest Item</div>
+                        <div class="dashboard-header" style="margin-bottom: 20px;">
                             <div class="input-field-group">
                                 <label for="form-new-pname">Product Name</label>
                                 <input type="text" class="input-box" id="form-new-pname" placeholder="e.g. Organic Broccoli">
@@ -329,6 +338,43 @@
                             <button class="btn-primary-gradient" id="btn-farmer-add-product" style="width: 100%; height:40px; margin-top:5px;">
                                 Publish to Market
                             </button>
+                        </div>
+
+                        <!-- Published products list -->
+                        <div style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Active Inventory</div>
+                        <div class="orders-list-container" id="farmer-inventory-list">
+                            <!-- Injected dynamically via app.js -->
+                        </div>
+                    </div>
+
+                    <!-- SCREEN 6C: Farmer Profile -->
+                    <div class="app-screen" id="screen-farmer-profile">
+                        <div class="cart-header">
+                            <h2 class="section-title">Farmer Profile</h2>
+                        </div>
+                        <div class="dashboard-header" style="text-align:center; padding: 20px;">
+                            <div style="font-size: 40px; margin-bottom: 10px;">🚜</div>
+                            <h3 style="margin: 5px 0;">Organico Farm</h3>
+                            <span style="font-size:11px; color:var(--text-muted);">Partner ID: #FARM-82</span>
+                            <div class="btn-action-small" style="background:#EAF6EC; color:#2E7D32; display:inline-block; margin-top:10px;">Verified Merchant</div>
+                        </div>
+
+                        <div style="font-size: 13px; font-weight: 700; margin: 20px 0 10px;">Farm Details & Payouts</div>
+                        <div class="dashboard-header">
+                            <div style="display:flex; flex-direction:column; gap:12px;">
+                                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                                    <span style="color:var(--text-muted);">Bank Account:</span>
+                                    <span style="font-weight:600; color:var(--text-main);">•••• 4892 (State Bank)</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                                    <span style="color:var(--text-muted);">Payout Cycle:</span>
+                                    <span style="font-weight:600; color:var(--text-main);">Every Friday</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                                    <span style="color:var(--text-muted);">Address:</span>
+                                    <span style="font-weight:600; color:var(--text-main);">Grid Route 4, Santorini</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -390,6 +436,37 @@
                                 <button class="btn-primary-gradient" id="btn-delivery-submit-otp" style="width: 100%; height:42px;">
                                     Verify and Complete Delivery
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SCREEN 7B: Delivery Profile -->
+                    <div class="app-screen" id="screen-delivery-profile">
+                        <div class="cart-header">
+                            <h2 class="section-title">Rider Profile</h2>
+                        </div>
+                        <div class="dashboard-header" style="text-align:center; padding: 20px;">
+                            <div style="font-size: 40px; margin-bottom: 10px;">🛵</div>
+                            <h3 style="margin: 5px 0;">Alex Rider</h3>
+                            <span style="font-size:11px; color:var(--text-muted);">Vehicle Type: E-Bike</span>
+                            <div class="btn-action-small" style="background:#ECEFFC; color:#3F51B5; display:inline-block; margin-top:10px;">Active Rider</div>
+                        </div>
+
+                        <div style="font-size: 13px; font-weight: 700; margin: 20px 0 10px;">Rider Wallet & Ratings</div>
+                        <div class="dashboard-header">
+                            <div style="display:flex; flex-direction:column; gap:12px;">
+                                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                                    <span style="color:var(--text-muted);">Wallet Balance:</span>
+                                    <span style="font-weight:600; color:Colors.green;" id="delivery-wallet-balance">$45.00</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                                    <span style="color:var(--text-muted);">Weekly Tips:</span>
+                                    <span style="font-weight:600; color:var(--text-main);">$12.50</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                                    <span style="color:var(--text-muted);">Rider Rating:</span>
+                                    <span style="font-weight:600; color:#fbbf24;">⭐ 4.9 (48 ratings)</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -456,6 +533,34 @@
                         <div class="nav-tab-item" id="tab-tracking">
                             <i class="fa-solid fa-clock-rotate-left"></i>
                             <span>Tracking</span>
+                        </div>
+                    </nav>
+
+                    <!-- Farmer Bottom Nav Tab Bar -->
+                    <nav class="phone-bottom-nav" id="farmer-bottom-navbar" style="display: none; border-top: 1px solid #e2e8f0;">
+                        <div class="nav-tab-item active" id="tab-farmer-dashboard">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>Dashboard</span>
+                        </div>
+                        <div class="nav-tab-item" id="tab-farmer-products">
+                            <i class="fa-solid fa-seedling"></i>
+                            <span>Products</span>
+                        </div>
+                        <div class="nav-tab-item" id="tab-farmer-profile">
+                            <i class="fa-solid fa-store"></i>
+                            <span>Profile</span>
+                        </div>
+                    </nav>
+
+                    <!-- Delivery Bottom Nav Tab Bar -->
+                    <nav class="phone-bottom-nav" id="delivery-bottom-navbar" style="display: none; border-top: 1px solid #e2e8f0;">
+                        <div class="nav-tab-item active" id="tab-delivery-dashboard">
+                            <i class="fa-solid fa-motorcycle"></i>
+                            <span>Console</span>
+                        </div>
+                        <div class="nav-tab-item" id="tab-delivery-profile">
+                            <i class="fa-solid fa-id-card"></i>
+                            <span>Profile</span>
                         </div>
                     </nav>
 

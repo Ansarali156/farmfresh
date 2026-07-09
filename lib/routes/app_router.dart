@@ -6,16 +6,18 @@ import 'package:go_router/go_router.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/authentication/login_screen.dart';
 import '../features/authentication/signup_screen.dart';
+import '../features/home/customer_main_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/products/product_details_screen.dart';
 import '../features/cart/cart_screen.dart';
 import '../features/wishlist/wishlist_screen.dart';
 import '../features/orders/orders_screen.dart';
 import '../features/profile/profile_screen.dart';
+import '../features/farmer/farmer_main_screen.dart';
 
 // Defines all the routes for the application
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/splash',
+  initialLocation: '/login', // Start directly at login for demonstration
   routes: [
     GoRoute(
       path: '/splash',
@@ -32,6 +34,19 @@ final GoRouter appRouter = GoRouter(
       name: 'signup',
       builder: (context, state) => const SignupScreen(),
     ),
+    // Main Customer shell (Bottom Navigation)
+    GoRoute(
+      path: '/customer-main',
+      name: 'customer-main',
+      builder: (context, state) => const CustomerMainScreen(),
+    ),
+    // Main Farmer shell (Bottom Navigation)
+    GoRoute(
+      path: '/farmer-main',
+      name: 'farmer-main',
+      builder: (context, state) => const FarmerMainScreen(),
+    ),
+    // Sub-pages/Details
     GoRoute(
       path: '/home',
       name: 'home',
