@@ -568,6 +568,11 @@ function switchRole(role) {
     
     // View Switch matching the role
     if (role === 'customer') {
+        STATE.activeCategory = 'all';
+        STATE.searchQuery = '';
+        const searchBox = document.getElementById('product-search-input');
+        if (searchBox) searchBox.value = '';
+        
         switchScreen('screen-customer-home', 'tab-home');
         renderCategories();
         renderProducts();
