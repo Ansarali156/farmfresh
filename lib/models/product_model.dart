@@ -1,84 +1,151 @@
 class ProductModel {
   final String id;
   final String name;
+  final String slug;
   final double price;
   final double originalPrice;
-  final String? discount; // e.g. '20% OFF'
+  final String? discount;
   final String origin;
-  final String category; // 'Vegetables', 'Fruits', 'Dairy', 'Grains', 'Meat' etc.
-  final String image; // Asset or network image link
+  final String category;
+  final String? categoryId;
+  final String image;
   final String description;
   final String calories;
   final String protein;
   final String fat;
   final String weight;
-  final double stock; // Quantity in kg, dozen, or bundles
+  final double stock;
   final String farmName;
+  final String? farmerId;
+  final bool organic;
+  final bool featured;
+  final bool seasonal;
+  final int viewCount;
+  final int soldCount;
+  final int reviewCount;
+  final double rating;
+  final String status;
 
   ProductModel({
     required this.id,
     required this.name,
+    this.slug = '',
     required this.price,
     required this.originalPrice,
     this.discount,
     required this.origin,
     required this.category,
+    this.categoryId,
     required this.image,
     required this.description,
-    required this.calories,
-    required this.protein,
-    required this.fat,
+    this.calories = '',
+    this.protein = '',
+    this.fat = '',
     required this.weight,
     required this.stock,
     required this.farmName,
+    this.farmerId,
+    this.organic = false,
+    this.featured = false,
+    this.seasonal = false,
+    this.viewCount = 0,
+    this.soldCount = 0,
+    this.reviewCount = 0,
+    this.rating = 0,
+    this.status = 'APPROVED',
   });
+
+  /// Creates a minimal fallback product when backend data is incomplete.
+  factory ProductModel.fallback({required String id}) {
+    return ProductModel(
+      id: id,
+      name: 'Unknown Product',
+      price: 0,
+      originalPrice: 0,
+      origin: 'Local',
+      category: 'Other',
+      image: '',
+      description: '',
+      weight: '1 kg',
+      stock: 0,
+      farmName: 'Unknown Farm',
+    );
+  }
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
       id: json['id'] as String,
       name: json['name'] as String,
+      slug: json['slug'] as String? ?? '',
       price: (json['price'] as num).toDouble(),
-      originalPrice: (json['originalPrice'] as num).toDouble(),
+      originalPrice: (json['originalPrice'] as num?)?.toDouble() ?? (json['price'] as num).toDouble(),
       discount: json['discount'] as String?,
-      origin: json['origin'] as String,
-      category: json['category'] as String,
-      image: json['image'] as String,
-      description: json['description'] as String,
-      calories: json['calories'] as String,
-      protein: json['protein'] as String,
-      fat: json['fat'] as String,
-      weight: json['weight'] as String,
-      stock: (json['stock'] as num).toDouble(),
-      farmName: json['farmName'] as String,
+      origin: json['origin'] as String? ?? 'Local',
+      category: json['category'] as String? ?? 'Other',
+      categoryId: json['categoryId'] as String?,
+      image: json['image'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      calories: json['calories'] as String? ?? '',
+      protein: json['protein'] as String? ?? '',
+      fat: json['fat'] as String? ?? '',
+      weight: json['weight'] as String? ?? '1 kg',
+      stock: (json['stock'] as num?)?.toDouble() ?? 0,
+      farmName: json['farmName'] as String? ?? '',
+      farmerId: json['farmerId'] as String?,
+      organic: json['organic'] as bool? ?? false,
+      featured: json['featured'] as bool? ?? false,
+      seasonal: json['seasonal'] as bool? ?? false,
+      viewCount: json['viewCount'] as int? ?? 0,
+      soldCount: json['soldCount'] as int? ?? 0,
+      reviewCount: json['reviewCount'] as int? ?? 0,
+      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+      status: json['status'] as String? ?? 'APPROVED',
     );
   }
 
   factory ProductModel.fromBackendJson(Map<String, dynamic> json) {
     final price = (json['price'] as num).toDouble();
     final discountPrice = json['discountPrice'] != null ? (json['discountPrice'] as num).toDouble() : null;
-    final discountPct = discountPrice != null ? '${(((price - discountPrice) / price) * 100).round()}% OFF' : null;
+    final discountPct = discountPrice != null && price > 0
+        ? '${(((price - discountPrice) / price) * 100).round()}% OFF'
+        : null;
+
+    final categoryData = json['category'] as Map<String, dynamic>?;
+    final imagesList = json['images'] as List?;
+    final inventoryData = json['inventory'] as Map<String, dynamic>?;
+    final farmerData = json['farmer'] as Map<String, dynamic>?;
 
     return ProductModel(
       id: json['id'] as String,
       name: json['name'] as String,
+      slug: json['slug'] as String? ?? '',
       price: discountPrice ?? price,
       originalPrice: price,
       discount: discountPct,
       origin: json['organic'] == true ? 'Organic' : 'Local',
-      category: json['category'] != null ? json['category']['name'] as String : 'Fruits',
-      image: json['images'] != null && (json['images'] as List).isNotEmpty ? json['images'][0]['imageUrl'] as String : '',
+      category: categoryData != null ? categoryData['name'] as String : 'Other',
+      categoryId: json['categoryId'] as String?,
+      image: imagesList != null && imagesList.isNotEmpty
+          ? imagesList[0]['imageUrl'] as String
+          : '',
       description: json['description'] as String? ?? '',
-      calories: '45 kcal',
-      protein: '1.2 g',
-      fat: '0.2 g',
       weight: json['unit'] as String? ?? '1 kg',
-      stock: json['inventory'] != null ? (json['inventory']['currentStock'] as num).toDouble() : 50.0,
-      farmName: json['farmer'] != null ? json['farmer']['farmName'] as String : 'Green Farms',
+      stock: inventoryData != null
+          ? (inventoryData['currentStock'] as num).toDouble()
+          : 50.0,
+      farmName: farmerData != null ? farmerData['farmName'] as String : 'Farm',
+      farmerId: json['farmerId'] as String?,
+      organic: json['organic'] as bool? ?? false,
+      featured: json['featured'] as bool? ?? false,
+      seasonal: json['seasonal'] as bool? ?? false,
+      viewCount: json['viewCount'] as int? ?? 0,
+      soldCount: json['soldCount'] as int? ?? 0,
+      reviewCount: json['reviewCount'] as int? ?? 0,
+      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+      status: json['status'] as String? ?? 'APPROVED',
     );
   }
 
-  /// Parses the slim product object embedded inside a cart item response.
-  /// The cart item product does NOT include nested farmer/images — only basic fields.
   factory ProductModel.fromCartItemBackendJson(
     Map<String, dynamic> productJson,
     Map<String, dynamic> cartItemJson,
@@ -90,6 +157,7 @@ class ProductModel {
     return ProductModel(
       id: productJson['id'] as String? ?? cartItemJson['productId'] as String? ?? '',
       name: productJson['name'] as String? ?? 'Product',
+      slug: productJson['slug'] as String? ?? '',
       price: discountPrice ?? price,
       originalPrice: price,
       discount: discountPct,
@@ -97,13 +165,10 @@ class ProductModel {
       category: 'Produce',
       image: '',
       description: '',
-      calories: '45 kcal',
-      protein: '1.2 g',
-      fat: '0.2 g',
       weight: productJson['unit'] as String? ?? '1 kg',
       stock: productJson['inventory'] != null
           ? ((productJson['inventory']['currentStock'] as num).toDouble() -
-              (productJson['inventory']['reservedStock'] as num).toDouble())
+              (productJson['inventory']['reservedStock'] as num?)?.toDouble() ?? 0)
           : 50.0,
       farmName: 'Farm',
     );
@@ -113,30 +178,44 @@ class ProductModel {
     return {
       'id': id,
       'name': name,
-      'price': price,
-      'originalPrice': originalPrice,
-      'discount': discount,
-      'origin': origin,
-      'category': category,
-      'image': image,
+      'slug': slug,
+      'price': originalPrice,
+      'discountPrice': discount != null ? price : null,
+      'unit': weight,
       'description': description,
-      'calories': calories,
-      'protein': protein,
-      'fat': fat,
-      'weight': weight,
+      'categoryId': categoryId,
+      'organic': organic,
+      'featured': featured,
+      'seasonal': seasonal,
+    };
+  }
+
+  /// Converts to the JSON format expected by POST /products
+  Map<String, dynamic> toCreatePayload() {
+    return {
+      'name': name,
+      'description': description,
+      'price': originalPrice,
+      if (discount != null) 'discountPrice': price,
+      'unit': weight,
+      'categoryId': categoryId,
+      'organic': organic,
+      'featured': featured,
+      'seasonal': seasonal,
       'stock': stock,
-      'farmName': farmName,
     };
   }
 
   ProductModel copyWith({
     String? id,
     String? name,
+    String? slug,
     double? price,
     double? originalPrice,
     String? discount,
     String? origin,
     String? category,
+    String? categoryId,
     String? image,
     String? description,
     String? calories,
@@ -145,15 +224,26 @@ class ProductModel {
     String? weight,
     double? stock,
     String? farmName,
+    String? farmerId,
+    bool? organic,
+    bool? featured,
+    bool? seasonal,
+    int? viewCount,
+    int? soldCount,
+    int? reviewCount,
+    double? rating,
+    String? status,
   }) {
     return ProductModel(
       id: id ?? this.id,
       name: name ?? this.name,
+      slug: slug ?? this.slug,
       price: price ?? this.price,
       originalPrice: originalPrice ?? this.originalPrice,
       discount: discount ?? this.discount,
       origin: origin ?? this.origin,
       category: category ?? this.category,
+      categoryId: categoryId ?? this.categoryId,
       image: image ?? this.image,
       description: description ?? this.description,
       calories: calories ?? this.calories,
@@ -162,6 +252,15 @@ class ProductModel {
       weight: weight ?? this.weight,
       stock: stock ?? this.stock,
       farmName: farmName ?? this.farmName,
+      farmerId: farmerId ?? this.farmerId,
+      organic: organic ?? this.organic,
+      featured: featured ?? this.featured,
+      seasonal: seasonal ?? this.seasonal,
+      viewCount: viewCount ?? this.viewCount,
+      soldCount: soldCount ?? this.soldCount,
+      reviewCount: reviewCount ?? this.reviewCount,
+      rating: rating ?? this.rating,
+      status: status ?? this.status,
     );
   }
 }

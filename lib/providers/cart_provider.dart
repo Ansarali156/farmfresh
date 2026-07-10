@@ -204,11 +204,9 @@ class CartNotifier extends StateNotifier<CartState> {
   }
 
   bool applyCoupon(String code) {
-    if (code.toUpperCase() == 'SAVE50') {
-      state = state.copyWith(couponCode: 'SAVE50', discountPercent: 0.50, hasFetchedSummary: false);
-      return true;
-    }
-    return false;
+    if (code.trim().isEmpty) return false;
+    state = state.copyWith(couponCode: code.trim().toUpperCase(), discountPercent: 0.0, hasFetchedSummary: false);
+    return true;
   }
 
   void removeCoupon() {

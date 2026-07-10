@@ -29,7 +29,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Coupon SAVE50 applied! 50% discount active.'),
+          content: Text('Coupon applied successfully!'),
           backgroundColor: Colors.green,
         ),
       );
@@ -56,10 +56,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Order #${createdOrder.id} placed! Verification OTP: ${createdOrder.otp}',
+            'Order #${createdOrder.orderNumber.isNotEmpty ? createdOrder.orderNumber : createdOrder.id} placed successfully!',
           ),
           backgroundColor: Colors.green,
-          duration: const Duration(seconds: 4),
+          duration: const Duration(seconds: 3),
         ),
       );
       ref.read(cartProvider.notifier).clearCart();
@@ -278,7 +278,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         '\$${item.product.price.toStringAsFixed(2)} / ${item.product.weight}',
                         style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                       ),
-                      if (item.product.origin.toLowerCase() == 'organic') ...[
+                      if (item.product.organic) ...[
                         const SizedBox(width: 6),
                         const Icon(Icons.eco, color: Colors.green, size: 14),
                       ],

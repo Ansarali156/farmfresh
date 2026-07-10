@@ -15,14 +15,15 @@ import ReviewsPage from './pages/ReviewsPage';
 import CouponsPage from './pages/CouponsPage';
 import InventoryAlertsPage from './pages/InventoryAlertsPage';
 import SettingsPage from './pages/SettingsPage';
+import BannersPage from './pages/BannersPage';
+import NotificationsPage from './pages/NotificationsPage';
+import AuditLogsPage from './pages/AuditLogsPage';
+import CmsPage from './pages/CmsPage';
 
 export default function App() {
   return (
     <Routes>
-      {/* Public route */}
       <Route path="/login" element={<LoginPage />} />
-
-      {/* Protected routes */}
       <Route
         element={
           <ProtectedRoute>
@@ -43,6 +44,10 @@ export default function App() {
         <Route path="/coupons" element={<CouponsPage />} />
         <Route path="/inventory-alerts" element={<InventoryAlertsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/banners" element={<BannersPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/audit-logs" element={<AuditLogsPage />} />
+        <Route path="/cms" element={<CmsPage />} />
       </Route>
     </Routes>
   );

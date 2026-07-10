@@ -17,7 +17,7 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasDiscount = product.originalPrice > product.price;
-    final isOrganic = product.origin.toLowerCase() == 'organic';
+    final isOrganic = product.organic;
     final isOutOfStock = product.stock <= 0;
 
     return GestureDetector(

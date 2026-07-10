@@ -4,25 +4,49 @@ import '../models/cart_item_model.dart';
 import 'app_providers.dart';
 
 class OrderState {
-  final List<OrderModel> orders;
+  final List<OrderModel> currentOrders;
+  final List<OrderModel> historyOrders;
+  final OrderModel? selectedOrder;
   final bool isLoading;
+  final bool isLoadingMore;
+  final bool hasMoreHistory;
+  final int currentPage;
   final String? errorMessage;
+  final String? actionMessage;
 
   OrderState({
-    this.orders = const [],
+    this.currentOrders = const [],
+    this.historyOrders = const [],
+    this.selectedOrder,
     this.isLoading = false,
+    this.isLoadingMore = false,
+    this.hasMoreHistory = true,
+    this.currentPage = 1,
     this.errorMessage,
+    this.actionMessage,
   });
 
   OrderState copyWith({
-    List<OrderModel>? orders,
+    List<OrderModel>? currentOrders,
+    List<OrderModel>? historyOrders,
+    OrderModel? selectedOrder,
     bool? isLoading,
+    bool? isLoadingMore,
+    bool? hasMoreHistory,
+    int? currentPage,
     String? errorMessage,
+    String? actionMessage,
   }) {
     return OrderState(
-      orders: orders ?? this.orders,
+      currentOrders: currentOrders ?? this.currentOrders,
+      historyOrders: historyOrders ?? this.historyOrders,
+      selectedOrder: selectedOrder ?? this.selectedOrder,
       isLoading: isLoading ?? this.isLoading,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      hasMoreHistory: hasMoreHistory ?? this.hasMoreHistory,
+      currentPage: currentPage ?? this.currentPage,
       errorMessage: errorMessage,
+      actionMessage: actionMessage,
     );
   }
 }
@@ -34,13 +58,86 @@ class OrderNotifier extends StateNotifier<OrderState> {
     loadOrders();
   }
 
+  static const _activeStatuses = {
+    'PENDING',
+    'CONFIRMED',
+    'ACCEPTED',
+    'PREPARING',
+    'READY_FOR_PICKUP',
+    'OUT_FOR_DELIVERY',
+  };
+
   Future<void> loadOrders() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final list = await _ref.read(orderRepositoryProvider).getOrders();
-      state = OrderState(orders: list);
+      final allOrders =
+          await _ref.read(orderRepositoryProvider).getCustomerOrders(
+                page: 1,
+                limit: 50,
+              );
+
+      final current = allOrders
+          .where((o) => _activeStatuses.contains(o.status.toUpperCase()))
+          .toList();
+      final history = allOrders
+          .where((o) => !_activeStatuses.contains(o.status.toUpperCase()))
+          .toList();
+
+      state = state.copyWith(
+        currentOrders: current,
+        historyOrders: history,
+        isLoading: false,
+        currentPage: 1,
+        hasMoreHistory: history.length >= 10,
+      );
     } catch (e) {
-      state = OrderState(errorMessage: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<void> loadMoreHistory() async {
+    if (state.isLoadingMore || !state.hasMoreHistory) return;
+
+    state = state.copyWith(isLoadingMore: true);
+    try {
+      final nextPage = state.currentPage + 1;
+      final moreOrders =
+          await _ref.read(orderRepositoryProvider).getCustomerOrders(
+                page: nextPage,
+                limit: 10,
+              );
+
+      if (moreOrders.isEmpty) {
+        state = state.copyWith(isLoadingMore: false, hasMoreHistory: false);
+        return;
+      }
+
+      final newHistory = [...state.historyOrders, ...moreOrders];
+      state = state.copyWith(
+        historyOrders: newHistory,
+        isLoadingMore: false,
+        currentPage: nextPage,
+        hasMoreHistory: moreOrders.length >= 10,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoadingMore: false);
+    }
+  }
+
+  Future<void> loadOrderById(String orderId) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final order =
+          await _ref.read(orderRepositoryProvider).getOrderById(orderId);
+      state = state.copyWith(selectedOrder: order, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString(),
+      );
     }
   }
 
@@ -48,39 +145,86 @@ class OrderNotifier extends StateNotifier<OrderState> {
     required List<CartItemModel> items,
     required double total,
     required double deliveryFee,
+    String? address,
+    String? notes,
   }) async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      // Generate a random 4-digit OTP code for order security verification
-      final otp = (1000 + (DateTime.now().millisecond % 9000)).toString();
       final newOrder = OrderModel(
-        id: '', // Set by repository
+        id: '',
+        orderNumber: '',
         date: DateTime.now(),
         items: items,
         total: total,
         deliveryFee: deliveryFee,
-        status: 'Pending',
-        otp: otp,
+        status: 'PENDING',
       );
-      final created = await _ref.read(orderRepositoryProvider).createOrder(newOrder);
+      final created = await _ref.read(orderRepositoryProvider).createOrder(
+            newOrder,
+            address: address,
+            notes: notes,
+          );
       await loadOrders();
       return created;
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(
+          isLoading: false, errorMessage: e.toString());
       return null;
     }
   }
 
   Future<bool> updateStatus(String orderId, String status) async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      await _ref.read(orderRepositoryProvider).updateOrderStatus(orderId, status);
+      await _ref
+          .read(orderRepositoryProvider)
+          .updateOrderStatus(orderId, status);
       await loadOrders();
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      state = state.copyWith(
+          isLoading: false, errorMessage: e.toString());
       return false;
     }
+  }
+
+  Future<bool> cancelOrder(String orderId, {String? reason}) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      await _ref
+          .read(orderRepositoryProvider)
+          .cancelOrder(orderId, reason: reason);
+      state = state.copyWith(
+        isLoading: false,
+        actionMessage: 'Order cancelled successfully',
+      );
+      await loadOrders();
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+          isLoading: false, errorMessage: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> reorder(String orderId) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      await _ref.read(orderRepositoryProvider).reorder(orderId);
+      state = state.copyWith(
+        isLoading: false,
+        actionMessage: 'Items added to cart successfully',
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+          isLoading: false, errorMessage: e.toString());
+      return false;
+    }
+  }
+
+  void clearMessages() {
+    state = state.copyWith(errorMessage: null, actionMessage: null);
   }
 }
 

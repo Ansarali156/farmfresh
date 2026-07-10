@@ -1,12 +1,8 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/cart_item_model.dart';
-import '../models/product_model.dart';
 import '../core/constants/app_constants.dart';
-import 'mock_db.dart';
 
-/// Summary returned from GET /cart/summary
 class CartSummary {
   final double subtotal;
   final double discount;
@@ -34,178 +30,102 @@ abstract class CartRepository {
 }
 
 class PostgresCartRepository implements CartRepository {
-  final MockCartRepository _mockFallback = MockCartRepository();
+  final Dio _dio;
 
-  Future<Map<String, String>> _getHeaders() async {
+  PostgresCartRepository() : _dio = Dio(BaseOptions(
+    baseUrl: AppConstants.apiBaseUrl,
+    connectTimeout: const Duration(seconds: 10),
+    receiveTimeout: const Duration(seconds: 10),
+  ));
+
+  Future<Options> _authOptions() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
-    return {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    };
+    return Options(
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    );
   }
 
   @override
   Future<List<CartItemModel>> getCart() async {
     try {
-      final res = await http.get(
-        Uri.parse('${AppConstants.apiBaseUrl}/cart'),
-        headers: await _getHeaders(),
-      ).timeout(const Duration(seconds: 6));
+      final res = await _dio.get('/cart', options: await _authOptions());
 
-      if (res.statusCode == 200) {
-        final data = json.decode(res.body);
-        if (data['success'] == true && data['data'] != null) {
-          final cartData = data['data'];
-          final items = cartData['items'] as List? ?? [];
-          return items.map<CartItemModel>((item) {
-            return CartItemModel.fromBackendJson(item as Map<String, dynamic>);
-          }).toList();
-        }
+      if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
+        final cartData = res.data['data'];
+        final items = cartData['items'] as List? ?? [];
+        return items.map<CartItemModel>((item) {
+          return CartItemModel.fromBackendJson(item as Map<String, dynamic>);
+        }).toList();
       }
-    } catch (_) {
-      // Fall through to mock
-    }
-    return _mockFallback.getCart();
+    } catch (_) {}
+    return [];
   }
 
   @override
   Future<CartSummary> getCartSummary() async {
     try {
-      final res = await http.get(
-        Uri.parse('${AppConstants.apiBaseUrl}/cart/summary'),
-        headers: await _getHeaders(),
-      ).timeout(const Duration(seconds: 6));
+      final res = await _dio.get('/cart/summary', options: await _authOptions());
 
-      if (res.statusCode == 200) {
-        final data = json.decode(res.body);
-        if (data['success'] == true && data['data'] != null) {
-          final d = data['data'];
-          return CartSummary(
-            subtotal: (d['subtotal'] as num?)?.toDouble() ?? 0,
-            discount: (d['discount'] as num?)?.toDouble() ?? 0,
-            tax: (d['tax'] as num?)?.toDouble() ?? 0,
-            deliveryCharge: (d['deliveryCharge'] as num?)?.toDouble() ?? 0,
-            grandTotal: (d['grandTotal'] as num?)?.toDouble() ?? 0,
-          );
-        }
+      if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
+        final d = res.data['data'];
+        return CartSummary(
+          subtotal: (d['subtotal'] as num?)?.toDouble() ?? 0,
+          discount: (d['discount'] as num?)?.toDouble() ?? 0,
+          tax: (d['tax'] as num?)?.toDouble() ?? 0,
+          deliveryCharge: (d['deliveryCharge'] as num?)?.toDouble() ?? 0,
+          grandTotal: (d['grandTotal'] as num?)?.toDouble() ?? 0,
+        );
       }
-    } catch (_) {
-      // Return zero summary on error
-    }
+    } catch (_) {}
     return const CartSummary();
   }
 
   @override
   Future<void> addItemToBackend(String productId, int quantity) async {
     try {
-      await http.post(
-        Uri.parse('${AppConstants.apiBaseUrl}/cart/items'),
-        headers: await _getHeaders(),
-        body: json.encode({'productId': productId, 'quantity': quantity}),
-      ).timeout(const Duration(seconds: 5));
-    } catch (_) {
-      // Silently fall through — local state already updated
-    }
+      await _dio.post('/cart/items', data: {
+        'productId': productId,
+        'quantity': quantity,
+      }, options: await _authOptions());
+    } catch (_) {}
   }
 
   @override
   Future<void> updateItemQuantity(String cartItemId, int quantity) async {
     try {
-      await http.patch(
-        Uri.parse('${AppConstants.apiBaseUrl}/cart/items/$cartItemId'),
-        headers: await _getHeaders(),
-        body: json.encode({'quantity': quantity}),
-      ).timeout(const Duration(seconds: 5));
+      await _dio.patch('/cart/items/$cartItemId', data: {
+        'quantity': quantity,
+      }, options: await _authOptions());
     } catch (_) {}
   }
 
   @override
   Future<void> removeItemById(String cartItemId) async {
     try {
-      await http.delete(
-        Uri.parse('${AppConstants.apiBaseUrl}/cart/items/$cartItemId'),
-        headers: await _getHeaders(),
-      ).timeout(const Duration(seconds: 5));
+      await _dio.delete('/cart/items/$cartItemId', options: await _authOptions());
     } catch (_) {}
   }
 
   @override
   Future<void> updateCart(List<CartItemModel> items) async {
-    // Kept for backwards compat; individual operations now use addItemToBackend / updateItemQuantity
     try {
       for (final item in items) {
-        await http.post(
-          Uri.parse('${AppConstants.apiBaseUrl}/cart/items'),
-          headers: await _getHeaders(),
-          body: json.encode({
-            'productId': item.product.id,
-            'quantity': item.quantity,
-          }),
-        ).timeout(const Duration(seconds: 3));
+        await _dio.post('/cart/items', data: {
+          'productId': item.product.id,
+          'quantity': item.quantity,
+        }, options: await _authOptions());
       }
     } catch (_) {}
-    await _mockFallback.updateCart(items);
   }
 
   @override
   Future<void> clearCart() async {
     try {
-      await http.delete(
-        Uri.parse('${AppConstants.apiBaseUrl}/cart/clear'),
-        headers: await _getHeaders(),
-      ).timeout(const Duration(seconds: 5));
+      await _dio.delete('/cart/clear', options: await _authOptions());
     } catch (_) {}
-    await _mockFallback.clearCart();
   }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Mock fallback (used when auth token is unavailable / offline)
-// ─────────────────────────────────────────────────────────────────────────────
-
-class MockCartRepository implements CartRepository {
-  @override
-  Future<List<CartItemModel>> getCart() async {
-    await Future.delayed(const Duration(milliseconds: 80));
-    return List.from(MockDb.cartItems);
-  }
-
-  @override
-  Future<CartSummary> getCartSummary() async {
-    final items = MockDb.cartItems;
-    final subtotal = items.fold(0.0, (s, i) => s + (i.product.price * i.quantity));
-    final delivery = subtotal >= 20 ? 0.0 : 2.0;
-    final tax = subtotal * 0.05;
-    return CartSummary(
-      subtotal: subtotal,
-      discount: 0,
-      tax: tax,
-      deliveryCharge: delivery,
-      grandTotal: subtotal + tax + delivery,
-    );
-  }
-
-  @override
-  Future<void> updateCart(List<CartItemModel> items) async {
-    await Future.delayed(const Duration(milliseconds: 80));
-    MockDb.cartItems
-      ..clear()
-      ..addAll(items);
-  }
-
-  @override
-  Future<void> clearCart() async {
-    await Future.delayed(const Duration(milliseconds: 80));
-    MockDb.cartItems.clear();
-  }
-
-  @override
-  Future<void> addItemToBackend(String productId, int quantity) async {}
-
-  @override
-  Future<void> updateItemQuantity(String cartItemId, int quantity) async {}
-
-  @override
-  Future<void> removeItemById(String cartItemId) async {}
 }

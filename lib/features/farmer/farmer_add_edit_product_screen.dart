@@ -1,0 +1,297 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../models/product_model.dart';
+import '../../providers/product_provider.dart';
+
+class FarmerAddEditProductScreen extends ConsumerStatefulWidget {
+  final ProductModel? product;
+
+  const FarmerAddEditProductScreen({super.key, this.product});
+
+  @override
+  ConsumerState<FarmerAddEditProductScreen> createState() => _FarmerAddEditProductScreenState();
+}
+
+class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProductScreen> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameController;
+  late final TextEditingController _descriptionController;
+  late final TextEditingController _priceController;
+  late final TextEditingController _stockController;
+  late final TextEditingController _weightController;
+  late final TextEditingController _originController;
+  late String _selectedCategory;
+  bool _isOrganic = false;
+  bool _isFeatured = false;
+  bool _isSeasonal = false;
+  bool _isSaving = false;
+
+  bool get _isEditMode => widget.product != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.product;
+    _nameController = TextEditingController(text: p?.name ?? '');
+    _descriptionController = TextEditingController(text: p?.description ?? '');
+    _priceController = TextEditingController(text: p != null ? p.originalPrice.toStringAsFixed(2) : '');
+    _stockController = TextEditingController(text: p != null ? p.stock.toStringAsFixed(0) : '');
+    _weightController = TextEditingController(text: p?.weight ?? '');
+    _originController = TextEditingController(text: p?.origin ?? '');
+    _selectedCategory = p?.category ?? 'Vegetables';
+    _isOrganic = p?.organic ?? false;
+    _isFeatured = p?.featured ?? false;
+    _isSeasonal = p?.seasonal ?? false;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _priceController.dispose();
+    _stockController.dispose();
+    _weightController.dispose();
+    _originController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveProduct() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSaving = true);
+
+    final product = ProductModel(
+      id: widget.product?.id ?? '',
+      name: _nameController.text.trim(),
+      description: _descriptionController.text.trim(),
+      price: double.parse(_priceController.text),
+      originalPrice: widget.product?.originalPrice ?? double.parse(_priceController.text),
+      stock: double.parse(_stockController.text),
+      weight: _weightController.text.trim(),
+      category: _selectedCategory,
+      origin: _originController.text.trim(),
+      organic: _isOrganic,
+      featured: _isFeatured,
+      seasonal: _isSeasonal,
+      image: widget.product?.image ?? '',
+      farmName: widget.product?.farmName ?? '',
+      farmerId: widget.product?.farmerId,
+      slug: widget.product?.slug ?? '',
+      categoryId: widget.product?.categoryId,
+      status: widget.product?.status ?? 'PENDING_APPROVAL',
+    );
+
+    bool success;
+    if (_isEditMode) {
+      success = await ref.read(productProvider.notifier).updateProduct(product);
+    } else {
+      success = await ref.read(productProvider.notifier).addProduct(product);
+    }
+
+    if (!mounted) return;
+
+    setState(() => _isSaving = false);
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_isEditMode ? 'Product updated' : 'Product added')),
+      );
+      context.pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to save product')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_isEditMode ? 'Edit Product' : 'Add Product'),
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            TextFormField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Product Name',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter product name';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _descriptionController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Description',
+                border: OutlineInputBorder(),
+                alignLabelWithHint: true,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _priceController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Price',
+                      prefixText: '\$ ',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Required';
+                      }
+                      if (double.tryParse(value) == null) {
+                        return 'Invalid';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextFormField(
+                    controller: _stockController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Stock',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Required';
+                      }
+                      if (double.tryParse(value) == null) {
+                        return 'Invalid';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _weightController,
+              decoration: const InputDecoration(
+                labelText: 'Weight / Unit',
+                hintText: 'e.g. 1 kg, 500g, 1 dozen',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter weight or unit';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: _selectedCategory,
+              decoration: const InputDecoration(
+                labelText: 'Category',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'Vegetables', child: Text('Vegetables')),
+                DropdownMenuItem(value: 'Fruits', child: Text('Fruits')),
+                DropdownMenuItem(value: 'Dairy', child: Text('Dairy')),
+                DropdownMenuItem(value: 'Grains', child: Text('Grains')),
+                DropdownMenuItem(value: 'Herbs', child: Text('Herbs')),
+                DropdownMenuItem(value: 'Other', child: Text('Other')),
+              ],
+              onChanged: (val) {
+                if (val != null) {
+                  setState(() => _selectedCategory = val);
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _originController,
+              decoration: const InputDecoration(
+                labelText: 'Origin',
+                hintText: 'e.g. Local Farm, Valley Region',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Column(
+                children: [
+                  SwitchListTile(
+                    title: const Text('Organic'),
+                    subtitle: const Text('Certified organic product'),
+                    value: _isOrganic,
+                    activeColor: Colors.green,
+                    onChanged: (val) => setState(() => _isOrganic = val),
+                  ),
+                  const Divider(height: 1),
+                  SwitchListTile(
+                    title: const Text('Featured'),
+                    subtitle: const Text('Show on homepage'),
+                    value: _isFeatured,
+                    activeColor: Colors.green,
+                    onChanged: (val) => setState(() => _isFeatured = val),
+                  ),
+                  const Divider(height: 1),
+                  SwitchListTile(
+                    title: const Text('Seasonal'),
+                    subtitle: const Text('Available seasonally'),
+                    value: _isSeasonal,
+                    activeColor: Colors.green,
+                    onChanged: (val) => setState(() => _isSeasonal = val),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _isSaving ? null : _saveProduct,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        _isEditMode ? 'Update Product' : 'Save Product',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -1,129 +1,208 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/order_model.dart';
 import '../models/cart_item_model.dart';
 import '../models/product_model.dart';
 import '../core/constants/app_constants.dart';
-import 'mock_db.dart';
 
 abstract class OrderRepository {
   Future<List<OrderModel>> getOrders();
-  Future<OrderModel> createOrder(OrderModel order);
+  Future<List<OrderModel>> getCustomerOrders({int page = 1, int limit = 10});
+  Future<List<OrderModel>> getFarmerOrders({int page = 1, int limit = 10, String? status});
+  Future<OrderModel> getOrderById(String orderId);
+  Future<OrderModel> createOrder(OrderModel order, {String? address, String? notes});
   Future<OrderModel> updateOrderStatus(String orderId, String status);
+  Future<void> cancelOrder(String orderId, {String? reason});
+  Future<void> reorder(String orderId);
 }
 
 class PostgresOrderRepository implements OrderRepository {
-  final MockOrderRepository _mockFallback = MockOrderRepository();
+  final Dio _dio;
 
-  Future<Map<String, String>> _getHeaders() async {
+  PostgresOrderRepository()
+      : _dio = Dio(BaseOptions(
+          baseUrl: AppConstants.apiBaseUrl,
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+        ));
+
+  Future<Options> _authOptions() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
-    return {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    };
+    return Options(
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    );
   }
 
   @override
   Future<List<OrderModel>> getOrders() async {
     try {
-      final res = await http.get(
-        Uri.parse('${AppConstants.apiBaseUrl}/orders'),
-        headers: await _getHeaders(),
-      ).timeout(const Duration(seconds: 4));
+      final res =
+          await _dio.get('/orders', options: await _authOptions());
 
-      if (res.statusCode == 200) {
-        final data = json.decode(res.body);
-        if (data['success'] == true && data['data'] != null) {
-          final list = data['data'] as List;
-          return list.map((item) => OrderModel.fromBackendJson(item)).toList();
-        }
+      if (res.statusCode == 200 &&
+          res.data['success'] == true &&
+          res.data['data'] != null) {
+        final list = res.data['data'] as List;
+        return list
+            .map((item) => OrderModel.fromBackendJson(item))
+            .toList();
       }
-    } catch (e) {
-      // Fallback silently
-    }
-    return _mockFallback.getOrders();
+    } catch (_) {}
+    return [];
   }
 
   @override
-  Future<OrderModel> createOrder(OrderModel order) async {
+  Future<List<OrderModel>> getFarmerOrders({int page = 1, int limit = 10, String? status}) async {
     try {
-      final itemsPayload = order.items.map((item) => {
-        'productId': item.product.id,
-        'quantity': item.quantity,
-      }).toList();
+      final query = <String, dynamic>{
+        'page': page,
+        'limit': limit,
+      };
+      if (status != null) query['status'] = status;
 
-      final res = await http.post(
-        Uri.parse('${AppConstants.apiBaseUrl}/orders'),
-        headers: await _getHeaders(),
-        body: json.encode({
-          'address': 'Seeded Address, City',
-          'notes': 'Delivered via Checkout flow',
-          'items': itemsPayload,
-        }),
-      ).timeout(const Duration(seconds: 5));
+      final res = await _dio.get('/orders/farmer',
+          queryParameters: query,
+          options: await _authOptions());
+
+      if (res.statusCode == 200 &&
+          res.data['success'] == true &&
+          res.data['data'] != null) {
+        final list = res.data['data'] as List;
+        return list
+            .map((item) => OrderModel.fromBackendJson(item))
+            .toList();
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  @override
+  Future<List<OrderModel>> getCustomerOrders(
+      {int page = 1, int limit = 10}) async {
+    try {
+      final res = await _dio.get('/orders/customer',
+          queryParameters: {'page': page, 'limit': limit},
+          options: await _authOptions());
+
+      if (res.statusCode == 200 &&
+          res.data['success'] == true &&
+          res.data['data'] != null) {
+        final list = res.data['data'] as List;
+        return list
+            .map((item) => OrderModel.fromBackendJson(item))
+            .toList();
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  @override
+  Future<OrderModel> getOrderById(String orderId) async {
+    try {
+      final res = await _dio.get('/orders/$orderId',
+          options: await _authOptions());
+
+      if (res.statusCode == 200 &&
+          res.data['success'] == true &&
+          res.data['data'] != null) {
+        return OrderModel.fromBackendJson(res.data['data']);
+      }
+      throw Exception('Order not found');
+    } on DioException catch (e) {
+      throw Exception(
+          e.response?.data['message'] ?? e.message ?? 'Failed to load order');
+    }
+  }
+
+  @override
+  Future<OrderModel> createOrder(OrderModel order,
+      {String? address, String? notes}) async {
+    try {
+      final itemsPayload = order.items
+          .map((item) => {
+                'productId': item.product.id,
+                'quantity': item.quantity,
+              })
+          .toList();
+
+      final res = await _dio.post('/orders',
+          data: {
+            'address': address ?? '',
+            'notes': notes ?? '',
+            'items': itemsPayload,
+          },
+          options: await _authOptions());
 
       if (res.statusCode == 201 || res.statusCode == 200) {
-        final data = json.decode(res.body);
-        if (data['success'] == true && data['data'] != null) {
-          return OrderModel.fromBackendJson(data['data']);
+        if (res.data['success'] == true && res.data['data'] != null) {
+          return OrderModel.fromBackendJson(res.data['data']);
         }
       }
-    } catch (e) {
-      // Fallback
+      throw Exception('Failed to create order');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ??
+          e.message ??
+          'Failed to create order');
     }
-    return _mockFallback.createOrder(order);
   }
 
   @override
   Future<OrderModel> updateOrderStatus(String orderId, String status) async {
     try {
-      final res = await http.patch(
-        Uri.parse('${AppConstants.apiBaseUrl}/orders/$orderId/status'),
-        headers: await _getHeaders(),
-        body: json.encode({'status': status}),
-      ).timeout(const Duration(seconds: 3));
+      final res = await _dio.patch('/orders/$orderId/status',
+          data: {'status': status}, options: await _authOptions());
 
       if (res.statusCode == 200) {
-        final data = json.decode(res.body);
-        if (data['success'] == true && data['data'] != null) {
-          return OrderModel.fromBackendJson(data['data']);
+        if (res.data['success'] == true && res.data['data'] != null) {
+          return OrderModel.fromBackendJson(res.data['data']);
         }
       }
-    } catch (e) {
-      // Fallback
+      throw Exception('Failed to update order status');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ??
+          e.message ??
+          'Failed to update order status');
     }
-    return _mockFallback.updateOrderStatus(orderId, status);
-  }
-}
-
-class MockOrderRepository implements OrderRepository {
-  @override
-  Future<List<OrderModel>> getOrders() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return List.from(MockDb.orders);
   }
 
   @override
-  Future<OrderModel> createOrder(OrderModel order) async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    final newOrder = order.copyWith(
-      id: (MockDb.orders.length + 1000).toString(),
-    );
-    MockDb.orders.insert(0, newOrder);
-    return newOrder;
-  }
+  Future<void> cancelOrder(String orderId, {String? reason}) async {
+    try {
+      final res = await _dio.patch('/orders/$orderId/cancel',
+          data: {
+            if (reason != null) 'reason': reason,
+          },
+          options: await _authOptions());
 
-  @override
-  Future<OrderModel> updateOrderStatus(String orderId, String status) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    final index = MockDb.orders.indexWhere((o) => o.id == orderId);
-    if (index != -1) {
-      final updated = MockDb.orders[index].copyWith(status: status);
-      MockDb.orders[index] = updated;
-      return updated;
+      if (res.statusCode != 200) {
+        throw Exception(
+            res.data['message'] ?? 'Failed to cancel order');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ??
+          e.message ??
+          'Failed to cancel order');
     }
-    throw Exception('Order not found');
+  }
+
+  @override
+  Future<void> reorder(String orderId) async {
+    try {
+      final res = await _dio.post('/orders/$orderId/reorder',
+          options: await _authOptions());
+
+      if (res.statusCode != 200 && res.statusCode != 201) {
+        throw Exception(
+            res.data['message'] ?? 'Failed to reorder');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ??
+          e.message ??
+          'Failed to reorder');
+    }
   }
 }

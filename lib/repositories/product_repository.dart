@@ -1,8 +1,7 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/product_model.dart';
 import '../core/constants/app_constants.dart';
-import 'mock_db.dart';
 
 abstract class ProductRepository {
   Future<List<ProductModel>> getProducts({String? search, String? category, String? sortBy});
@@ -12,68 +11,63 @@ abstract class ProductRepository {
   Future<ProductModel> addProduct(ProductModel product);
   Future<ProductModel> updateProduct(ProductModel product);
   Future<void> deleteProduct(String id);
+  Future<List<ProductModel>> getFarmerProducts({int page = 1, int limit = 20, String? search, String? status});
+  Future<String> uploadProductImage(String productId, String filePath);
 }
 
 class PostgresProductRepository implements ProductRepository {
-  final MockProductRepository _mockFallback = MockProductRepository();
+  final Dio _dio;
+
+  PostgresProductRepository() : _dio = Dio(BaseOptions(
+    baseUrl: AppConstants.apiBaseUrl,
+    connectTimeout: const Duration(seconds: 10),
+    receiveTimeout: const Duration(seconds: 10),
+  ));
+
+  Future<Options> _authOptions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('access_token');
+    return Options(
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    );
+  }
 
   @override
   Future<List<ProductModel>> getFeaturedProducts() async {
     try {
-      final res = await http.get(
-        Uri.parse('${AppConstants.apiBaseUrl}/products/featured'),
-      ).timeout(const Duration(seconds: 5));
-
-      if (res.statusCode == 200) {
-        final data = json.decode(res.body);
-        if (data['success'] == true && data['data'] != null) {
-          final list = data['data'] as List;
-          return list.map((item) => ProductModel.fromBackendJson(item)).toList();
-        }
+      final res = await _dio.get('/products/featured');
+      if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
+        final list = res.data['data'] as List;
+        return list.map((item) => ProductModel.fromBackendJson(item)).toList();
       }
-    } catch (e) {
-      // Fallback
-    }
-    return _mockFallback.getFeaturedProducts();
+    } catch (_) {}
+    return [];
   }
 
   @override
   Future<List<ProductModel>> getPopularProducts() async {
     try {
-      final res = await http.get(
-        Uri.parse('${AppConstants.apiBaseUrl}/products/popular'),
-      ).timeout(const Duration(seconds: 5));
-
-      if (res.statusCode == 200) {
-        final data = json.decode(res.body);
-        if (data['success'] == true && data['data'] != null) {
-          final list = data['data'] as List;
-          return list.map((item) => ProductModel.fromBackendJson(item)).toList();
-        }
+      final res = await _dio.get('/products/popular');
+      if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
+        final list = res.data['data'] as List;
+        return list.map((item) => ProductModel.fromBackendJson(item)).toList();
       }
-    } catch (e) {
-      // Fallback
-    }
-    return _mockFallback.getPopularProducts();
+    } catch (_) {}
+    return [];
   }
 
   @override
   Future<List<String>> getCategories() async {
     try {
-      final res = await http.get(
-        Uri.parse('${AppConstants.apiBaseUrl}/categories'),
-      ).timeout(const Duration(seconds: 5));
-
-      if (res.statusCode == 200) {
-        final data = json.decode(res.body);
-        if (data['success'] == true && data['data'] != null) {
-          final list = data['data'] as List;
-          return ['All', ...list.map((item) => item['name'] as String)];
-        }
+      final res = await _dio.get('/categories');
+      if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
+        final list = res.data['data'] as List;
+        return ['All', ...list.map((item) => item['name'] as String)];
       }
-    } catch (e) {
-      // Fallback silently to static list
-    }
+    } catch (_) {}
     return ['All', 'Vegetables', 'Fruits', 'Dairy', 'Grains'];
   }
 
@@ -85,96 +79,97 @@ class PostgresProductRepository implements ProductRepository {
       if (category != null && category != 'All') query['category'] = category;
       if (sortBy != null) query['sortBy'] = sortBy;
 
-      final uri = Uri.parse('${AppConstants.apiBaseUrl}/products').replace(queryParameters: query);
-      final res = await http.get(uri).timeout(const Duration(seconds: 5));
+      final res = await _dio.get('/products', queryParameters: query);
 
+      if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
+        final list = res.data['data'] as List;
+        return list.map((item) => ProductModel.fromBackendJson(item)).toList();
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  @override
+  Future<ProductModel> addProduct(ProductModel product) async {
+    try {
+      final res = await _dio.post('/products', data: product.toCreatePayload(), options: await _authOptions());
+      if (res.statusCode == 201 || res.statusCode == 200) {
+        if (res.data['success'] == true && res.data['data'] != null) {
+          return ProductModel.fromBackendJson(res.data['data']);
+        }
+      }
+      throw Exception('Failed to add product');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to add product');
+    }
+  }
+
+  @override
+  Future<ProductModel> updateProduct(ProductModel product) async {
+    try {
+      final res = await _dio.patch('/products/${product.id}', data: product.toCreatePayload(), options: await _authOptions());
       if (res.statusCode == 200) {
-        final data = json.decode(res.body);
-        if (data['success'] == true && data['data'] != null) {
-          final list = data['data'] as List;
-          if (list.isNotEmpty) {
-            return list.map((item) => ProductModel.fromBackendJson(item)).toList();
+        if (res.data['success'] == true && res.data['data'] != null) {
+          return ProductModel.fromBackendJson(res.data['data']);
+        }
+      }
+      throw Exception('Failed to update product');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to update product');
+    }
+  }
+
+  @override
+  Future<void> deleteProduct(String id) async {
+    try {
+      final res = await _dio.delete('/products/$id', options: await _authOptions());
+      if (res.statusCode != 200 && res.statusCode != 204) {
+        throw Exception('Failed to delete product');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to delete product');
+    }
+  }
+
+  @override
+  Future<List<ProductModel>> getFarmerProducts({int page = 1, int limit = 20, String? search, String? status}) async {
+    try {
+      final query = <String, String>{
+        'page': page.toString(),
+        'limit': limit.toString(),
+      };
+      if (search != null && search.isNotEmpty) query['search'] = search;
+      if (status != null) query['status'] = status;
+
+      final res = await _dio.get('/farmer/products', queryParameters: query, options: await _authOptions());
+      if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
+        final list = res.data['data'] as List;
+        return list.map((item) => ProductModel.fromBackendJson(item)).toList();
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  @override
+  Future<String> uploadProductImage(String productId, String filePath) async {
+    try {
+      final formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(filePath),
+      });
+      final res = await _dio.post('/products/$productId/images',
+          data: formData,
+          options: await _authOptions());
+      if (res.statusCode == 201 || res.statusCode == 200) {
+        if (res.data['success'] == true && res.data['data'] != null) {
+          final images = res.data['data']['images'] as List?;
+          if (images != null && images.isNotEmpty) {
+            return images[0]['imageUrl'] as String;
           }
         }
       }
-    } catch (e) {
-      // Fallback silently to mock database if connection drops
+      throw Exception('Failed to upload image');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to upload image');
     }
-    return _mockFallback.getProducts(search: search, category: category);
-  }
-
-  @override
-  Future<ProductModel> addProduct(ProductModel product) async {
-    return _mockFallback.addProduct(product);
-  }
-
-  @override
-  Future<ProductModel> updateProduct(ProductModel product) async {
-    return _mockFallback.updateProduct(product);
-  }
-
-  @override
-  Future<void> deleteProduct(String id) async {
-    await _mockFallback.deleteProduct(id);
-  }
-}
-
-class MockProductRepository implements ProductRepository {
-  @override
-  Future<List<String>> getCategories() async {
-    await Future.delayed(const Duration(milliseconds: 100));
-    return ['All', 'Vegetables', 'Fruits', 'Dairy', 'Grains'];
-  }
-
-  @override
-  Future<List<ProductModel>> getFeaturedProducts() async {
-    await Future.delayed(const Duration(milliseconds: 100));
-    return MockDb.products.where((p) => p.discount != null).toList();
-  }
-
-  @override
-  Future<List<ProductModel>> getPopularProducts() async {
-    await Future.delayed(const Duration(milliseconds: 100));
-    return MockDb.products.take(2).toList();
-  }
-
-  @override
-  Future<List<ProductModel>> getProducts({String? search, String? category, String? sortBy}) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    var results = List<ProductModel>.from(MockDb.products);
-    if (category != null && category != 'All') {
-      results = results.where((p) => p.category.toLowerCase() == category.toLowerCase()).toList();
-    }
-    if (search != null && search.isNotEmpty) {
-      results = results.where((p) => p.name.toLowerCase().contains(search.toLowerCase())).toList();
-    }
-    return results;
-  }
-
-  @override
-  Future<ProductModel> addProduct(ProductModel product) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    final newProduct = product.copyWith(
-      id: 'prod-${DateTime.now().millisecondsSinceEpoch}',
-    );
-    MockDb.products.add(newProduct);
-    return newProduct;
-  }
-
-  @override
-  Future<ProductModel> updateProduct(ProductModel product) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    final index = MockDb.products.indexWhere((p) => p.id == product.id);
-    if (index != -1) {
-      MockDb.products[index] = product;
-      return product;
-    }
-    throw Exception('Product not found');
-  }
-
-  @override
-  Future<void> deleteProduct(String id) async {
-    await Future.delayed(const Duration(milliseconds: 100));
-    MockDb.products.removeWhere((p) => p.id == id);
   }
 }

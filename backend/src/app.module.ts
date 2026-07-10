@@ -13,6 +13,7 @@ import { CartModule } from './cart/cart.module';
 import { OrdersModule } from './orders/orders.module';
 import { DeliveryModule } from './delivery/delivery.module';
 import { HealthModule } from './health/health.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { HealthModule } from './health/health.module';
     OrdersModule,
     DeliveryModule,
     HealthModule,
+    AdminModule,
   ],
   providers: [
     // Wire up global API Throttler limiter

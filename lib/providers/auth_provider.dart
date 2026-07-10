@@ -6,22 +6,26 @@ class AuthState {
   final UserModel? user;
   final bool isLoading;
   final String? errorMessage;
+  final String? successMessage;
 
   AuthState({
     this.user,
     this.isLoading = false,
     this.errorMessage,
+    this.successMessage,
   });
 
   AuthState copyWith({
     UserModel? user,
     bool? isLoading,
     String? errorMessage,
+    String? successMessage,
   }) {
     return AuthState(
       user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
+      successMessage: successMessage,
     );
   }
 }
@@ -72,6 +76,40 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final updatedUser = state.user!.copyWith(role: newRole);
       state = AuthState(user: updatedUser);
     }
+  }
+
+  Future<bool> updateProfile({String? name, String? phone}) async {
+    state = state.copyWith(isLoading: true, errorMessage: null, successMessage: null);
+    try {
+      final updated = await _ref
+          .read(authRepositoryProvider)
+          .updateProfile(name: name, phone: phone);
+      state = AuthState(user: updated, successMessage: 'Profile updated successfully');
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> changePassword(
+      {required String currentPassword, required String newPassword}) async {
+    state = state.copyWith(isLoading: true, errorMessage: null, successMessage: null);
+    try {
+      await _ref.read(authRepositoryProvider).changePassword(
+            currentPassword: currentPassword,
+            newPassword: newPassword,
+          );
+      state = state.copyWith(isLoading: false, successMessage: 'Password changed successfully');
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      return false;
+    }
+  }
+
+  void clearMessages() {
+    state = state.copyWith(errorMessage: null, successMessage: null);
   }
 
   Future<void> logout() async {

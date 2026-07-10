@@ -15,11 +15,14 @@ class FarmerHomeScreen extends ConsumerWidget {
     // Calculate metrics dynamically
     final activeProductsCount = productState.products.where((p) => p.stock > 0).length;
     final outOfStockCount = productState.products.where((p) => p.stock == 0).length;
-    final pendingOrdersCount = orderState.orders.where((o) => o.status != 'Delivered').length;
+    final pendingOrdersCount = orderState.orders.where((o) {
+      final s = o.status.toUpperCase();
+      return s != 'DELIVERED' && s != 'COMPLETED' && s != 'CANCELLED';
+    }).length;
 
     // Total Earnings: Sum of delivered orders total
     final totalEarnings = orderState.orders
-        .where((o) => o.status == 'Delivered')
+        .where((o) => o.status.toUpperCase() == 'DELIVERED' || o.status.toUpperCase() == 'COMPLETED')
         .fold(0.0, (sum, o) => sum + o.total);
 
     // Filter recent orders
@@ -90,7 +93,7 @@ class FarmerHomeScreen extends ConsumerWidget {
                                   backgroundColor: Colors.green,
                                   child: Icon(Icons.shopping_bag, color: Colors.white),
                                 ),
-                                title: Text('Order #${order.id} - ${order.items.length} items', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                title: Text('Order #${order.orderNumber.isNotEmpty ? order.orderNumber : order.id} - ${order.items.length} items', style: const TextStyle(fontWeight: FontWeight.bold)),
                                 subtitle: Text('Status: ${order.status} | $dateStr'),
                                 trailing: const Icon(Icons.chevron_right),
                               ),

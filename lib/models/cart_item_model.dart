@@ -40,22 +40,7 @@ class CartItemModel {
   }
 
   static ProductModel _fallbackProduct(Map<String, dynamic> json) {
-    return ProductModel(
-      id: json['productId'] as String? ?? '',
-      name: 'Unknown Product',
-      price: (json['unitPrice'] as num?)?.toDouble() ?? 0.0,
-      originalPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0.0,
-      origin: 'Local',
-      category: 'Other',
-      image: '',
-      description: '',
-      calories: '0 kcal',
-      protein: '0 g',
-      fat: '0 g',
-      weight: '1 kg',
-      stock: 100,
-      farmName: 'Unknown Farm',
-    );
+    return ProductModel.fallback(id: json['productId'] as String? ?? '');
   }
 
   Map<String, dynamic> toJson() {

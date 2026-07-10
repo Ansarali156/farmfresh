@@ -34,7 +34,7 @@ class ProductDetailsScreen extends ConsumerWidget {
         .where((p) => p.category == product!.category && p.id != product!.id)
         .toList();
 
-    final isOrganic = product!.origin.toLowerCase() == 'organic';
+    final isOrganic = product!.organic;
     final hasDiscount = product!.originalPrice > product!.price;
 
     return Scaffold(
@@ -146,7 +146,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                     children: [
                       const Icon(Icons.star, color: Colors.amber, size: 20),
                       const SizedBox(width: 4),
-                      const Text('4.8 (42 reviews)', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text('${product!.rating.toStringAsFixed(1)} (${product!.reviewCount} reviews)', style: const TextStyle(fontWeight: FontWeight.bold)),
                       const SizedBox(width: 16),
                       const Icon(Icons.location_on, color: Colors.red, size: 20),
                       const SizedBox(width: 4),
@@ -267,12 +267,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                             child: ProductCard(
                               product: prod,
                               onTap: () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProductDetailsScreen(product: prod),
-                                  ),
-                                );
+                                context.push('/product/${prod.id}', extra: prod);
                               },
                               onAddToCart: () {
                                 ref.read(cartProvider.notifier).addItem(prod);

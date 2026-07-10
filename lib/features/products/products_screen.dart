@@ -97,8 +97,8 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       final matchesCategory = _selectedCategory == 'All' || p.category.toLowerCase() == _selectedCategory.toLowerCase();
       final matchesSearch = p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
                             p.farmName.toLowerCase().contains(_searchQuery.toLowerCase());
-      final matchesOrganic = !_organicOnly || p.origin.toLowerCase() == 'organic';
-      final matchesSeasonal = !_seasonalOnly || p.description.toLowerCase().contains('seasonal'); // fallback seasonal check
+      final matchesOrganic = !_organicOnly || p.organic;
+      final matchesSeasonal = !_seasonalOnly || p.seasonal;
       return matchesCategory && matchesSearch && matchesOrganic && matchesSeasonal;
     }).toList();
 
@@ -482,7 +482,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       mainAxisAlignment: MainAxisAlignment.between,
                       children: [
                         Text(prod.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                        if (prod.origin.toLowerCase() == 'organic')
+                        if (prod.organic)
                           const Icon(Icons.eco, color: Colors.green, size: 16),
                       ],
                     ),

@@ -11,8 +11,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _emailController = TextEditingController(text: 'customer@farmfresh.com');
-  final _passwordController = TextEditingController(text: 'password123');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   String _selectedRole = 'Customer'; // Default role
   final _formKey = GlobalKey<FormState>();
 
@@ -96,14 +96,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     if (val != null) {
                       setState(() {
                         _selectedRole = val;
-                        // Provide sensible defaults for easy testing
-                        if (val == 'Farmer') {
-                          _emailController.text = 'farmer@farmfresh.com';
-                        } else if (val == 'Delivery Partner') {
-                          _emailController.text = 'delivery@farmfresh.com';
-                        } else {
-                          _emailController.text = 'customer@farmfresh.com';
-                        }
                       });
                     }
                   },
