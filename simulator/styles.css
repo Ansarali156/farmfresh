@@ -29,12 +29,13 @@
 body {
     background-color: #121A16;
     color: #E2ECE8;
-    min-height: 100vh;
+    height: 100vh;
+    width: 100vw;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow-x: hidden;
-    padding: 40px 24px;
+    overflow: hidden;
+    padding: 12px;
 }
 
 /* Master Layout Container */
@@ -42,8 +43,7 @@ body {
     display: flex;
     width: 100%;
     max-width: 1280px;
-    height: 90vh;
-    min-height: 760px;
+    height: 100%;
     background: rgba(30, 44, 38, 0.6);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.05);
