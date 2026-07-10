@@ -1962,3 +1962,18 @@ body {
 .category-large-card:active {
     transform: scale(0.96);
 }
+
+/* Account Modal Bottom Sheet Styling */
+.account-modal-overlay {
+    display: flex !important;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+.account-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+.account-modal-overlay.active .account-modal-sheet {
+    transform: translateY(0) !important;
+}

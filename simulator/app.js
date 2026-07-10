@@ -1818,54 +1818,274 @@ window.logoutUserOption = function() {
     switchScreen('screen-onboarding');
 };
 
+// ACCOUNT MODAL CONTROL PANEL SYSTEM
+window.openAccountModal = function(title, contentHTML) {
+    const modal = document.getElementById('account-detail-modal');
+    const titleEl = document.getElementById('account-modal-title');
+    const bodyEl = document.getElementById('account-modal-body');
+    
+    if (modal && titleEl && bodyEl) {
+        titleEl.innerText = title;
+        bodyEl.innerHTML = contentHTML;
+        modal.style.display = 'flex';
+        // Trigger reflow for transition
+        modal.offsetHeight;
+        modal.classList.add('active');
+        Logger.log(`Opened account details panel: "${title}"`, 'customer');
+    }
+};
+
+window.closeAccountModal = function() {
+    const modal = document.getElementById('account-detail-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            if (!modal.classList.contains('active')) {
+                modal.style.display = 'none';
+            }
+        }, 250);
+    }
+};
+
+window.copyPromo = function(code) {
+    navigator.clipboard.writeText(code).then(() => {
+        showToast(`Promo "${code}" copied! 📋`);
+        Logger.log(`Customer copied voucher code: "${code}"`, 'customer');
+    }).catch(() => {
+        showToast(`Voucher code: ${code} active!`);
+    });
+};
+
+window.triggerActualDownload = function() {
+    const selected = document.querySelector('input[name="statement_period"]:checked');
+    const period = selected ? selected.value : 'June 2026';
+    showToast(`Downloading statement for ${period}... 📥`);
+    Logger.log(`Customer exported transaction statement PDF for period: ${period}`, 'customer');
+    closeAccountModal();
+};
+
 window.openProfileAddresses = function() {
-    showToast('Saved Addresses: Santorini Heights, Block C-12 📍');
-    Logger.log('Customer inspected saved delivery addresses.', 'customer');
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="border:1px solid var(--green-light); background:#F9FBF9; border-radius:12px; padding:12px; position:relative;">
+                <span style="font-weight:700; color:var(--green-dark); display:block; font-size:11px;">Home (Default) 🏠</span>
+                <span style="color:#555; display:block; margin-top:2px; font-size:10px;">Santorini Heights, Block C-12, Sector 5</span>
+                <span style="color:#888; font-size:9px; display:block; margin-top:4px;">Rider Instructions: Ring bell, leave on doorstep.</span>
+            </div>
+            <div style="border:1px solid #ECECEC; border-radius:12px; padding:12px; opacity:0.8;">
+                <span style="font-weight:700; color:var(--text-main); display:block; font-size:11px;">Office 💼</span>
+                <span style="color:#555; display:block; margin-top:2px; font-size:10px;">Tech Hub Plaza, Tower B, 4th Floor</span>
+            </div>
+            <button onclick="showToast('Address builder coming soon! 🏗️')" class="btn-primary-gradient" style="height:38px; border-radius:12px; font-size:11px; margin-top:8px;">Add New Address</button>
+        </div>
+    `;
+    openAccountModal('Saved Addresses', html);
 };
 
 window.openProfilePayments = function() {
-    showToast('Payment Modes: UPI (active), Credit Card **** 9012 💳');
-    Logger.log('Customer checked active payment methods.', 'customer');
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; border:1px solid #ECECEC; border-radius:12px; padding:12px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fa-solid fa-building-columns" style="font-size:16px; color:#555; width:20px; text-align:center;"></i>
+                    <div>
+                        <span style="font-weight:700; color:var(--text-main); display:block;">HDFC Bank UPI</span>
+                        <span style="color:#888; font-size:9px;">ritih@hdfcbank</span>
+                    </div>
+                </div>
+                <span style="font-size:9px; font-weight:700; color:var(--green-dark); background:var(--green-light); padding:2px 6px; border-radius:6px;">Active</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; border:1px solid #ECECEC; border-radius:12px; padding:12px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fa-solid fa-credit-card" style="font-size:16px; color:#555; width:20px; text-align:center;"></i>
+                    <div>
+                        <span style="font-weight:700; color:var(--text-main); display:block;">Visa Credit Card</span>
+                        <span style="color:#888; font-size:9px;">**** **** **** 9012</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    openAccountModal('Payment Methods', html);
 };
 
 window.openProfileRefunds = function() {
-    showToast('Refund Status: No active refunds. All orders completed! 🔄');
-    Logger.log('Customer reviewed refund logs: Clean ledger.', 'customer');
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="border:1px solid #ECECEC; border-radius:12px; padding:12px;">
+                <div style="display:flex; justify-content:space-between; font-weight:700; color:var(--text-main);">
+                    <span>Refund #REF-9021</span>
+                    <span style="color:var(--green-dark); font-size:10px; font-weight:800;">SUCCESS</span>
+                </div>
+                <div style="color:#888; font-size:9px; margin-top:2px;">July 08, 2026 • Rs. 145.00</div>
+                <p style="color:#555; margin-top:6px; font-size:10px; line-height:1.35;">Refunded back to origin UPI for order #ORD-1001 (Out of stock: Organic Blueberries).</p>
+            </div>
+            <div style="text-align:center; padding:12px; color:var(--text-muted);">
+                <i class="fa-solid fa-circle-check" style="font-size:24px; color:var(--green-dark); margin-bottom:6px; display:block;"></i>
+                No other pending refunds!
+            </div>
+        </div>
+    `;
+    openAccountModal('My Refunds', html);
 };
 
 window.openProfileWallet = function() {
-    showToast('Wallet Balance: Rs. 420.00 ($5.00) 💰');
-    Logger.log('Customer checked wallet balance.', 'customer');
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="background:var(--primary-gradient); color:#fff; border-radius:16px; padding:16px; text-align:center;">
+                <span style="font-size:10px; opacity:0.9; text-transform:uppercase; letter-spacing:0.5px;">Wallet Balance</span>
+                <h2 style="font-family:var(--font-heading); font-size:24px; margin-top:4px; font-weight:800;">Rs. 420.00</h2>
+                <span style="font-size:9px; opacity:0.8;">Equivalent to $5.00</span>
+            </div>
+            <div>
+                <span style="font-weight:700; display:block; margin-bottom:6px; font-size:11px;">Recent Wallet Transactions</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #F5F5F5;">
+                    <div>
+                        <span style="font-weight:700; color:var(--text-main); display:block;">Cashback Reward</span>
+                        <span style="color:#888; font-size:9px;">July 09, 2026</span>
+                    </div>
+                    <span style="font-weight:700; color:var(--green-dark);">+Rs. 20.00</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0;">
+                    <div>
+                        <span style="font-weight:700; color:var(--text-main); display:block;">Refund Credit</span>
+                        <span style="color:#888; font-size:9px;">July 08, 2026</span>
+                    </div>
+                    <span style="font-weight:700; color:var(--green-dark);">+Rs. 400.00</span>
+                </div>
+            </div>
+            <button onclick="showToast('Top up is disabled in demo mode 💳')" class="btn-primary-gradient" style="height:36px; border-radius:12px; font-size:11px;">Top Up Wallet</button>
+        </div>
+    `;
+    openAccountModal('Swiggy Money Wallet', html);
 };
 
 window.openProfileCreditCard = function() {
-    showToast('FarmFresh Credit Card active: 5% Unlimited Cash-back! 💳');
-    Logger.log('Customer opened Credit Card rewards terminal.', 'customer');
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="background:linear-gradient(135deg, #1D2D44 0%, #0F1A24 100%); color:#fff; border-radius:16px; padding:18px; position:relative; box-shadow:0 8px 20px rgba(0,0,0,0.15);">
+                <span style="font-family:var(--font-heading); font-size:12px; font-weight:800; letter-spacing:0.5px;">FARM FRESH</span>
+                <div style="font-size:14px; font-weight:700; margin-top:20px; letter-spacing:1px;">HDFC Bank Co-brand</div>
+                <div style="margin-top:25px; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:10px; opacity:0.8;">VISA PLATINUM</span>
+                    <i class="fa-solid fa-wifi" style="font-size:12px;"></i>
+                </div>
+            </div>
+            <div>
+                <span style="font-weight:700; display:block; margin-bottom:6px; font-size:11px;">Exclusive Card Perks</span>
+                <ul style="padding-left:16px; display:flex; flex-direction:column; gap:4px; color:#555; font-size:10px;">
+                    <li><strong>5% Cashback</strong> on all organic farm purchases.</li>
+                    <li>Free delivery on orders above Rs. 199.</li>
+                    <li>10% off at partnered local nurseries.</li>
+                </ul>
+            </div>
+        </div>
+    `;
+    openAccountModal('Credit Card Rewards', html);
 };
 
 window.openProfileVouchers = function() {
-    showToast('Active Vouchers: SAVE50 (50% Off First Harvest) 🎟️');
-    Logger.log('Customer inspected promo vouchers grid.', 'customer');
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="border:2px dashed var(--green-dark); background:#F7FCF8; border-radius:14px; padding:12px; display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                    <span style="font-family:var(--font-heading); font-size:13px; font-weight:800; color:var(--green-dark); display:block;">SAVE50</span>
+                    <span style="color:#555; font-size:9px; display:block; margin-top:2px;">50% discount on your first order!</span>
+                </div>
+                <button onclick="copyPromo('SAVE50')" style="background:var(--green-dark); color:#fff; border:none; border-radius:8px; padding:4px 10px; font-size:9px; font-weight:700; cursor:pointer;">Copy</button>
+            </div>
+            <div style="border:2px dashed #ECECEC; border-radius:14px; padding:12px; display:flex; align-items:center; justify-content:space-between; opacity:0.6;">
+                <div>
+                    <span style="font-family:var(--font-heading); font-size:13px; font-weight:800; color:#888; display:block;">FRESHFREE</span>
+                    <span style="color:#888; font-size:9px; display:block; margin-top:2px;">Free delivery coupon.</span>
+                </div>
+                <button disabled style="background:#CCC; color:#FFF; border:none; border-radius:8px; padding:4px 10px; font-size:9px; font-weight:700;">Claimed</button>
+            </div>
+        </div>
+    `;
+    openAccountModal('My Vouchers', html);
 };
 
 window.downloadProfileStatements = function() {
-    showToast('Generating Account Statement PDF... Download started! 📥');
-    Logger.log('Customer triggered transaction statement export: "statement_june_2026.pdf" generated.', 'customer');
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <span style="font-weight:700; font-size:11px; display:block;">Select Statement Period</span>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+                <label style="display:flex; align-items:center; gap:8px; border:1px solid #ECECEC; border-radius:8px; padding:10px; cursor:pointer; font-size:10px;">
+                    <input type="radio" name="statement_period" checked value="June 2026">
+                    <span>June 2026 Statement (Current)</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; border:1px solid #ECECEC; border-radius:8px; padding:10px; cursor:pointer; font-size:10px;">
+                    <input type="radio" name="statement_period" value="May 2026">
+                    <span>May 2026 Statement</span>
+                </label>
+            </div>
+            <button onclick="triggerActualDownload()" class="btn-primary-gradient" style="height:36px; border-radius:12px; font-size:11px; margin-top:6px;">Download PDF</button>
+        </div>
+    `;
+    openAccountModal('Account Statements', html);
 };
 
 window.openCorporateRewards = function() {
-    showToast('Corporate Rewards: Google Employee Perks Active! 💼');
-    Logger.log('Customer authenticated corporate rewards tier.', 'customer');
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="text-align:center; padding:10px 0;">
+                <i class="fa-solid fa-briefcase" style="font-size:36px; color:var(--primary); margin-bottom:8px; display:block;"></i>
+                <h4 style="font-size:12px; font-weight:800; color:var(--text-main);">Google Corporate Program</h4>
+                <p style="color:var(--text-muted); font-size:9px; margin-top:2px;">Authorized via company email domain.</p>
+            </div>
+            <div style="border-top:1px solid #F0F0F0; padding-top:12px; display:flex; flex-direction:column; gap:8px; font-size:10px;">
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Status:</span>
+                    <strong style="color:var(--green-dark);">ACTIVE</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Discount Tier:</span>
+                    <strong>12% Flat Off Storewide</strong>
+                </div>
+            </div>
+        </div>
+    `;
+    openAccountModal('Corporate Rewards', html);
 };
 
 window.openStudentRewards = function() {
-    showToast('Student rewards verified: Active! 🎓');
-    Logger.log('Customer inspected student eligibility discounts.', 'customer');
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="text-align:center; padding:10px 0;">
+                <i class="fa-solid fa-graduation-cap" style="font-size:36px; color:#4A90E2; margin-bottom:8px; display:block;"></i>
+                <h4 style="font-size:12px; font-weight:800; color:var(--text-main);">Student Discount Club</h4>
+                <p style="color:var(--text-muted); font-size:9px; margin-top:2px;">Verified via Student ID Portal</p>
+            </div>
+            <div style="border:1px solid #EAEAEA; border-radius:12px; padding:12px; text-align:center;">
+                <span style="font-size:10px; color:#555; display:block;">Student verification active for school year.</span>
+                <span style="font-size:14px; font-weight:800; color:#4A90E2; display:block; margin-top:4px;">15% OFF FARM PRODUCTS</span>
+            </div>
+        </div>
+    `;
+    openAccountModal('Student Rewards', html);
 };
 
 window.openPartnerRewards = function() {
-    showToast('Partner Rewards: Free Starbucks Brew coupon active! 👑');
-    Logger.log('Customer accessed partner center perks.', 'customer');
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; align-items:center; gap:12px; border:1px solid #ECECEC; border-radius:12px; padding:12px;">
+                <i class="fa-solid fa-mug-hot" style="font-size:24px; color:#006241; width:24px; text-align:center;"></i>
+                <div>
+                    <span style="font-weight:700; color:var(--text-main); display:block; font-size:11px;">Starbucks Coffee</span>
+                    <span style="color:#555; font-size:9px; display:block; margin-top:2px;">Claim a free Espresso brew on orders above Rs. 499.</span>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; border:1px solid #ECECEC; border-radius:12px; padding:12px;">
+                <i class="fa-solid fa-dumbbell" style="font-size:20px; color:#4A4A4A; width:24px; text-align:center;"></i>
+                <div>
+                    <span style="font-weight:700; color:var(--text-main); display:block; font-size:11px;">FitPass Premium</span>
+                    <span style="color:#555; font-size:9px; display:block; margin-top:2px;">Get a 7-day gym trial pass with any fruit basket.</span>
+                </div>
+            </div>
+        </div>
+    `;
+    openAccountModal('Partner Program Deals', html);
 };
 
 window.toggleContactPermission = function(el) {
