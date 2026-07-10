@@ -1690,7 +1690,8 @@ document.getElementById('btn-farmer-add-product').addEventListener('click', () =
         if (matchedKey) {
             productImg = IMAGE_MAPPING[matchedKey];
         } else {
-            productImg = categoryFallbacks[category] || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&auto=format&fit=crop&q=80';
+            // Dynamic stock image finder based on product name
+            productImg = `https://loremflickr.com/500/500/${encodeURIComponent(cleanName)},organic,fresh/all`;
         }
         publishFarmerProduct(productImg);
     }
