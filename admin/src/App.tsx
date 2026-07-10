@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import ProductsPage from './pages/ProductsPage';
+import ProductApprovalPage from './pages/ProductApprovalPage';
 import CategoriesPage from './pages/CategoriesPage';
 import OrdersPage from './pages/OrdersPage';
 import OrderIssuesPage from './pages/OrderIssuesPage';
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/products" element={<ProductsPage />} />
+        <Route path="/product-approval" element={<ProductApprovalPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/order-issues" element={<OrderIssuesPage />} />
