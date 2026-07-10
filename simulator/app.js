@@ -1644,7 +1644,7 @@ document.getElementById('btn-farmer-add-product').addEventListener('click', () =
             weight: weight
         };
         
-        STATE.products.unshift(newProd);
+        STATE.products.push(newProd);
         
         // Clear forms
         document.getElementById('form-new-pname').value = '';
