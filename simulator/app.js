@@ -486,10 +486,6 @@ function switchScreen(screenId, activeTabId = null) {
         if (screenId === 'screen-customer-wishlist') {
             renderWishlistScreen();
         }
-        if (screenId === 'screen-customer-profile') {
-            const emailEl = document.getElementById('profile-header-email');
-            if (emailEl) emailEl.innerText = STATE.userEmail;
-        }
         if (screenId === 'screen-customer-categories') {
             renderCategoriesScreen();
         }
@@ -1811,8 +1807,6 @@ window.editProfileOption = function() {
     const newEmail = prompt("Enter new profile email address:", currentEmail);
     if (newEmail !== null && newEmail.trim() !== "") {
         STATE.userEmail = newEmail.trim();
-        const el = document.getElementById('profile-header-email');
-        if (el) el.innerText = STATE.userEmail;
         showToast('Profile email updated! ✏️');
         Logger.log(`Customer updated profile email to: ${STATE.userEmail}`, 'customer');
     }
