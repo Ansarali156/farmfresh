@@ -1957,7 +1957,7 @@ window.openProfileWallet = function() {
             <button onclick="showToast('Top up is disabled in demo mode 💳')" class="btn-primary-gradient" style="height:36px; border-radius:12px; font-size:11px;">Top Up Wallet</button>
         </div>
     `;
-    openAccountModal('Swiggy Money Wallet', html);
+    openAccountModal('Farm Fresh Money Wallet', html);
 };
 
 window.openProfileCreditCard = function() {
