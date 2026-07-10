@@ -1949,8 +1949,30 @@ body {
     transform: translateY(1px) scale(0.95);
 }
 
+.profile-list-panel {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+.profile-list-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("assets/basket_vegetables.jpg");
+    background-size: cover;
+    background-position: center;
+    opacity: 0.1; /* Very light faded bg image of fruits and vegetables */
+    z-index: 1;
+    pointer-events: none;
+}
+
 .profile-list-item {
     transition: background-color 0.15s ease;
+    position: relative;
+    z-index: 2;
 }
 .profile-list-item:hover {
     background-color: #FAFAFA !important;
