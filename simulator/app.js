@@ -1379,7 +1379,15 @@ function renderFarmerOrders() {
 function renderFarmerInventory() {
     const container = document.getElementById('farmer-inventory-list');
     if (!container) return;
-    container.innerHTML = STATE.products.map(p => {
+    
+    const farmerProds = STATE.products.filter(p => p.addedByFarmer === true);
+    
+    if (farmerProds.length === 0) {
+        container.innerHTML = `<div style="font-size:11px; color:var(--text-muted); text-align:center; padding:15px; background:var(--white); border-radius:12px; border:1px solid #EAEAEA;">No products added yet.</div>`;
+        return;
+    }
+    
+    container.innerHTML = farmerProds.map(p => {
         let priceStr = typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : p.price;
         return `
             <div class="order-card-merchant" style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
@@ -1664,7 +1672,8 @@ document.getElementById('btn-farmer-add-product').addEventListener('click', () =
             calories: '120 kcal',
             protein: '3 gram',
             fat: '0 gram',
-            weight: weight
+            weight: weight,
+            addedByFarmer: true
         };
         
         STATE.products.push(newProd);
