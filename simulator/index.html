@@ -582,6 +582,24 @@
 
                     <!-- SCREEN 6: Farmer Dashboard -->
                     <div class="app-screen" id="screen-farmer-dashboard">
+                        <!-- Location Row -->
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; background:var(--white); border:1px solid #EAEAEA; padding:8px 12px; border-radius:14px; box-shadow:0 2px 6px rgba(0,0,0,0.02); flex-shrink:0;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="color:var(--green-dark); width:24px; height:24px; border-radius:50%; background:#F1F8F4; display:flex; align-items:center; justify-content:center; font-size:11px;">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                </div>
+                                <div>
+                                    <label style="font-size:8px; color:var(--text-muted); display:block; line-height:1; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Farm Location</label>
+                                    <select id="farmer-location-selector" style="font-size:10px; font-weight:700; color:var(--text-main); border:none; background:transparent; outline:none; padding:0; cursor:pointer;">
+                                        <option value="California, US" selected>California, US</option>
+                                        <option value="Texas, US">Texas, US</option>
+                                        <option value="Washington, US">Washington, US</option>
+                                        <option value="Punjab, India">Punjab, India</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="cart-header">
                             <h2 class="section-title">Farmer Console</h2>
                             <span class="btn-action-small" style="background:#EAF6EC; color:#2E7D32;">Verified Profile</span>
@@ -614,6 +632,24 @@
 
                     <!-- SCREEN 6B: Farmer Products -->
                     <div class="app-screen" id="screen-farmer-products">
+                        <!-- Location Row -->
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; background:var(--white); border:1px solid #EAEAEA; padding:8px 12px; border-radius:14px; box-shadow:0 2px 6px rgba(0,0,0,0.02); flex-shrink:0;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="color:var(--green-dark); width:24px; height:24px; border-radius:50%; background:#F1F8F4; display:flex; align-items:center; justify-content:center; font-size:11px;">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                </div>
+                                <div>
+                                    <label style="font-size:8px; color:var(--text-muted); display:block; line-height:1; font-weight:700; text-transform:uppercase; letter-spacing:0.3px;">Farm Location</label>
+                                    <select id="farmer-products-location-selector" style="font-size:10px; font-weight:700; color:var(--text-main); border:none; background:transparent; outline:none; padding:0; cursor:pointer;">
+                                        <option value="California, US" selected>California, US</option>
+                                        <option value="Texas, US">Texas, US</option>
+                                        <option value="Washington, US">Washington, US</option>
+                                        <option value="Punjab, India">Punjab, India</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="cart-header">
                             <h2 class="section-title">Farm Products</h2>
                             <span class="btn-action-small" style="background:#EAF6EC; color:#2E7D32;">Manage Catalog</span>
