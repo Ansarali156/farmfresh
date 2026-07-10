@@ -1720,17 +1720,7 @@ window.filterCategoriesScreen = function(val) {
 
 window.selectCategoryFromScreen = function(catId) {
     STATE.activeCategory = catId;
-    
-    // Sync active class on horizontal home page pills
-    const pills = document.querySelectorAll('.category-pill');
-    pills.forEach(p => {
-        if (p.getAttribute('data-id') === catId) {
-            p.classList.add('active');
-        } else {
-            p.classList.remove('active');
-        }
-    });
-    
+    renderCategories();
     renderProducts();
     switchScreen('screen-customer-home', 'tab-home');
     Logger.log(`Selected category "${catId}" from category browser screen.`, 'customer');
