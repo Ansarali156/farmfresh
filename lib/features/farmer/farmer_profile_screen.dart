@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+class FarmerProfileScreen extends StatelessWidget {
+  const FarmerProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Profile'),
+        title: const Text('Farmer Profile'),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
       ),
@@ -19,15 +19,15 @@ class ProfileScreen extends StatelessWidget {
             const CircleAvatar(
               radius: 50,
               backgroundColor: Colors.green,
-              child: Icon(Icons.person, size: 64, color: Colors.white),
+              child: Icon(Icons.person_pin, size: 64, color: Colors.white),
             ),
             const SizedBox(height: 16),
             const Text(
-              'John Doe',
+              'Green Valley Farms',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const Text(
-              'john.doe@example.com',
+              'Partner ID: #F-98732',
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 24),
@@ -36,22 +36,22 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 children: [
                   ListTile(
+                    leading: const Icon(Icons.account_balance, color: Colors.green),
+                    title: const Text('Bank Details (Payouts)'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onPressed: () {},
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
                     leading: const Icon(Icons.location_on, color: Colors.green),
-                    title: const Text('Delivery Addresses'),
+                    title: const Text('Farm Location & Address'),
                     trailing: const Icon(Icons.chevron_right),
                     onPressed: () {},
                   ),
                   const Divider(height: 1),
                   ListTile(
-                    leading: const Icon(Icons.payment, color: Colors.green),
-                    title: const Text('Payment Methods'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onPressed: () {},
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.notifications, color: Colors.green),
-                    title: const Text('Notification Preferences'),
+                    leading: const Icon(Icons.support_agent, color: Colors.green),
+                    title: const Text('Contact Support'),
                     trailing: const Icon(Icons.chevron_right),
                     onPressed: () {},
                   ),
@@ -60,12 +60,12 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             
-            // Switch back to login / role selector
+            // Switch back to customer view
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  context.go('/login');
+                  context.go('/login'); // Return to login to switch roles
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,

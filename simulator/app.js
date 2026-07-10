@@ -495,18 +495,26 @@ function switchScreen(screenId, activeTabId = null) {
         }
         
         // Hide/show bottom nav bar based on screen
-        const bottomNav = document.getElementById('phone-bottom-navbar');
+        const customerNav = document.getElementById('phone-bottom-navbar');
+        const farmerNav = document.getElementById('farmer-bottom-navbar');
+        const deliveryNav = document.getElementById('delivery-bottom-navbar');
         const statusBar = document.getElementById('phone-status-bar');
         
+        // Hide all navbars initially
+        customerNav.style.display = 'none';
+        farmerNav.style.display = 'none';
+        deliveryNav.style.display = 'none';
+
         if (screenId === 'screen-onboarding') {
-            bottomNav.style.display = 'none';
             statusBar.classList.remove('dark-mode-icons');
         } else {
-            // Customer screens show bottom navigation
+            // Show appropriate navbar based on role
             if (STATE.currentRole === 'customer') {
-                bottomNav.style.display = 'flex';
-            } else {
-                bottomNav.style.display = 'none';
+                customerNav.style.display = 'flex';
+            } else if (STATE.currentRole === 'farmer') {
+                farmerNav.style.display = 'flex';
+            } else if (STATE.currentRole === 'delivery') {
+                deliveryNav.style.display = 'flex';
             }
             statusBar.classList.add('dark-mode-icons');
         }
@@ -534,6 +542,21 @@ function updateActiveBottomTab(activeId) {
     } else if (activeId === 'tab-tracking' || activeId === 'screen-customer-tracking') {
         const el = document.getElementById('tab-tracking');
         if (el) el.classList.add('active');
+    } else if (activeId === 'screen-farmer-dashboard') {
+        const el = document.getElementById('tab-farmer-dashboard');
+        if (el) el.classList.add('active');
+    } else if (activeId === 'screen-farmer-products') {
+        const el = document.getElementById('tab-farmer-products');
+        if (el) el.classList.add('active');
+    } else if (activeId === 'screen-farmer-profile') {
+        const el = document.getElementById('tab-farmer-profile');
+        if (el) el.classList.add('active');
+    } else if (activeId === 'screen-delivery-dashboard') {
+        const el = document.getElementById('tab-delivery-dashboard');
+        if (el) el.classList.add('active');
+    } else if (activeId === 'screen-delivery-profile') {
+        const el = document.getElementById('tab-delivery-profile');
+        if (el) el.classList.add('active');
     }
 }
 
@@ -554,6 +577,7 @@ function switchRole(role) {
         switchScreen('screen-farmer-dashboard');
         renderFarmerOrders();
         updateFarmerStats();
+        renderFarmerInventory();
     } else if (role === 'delivery') {
         switchScreen('screen-delivery-dashboard');
         renderRiderDashboard();
@@ -1349,6 +1373,31 @@ function renderFarmerOrders() {
     }).join('');
 }
 
+function renderFarmerInventory() {
+    const container = document.getElementById('farmer-inventory-list');
+    if (!container) return;
+    container.innerHTML = STATE.products.map(p => {
+        let priceStr = typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : p.price;
+        return `
+            <div class="order-card-merchant" style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-weight:700; font-size:12px;">${p.name}</div>
+                    <div style="font-size:10px; color:var(--text-muted);">${p.weight} | ${priceStr}</div>
+                </div>
+                <button class="btn-action-small" style="background:#fee2e2; color:#ef4444; border:none; padding:4px 8px;" onclick="farmerDeleteProduct('${p.id}')">Delete</button>
+            </div>
+        `;
+    }).join('');
+}
+
+window.farmerDeleteProduct = function(pId) {
+    STATE.products = STATE.products.filter(p => p.id !== pId);
+    renderFarmerInventory();
+    renderProducts();
+    Logger.log(`Farmer deleted product ID: ${pId} from online market.`, 'farmer');
+};
+
+
 window.farmerAcceptOrder = function(orderId) {
     const order = STATE.orders.find(o => o.id === orderId);
     if (!order) return;
@@ -1547,6 +1596,7 @@ document.getElementById('btn-farmer-add-product').addEventListener('click', () =
     
     // Rerender grids
     renderProducts();
+    renderFarmerInventory();
     Notification.show('New Harvest Item!', `Merchant published ${name} to the online market.`);
 });
 
@@ -1706,6 +1756,30 @@ document.getElementById('tab-tracking').addEventListener('click', () => {
     }
     switchScreen('screen-customer-tracking', 'tab-tracking');
 });
+
+// FARMER TAB LISTENERS
+document.getElementById('tab-farmer-dashboard').addEventListener('click', () => {
+    switchScreen('screen-farmer-dashboard');
+    renderFarmerOrders();
+    updateFarmerStats();
+});
+document.getElementById('tab-farmer-products').addEventListener('click', () => {
+    switchScreen('screen-farmer-products');
+    renderFarmerInventory();
+});
+document.getElementById('tab-farmer-profile').addEventListener('click', () => {
+    switchScreen('screen-farmer-profile');
+});
+
+// DELIVERY TAB LISTENERS
+document.getElementById('tab-delivery-dashboard').addEventListener('click', () => {
+    switchScreen('screen-delivery-dashboard');
+    renderRiderDashboard();
+});
+document.getElementById('tab-delivery-profile').addEventListener('click', () => {
+    switchScreen('screen-delivery-profile');
+});
+
 
 // CLEAR LEDGER LOGS
 document.getElementById('btn-clear-logs').addEventListener('click', () => Logger.clear());
