@@ -1682,17 +1682,40 @@ document.getElementById('btn-farmer-add-product').addEventListener('click', () =
         };
         reader.readAsDataURL(file);
     } else {
-        // Resolve using name mapping or category fallback
+        // Resolve using smart noun extraction and mapping lookup
         const cleanName = name.toLowerCase();
-        let productImg = '';
-        let matchedKey = Object.keys(IMAGE_MAPPING).find(key => cleanName.includes(key));
         
-        if (matchedKey) {
-            productImg = IMAGE_MAPPING[matchedKey];
+        // List of common farm keywords to search for
+        const knownKeywords = [
+            'potato', 'potatoes', 'onion', 'onions', 'grapes', 'grape', 'tomato', 'tomatoes', 
+            'carrot', 'carrots', 'spinach', 'cucumber', 'cucumbers', 'apple', 'apples', 
+            'blueberry', 'blueberries', 'egg', 'eggs', 'butter', 'milk', 'steak', 'beef', 
+            'salmon', 'fish', 'chicken', 'avocado', 'avocados', 'orange', 'oranges', 
+            'broccoli', 'broccolini', 'strawberry', 'strawberries', 'banana', 'bananas', 
+            'mango', 'mangoes', 'cabbage', 'garlic', 'ginger', 'lemon', 'lemons', 
+            'pineapple', 'pineapples', 'watermelon', 'pomegranate', 'pear', 'pears', 
+            'peach', 'peaches', 'plum', 'plums', 'berry', 'berries', 'cheese', 'yogurt'
+        ];
+        
+        let matchedKeyword = knownKeywords.find(keyword => cleanName.includes(keyword));
+        let queryWord = '';
+        
+        if (matchedKeyword) {
+            queryWord = matchedKeyword;
         } else {
-            // Dynamic stock image finder based on product name
-            productImg = `https://loremflickr.com/500/500/${encodeURIComponent(cleanName)},organic,fresh/all`;
+            // Extract the last word (the noun, e.g. "Grapes" in "Punjab Grapes")
+            const words = cleanName.replace(/[^a-z0-9\s]/g, '').trim().split(/\s+/);
+            queryWord = words[words.length - 1] || 'vegetable';
         }
+        
+        let productImg = '';
+        if (IMAGE_MAPPING[queryWord]) {
+            productImg = IMAGE_MAPPING[queryWord];
+        } else {
+            // Dynamic real/stock image lookup using LoremFlickr for the specific base product noun
+            productImg = `https://loremflickr.com/500/500/${encodeURIComponent(queryWord)},organic,fresh/all`;
+        }
+        
         publishFarmerProduct(productImg);
     }
 });
