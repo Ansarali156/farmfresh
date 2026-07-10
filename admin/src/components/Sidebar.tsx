@@ -20,6 +20,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import StarIcon from '@mui/icons-material/Star';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import SettingsIcon from '@mui/icons-material/Settings';
+import PendingActionsIcon from '@mui/icons-material/PendingActions';
 
 const SIDEBAR_WIDTH = 260;
 
@@ -27,6 +28,7 @@ const navItems = [
   { label: 'Dashboard', icon: <DashboardIcon />, path: '/' },
   { label: 'Analytics', icon: <BarChartIcon />, path: '/analytics' },
   { label: 'Products', icon: <InventoryIcon />, path: '/products' },
+  { label: 'Product Approval', icon: <PendingActionsIcon />, path: '/product-approval' },
   { label: 'Categories', icon: <CategoryIcon />, path: '/categories' },
   { label: 'Orders', icon: <ShoppingCartIcon />, path: '/orders' },
   { label: 'Order Issues', icon: <ReportProblemIcon />, path: '/order-issues' },
