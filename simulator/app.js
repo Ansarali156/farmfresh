@@ -915,6 +915,7 @@ function updateCartStats() {
         document.getElementById('onboard-total-price').innerText = formatPrice(sub + 3.99);
     }
     
+    syncCartAddress();
     renderCart();
 }
 
@@ -1240,6 +1241,8 @@ document.getElementById('btn-cart-checkout').addEventListener('click', () => {
         const otp = Math.floor(1000 + Math.random() * 9000).toString();
         const orderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
 
+        const defaultAddr = (STATE.addresses && STATE.addresses.find(a => a.isDefault)) || { address: 'Santorini Heights, Block C-12, Sector 5' };
+
         const newOrder = {
             id: orderId,
             items: orderItems,
@@ -1250,6 +1253,7 @@ document.getElementById('btn-cart-checkout').addEventListener('click', () => {
             otp: otp,
             status: 'placed',
             paymentMethod: STATE.cartSelectedPaymentMode,
+            address: defaultAddr.address,
             timestamp: new Date().toLocaleTimeString()
         };
 
@@ -2015,21 +2019,158 @@ window.triggerActualDownload = function() {
 };
 
 window.openProfileAddresses = function() {
+    if (!STATE.addresses) {
+        STATE.addresses = [
+            {
+                id: 'addr-1',
+                tag: 'Home 🏠',
+                address: 'Santorini Heights, Block C-12, Sector 5',
+                instructions: 'Ring bell, leave on doorstep.',
+                isDefault: true
+            },
+            {
+                id: 'addr-2',
+                tag: 'Office 💼',
+                address: 'Tech Hub Plaza, Tower B, 4th Floor',
+                instructions: '',
+                isDefault: false
+            }
+        ];
+    }
+
+    let addressCardsHtml = STATE.addresses.map(addr => {
+        const borderStyle = addr.isDefault ? 'border:1.5px solid var(--green-light); background:#F9FBF9;' : 'border:1px solid #ECECEC; background:var(--white);';
+        const defaultBadge = addr.isDefault ? '<span style="float:right; font-size:8px; background:var(--green-light); color:var(--green-dark); padding:2px 6px; border-radius:10px; font-weight:800; line-height:1;">DEFAULT</span>' : '';
+        const instructionsHtml = addr.instructions ? `<span style="color:#888; font-size:9px; display:block; margin-top:4px;">Instructions: ${addr.instructions}</span>` : '';
+        
+        return `
+            <div style="${borderStyle} border-radius:12px; padding:12px; position:relative; margin-bottom:10px; box-shadow:0 2px 6px rgba(0,0,0,0.02); text-align:left;">
+                ${defaultBadge}
+                <span style="font-weight:700; color:var(--text-main); display:block; font-size:11px; cursor:pointer;" onclick="setDefaultAddress('${addr.id}')">${addr.tag}</span>
+                <span style="color:#555; display:block; margin-top:2px; font-size:10px; cursor:pointer; line-height:1.3;" onclick="setDefaultAddress('${addr.id}')">${addr.address}</span>
+                ${instructionsHtml}
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:6px; border-top:1px dashed #EEE; padding-top:6px;">
+                    ${!addr.isDefault ? `<button onclick="setDefaultAddress('${addr.id}')" style="border:none; background:transparent; color:var(--green-dark); font-size:9px; font-weight:800; cursor:pointer; padding:0;">Set Default</button>` : ''}
+                    <button onclick="deleteSavedAddress('${addr.id}')" style="border:none; background:transparent; color:#C9184A; font-size:9px; font-weight:800; cursor:pointer; padding:0;">Delete</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    if (STATE.addresses.length === 0) {
+        addressCardsHtml = `<div style="text-align:center; padding:20px 10px; font-size:11px; color:#888;">No saved addresses. Add one below!</div>`;
+    }
+
     const html = `
-        <div style="display:flex; flex-direction:column; gap:10px;">
-            <div style="border:1px solid var(--green-light); background:#F9FBF9; border-radius:12px; padding:12px; position:relative;">
-                <span style="font-weight:700; color:var(--green-dark); display:block; font-size:11px;">Home (Default) 🏠</span>
-                <span style="color:#555; display:block; margin-top:2px; font-size:10px;">Santorini Heights, Block C-12, Sector 5</span>
-                <span style="color:#888; font-size:9px; display:block; margin-top:4px;">Rider Instructions: Ring bell, leave on doorstep.</span>
-            </div>
-            <div style="border:1px solid #ECECEC; border-radius:12px; padding:12px; opacity:0.8;">
-                <span style="font-weight:700; color:var(--text-main); display:block; font-size:11px;">Office 💼</span>
-                <span style="color:#555; display:block; margin-top:2px; font-size:10px;">Tech Hub Plaza, Tower B, 4th Floor</span>
-            </div>
-            <button onclick="showToast('Address builder coming soon! 🏗️')" class="btn-primary-gradient" style="height:38px; border-radius:12px; font-size:11px; margin-top:8px;">Add New Address</button>
+        <div style="display:flex; flex-direction:column; max-height:360px; overflow-y:auto; padding-right:2px;">
+            ${addressCardsHtml}
+            <button onclick="openAddNewAddressForm()" class="btn-primary-gradient" style="height:38px; border-radius:12px; font-size:11px; margin-top:8px; cursor:pointer; border:none; width:100%; font-weight:700;">Add New Address</button>
         </div>
     `;
     openAccountModal('Saved Addresses', html);
+};
+
+window.syncCartAddress = function() {
+    if (!STATE.addresses) {
+        STATE.addresses = [
+            {
+                id: 'addr-1',
+                tag: 'Home 🏠',
+                address: 'Santorini Heights, Block C-12, Sector 5',
+                instructions: 'Ring bell, leave on doorstep.',
+                isDefault: true
+            },
+            {
+                id: 'addr-2',
+                tag: 'Office 💼',
+                address: 'Tech Hub Plaza, Tower B, 4th Floor',
+                instructions: '',
+                isDefault: false
+            }
+        ];
+    }
+    
+    const defaultAddr = STATE.addresses.find(a => a.isDefault) || STATE.addresses[0];
+    const tagEl = document.getElementById('cart-selected-address-tag');
+    const textEl = document.getElementById('cart-selected-address-text');
+    
+    if (defaultAddr && tagEl && textEl) {
+        tagEl.innerText = defaultAddr.tag;
+        textEl.innerText = defaultAddr.address;
+    }
+};
+
+window.setDefaultAddress = function(addrId) {
+    STATE.addresses.forEach(addr => {
+        addr.isDefault = (addr.id === addrId);
+    });
+    showToast('Default address updated!');
+    Logger.log(`Customer changed default delivery address to: "${STATE.addresses.find(a => a.id === addrId).tag}"`, 'customer');
+    syncCartAddress();
+    openProfileAddresses();
+};
+
+window.deleteSavedAddress = function(addrId) {
+    const addr = STATE.addresses.find(a => a.id === addrId);
+    if (addr.isDefault) {
+        showToast('Cannot delete default address!');
+        return;
+    }
+    STATE.addresses = STATE.addresses.filter(a => a.id !== addrId);
+    showToast('Address deleted!');
+    Logger.log(`Customer removed saved address: "${addr.tag}"`, 'customer');
+    syncCartAddress();
+    openProfileAddresses();
+};
+
+window.openAddNewAddressForm = function() {
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:12px; text-align:left;">
+            <div class="input-field-group" style="margin:0;">
+                <label style="font-size: 9px; margin-bottom: 2px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Address Tag</label>
+                <input type="text" class="input-box" id="new-addr-tag" placeholder="e.g. Home 🏠, Office 💼, Gym 🏋️" style="height: 34px; font-size: 11px; padding:0 10px; border-radius:10px;">
+            </div>
+            <div class="input-field-group" style="margin:0;">
+                <label style="font-size: 9px; margin-bottom: 2px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Full Address</label>
+                <textarea class="input-box" id="new-addr-text" placeholder="House/Flat No, Building, Street, City" style="height: 60px; font-size: 11px; padding:6px 10px; resize:none; font-family:inherit; border-radius:10px; line-height:1.4;"></textarea>
+            </div>
+            <div class="input-field-group" style="margin:0;">
+                <label style="font-size: 9px; margin-bottom: 2px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Rider Instructions (Optional)</label>
+                <input type="text" class="input-box" id="new-addr-instructions" placeholder="e.g. Leave with security guard" style="height: 34px; font-size: 11px; padding:0 10px; border-radius:10px;">
+            </div>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <button onclick="openProfileAddresses()" style="flex:1; height:36px; background:#ECECEC; color:#555; border:none; border-radius:12px; font-weight:700; cursor:pointer; font-size:11px;">Cancel</button>
+                <button onclick="saveNewAddress()" class="btn-primary-gradient" style="flex:1; height:36px; font-size:11px; cursor:pointer; border:none; font-weight:700; border-radius:12px;">Save Address</button>
+            </div>
+        </div>
+    `;
+    openAccountModal('Add New Address', html);
+};
+
+window.saveNewAddress = function() {
+    const tagVal = document.getElementById('new-addr-tag').value.trim();
+    const addrVal = document.getElementById('new-addr-text').value.trim();
+    const instrVal = document.getElementById('new-addr-instructions').value.trim();
+
+    if (!tagVal || !addrVal) {
+        showToast('Please enter Tag and Full Address!');
+        return;
+    }
+
+    const newAddr = {
+        id: `addr-${Date.now()}`,
+        tag: tagVal,
+        address: addrVal,
+        instructions: instrVal,
+        isDefault: STATE.addresses.length === 0
+    };
+
+    STATE.addresses.push(newAddr);
+    showToast('Address saved successfully!');
+    Logger.log(`Customer saved new address: "${tagVal}" - "${addrVal}"`, 'customer');
+    
+    syncCartAddress();
+    openProfileAddresses();
 };
 
 window.openProfilePayments = function() {
@@ -2406,5 +2547,6 @@ window.addAndSelectUserLocation = function(name) {
 // INITIAL SETUP RUNS
 renderCategories();
 renderProducts();
+updateCartStats();
 Logger.log('Interactive Multi-Vendor FarmFresh Simulator re-initialized.', 'system');
 Logger.log('Ready to test. Switch roles above to inspect screens.', 'system');
