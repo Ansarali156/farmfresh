@@ -1024,7 +1024,9 @@ function updateCartTotals() {
     let subtotal = 0;
     STATE.cart.forEach(item => {
         const prod = STATE.products.find(p => p.id === item.productId);
-        subtotal += prod.price * item.quantity;
+        if (prod) {
+            subtotal += prod.price * item.quantity;
+        }
     });
 
     let discount = 0;
@@ -1334,6 +1336,58 @@ function updateTrackingTimeline(order) {
             el.classList.add('active');
         }
     });
+
+    // Render order items list on tracking page
+    const itemsCard = document.getElementById('tracking-order-items-card');
+    if (itemsCard) {
+        const itemsHtml = order.items.map(i => {
+            const prod = STATE.products.find(p => p.id === i.id) || { image: '📦' };
+            const imageHtml = (prod.image && (prod.image.endsWith('.jpg') || prod.image.includes('/') || prod.image.length > 5)) 
+                ? `<img src="${prod.image}" style="width:30px; height:30px; border-radius:6px; object-fit:cover; flex-shrink:0;">` 
+                : `<span style="font-size:16px; width:30px; height:30px; background:#ECECEC; display:flex; align-items:center; justify-content:center; border-radius:6px; flex-shrink:0;">${prod.image || '📦'}</span>`;
+            
+            return `
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; font-size:11px; gap:8px;">
+                    <div style="display:flex; align-items:center; gap:8px; text-align:left;">
+                        ${imageHtml}
+                        <div style="display:flex; flex-direction:column;">
+                            <span style="font-weight:700; color:var(--text-main); line-height:1.2;">${i.name}</span>
+                            <span style="font-size:9px; color:var(--text-muted); margin-top:2px;">${i.quantity} x ${formatPrice(i.price)}</span>
+                        </div>
+                    </div>
+                    <span style="font-weight:700; color:var(--text-main); flex-shrink:0;">${formatPrice(i.price * i.quantity)}</span>
+                </div>
+            `;
+        }).join('');
+
+        itemsCard.innerHTML = `
+            <div class="tracking-card" style="margin-top:15px; padding:15px; text-align:left; box-shadow: var(--card-shadow); border-radius: 20px; background: var(--white);">
+                <div style="font-size:11px; font-weight:800; color:var(--text-main); margin-bottom:12px; border-bottom:1px solid #F3F3F3; padding-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Order Summary</div>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    ${itemsHtml}
+                </div>
+                <div style="margin-top:10px; border-top:1px dashed #E5EDE7; padding-top:10px; display:flex; flex-direction:column; gap:4px; font-size:10px;">
+                    <div style="display:flex; justify-content:space-between; color:var(--text-muted);">
+                        <span>Subtotal</span>
+                        <span>${formatPrice(order.subtotal)}</span>
+                    </div>
+                    ${order.discount > 0 ? `
+                    <div style="display:flex; justify-content:space-between; color:#C9184A; font-weight:700;">
+                        <span>Discount</span>
+                        <span>-${formatPrice(order.discount)}</span>
+                    </div>` : ''}
+                    <div style="display:flex; justify-content:space-between; color:var(--text-muted);">
+                        <span>Delivery Fee</span>
+                        <span>${formatPrice(order.delivery)}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-weight:800; font-size:12px; color:var(--text-main); margin-top:4px; border-top:1px solid #F3F3F3; padding-top:4px;">
+                        <span>Total Paid</span>
+                        <span>${formatPrice(order.total)}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
 }
 
 function syncTrackingUI() {
@@ -1364,7 +1418,23 @@ function renderFarmerOrders() {
     }
 
     container.innerHTML = pending.map(o => {
-        const itemsSummary = o.items.map(i => `${i.quantity}x ${i.name}`).join(', ');
+        const itemsListHtml = o.items.map(i => {
+            const prod = STATE.products.find(p => p.id === i.id) || { image: '📦' };
+            const imageHtml = (prod.image && (prod.image.endsWith('.jpg') || prod.image.includes('/') || prod.image.length > 5)) 
+                ? `<img src="${prod.image}" style="width:20px; height:20px; border-radius:4px; object-fit:cover; flex-shrink:0;">` 
+                : `<span style="font-size:12px; width:20px; height:20px; background:#ECECEC; display:flex; align-items:center; justify-content:center; border-radius:4px; flex-shrink:0;">${prod.image || '📦'}</span>`;
+            
+            return `
+                <div style="display:flex; align-items:center; justify-content:space-between; font-size:10px; margin-bottom:4px; gap:6px; text-align:left;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        ${imageHtml}
+                        <span style="font-weight:700; color:var(--text-main);">${i.quantity}x</span>
+                        <span style="color:#555; max-width:120px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${i.name}</span>
+                    </div>
+                    <span style="font-weight:700; color:var(--text-main);">${formatPrice(i.price * i.quantity)}</span>
+                </div>
+            `;
+        }).join('');
         
         let actionBtn = '';
         if (o.status === 'placed') {
@@ -1379,8 +1449,10 @@ function renderFarmerOrders() {
                     <span style="font-weight:700;">#${o.id}</span>
                     <span style="color:var(--primary);text-transform:uppercase;font-size:9px;">${o.status}</span>
                 </div>
-                <div class="order-card-items-list">${itemsSummary}</div>
-                <div class="order-card-footer">
+                <div class="order-card-items-list" style="display:flex; flex-direction:column; gap:2px; margin:6px 0; border-bottom:1px dashed #EEE; padding-bottom:6px;">
+                    ${itemsListHtml}
+                </div>
+                <div class="order-card-footer" style="margin-top:4px;">
                     <span class="order-card-price">${formatPrice(o.total)}</span>
                     ${actionBtn}
                 </div>
@@ -1521,15 +1593,34 @@ function renderRiderJobs() {
     }
 
     container.innerHTML = jobs.map(o => {
-        const itemsSummary = o.items.map(i => `${i.quantity}x ${i.name}`).join(', ');
+        const itemsListHtml = o.items.map(i => {
+            const prod = STATE.products.find(p => p.id === i.id) || { image: '📦' };
+            const imageHtml = (prod.image && (prod.image.endsWith('.jpg') || prod.image.includes('/') || prod.image.length > 5)) 
+                ? `<img src="${prod.image}" style="width:20px; height:20px; border-radius:4px; object-fit:cover; flex-shrink:0;">` 
+                : `<span style="font-size:12px; width:20px; height:20px; background:#ECECEC; display:flex; align-items:center; justify-content:center; border-radius:4px; flex-shrink:0;">${prod.image || '📦'}</span>`;
+            
+            return `
+                <div style="display:flex; align-items:center; justify-content:space-between; font-size:10px; margin-bottom:4px; gap:6px; text-align:left;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        ${imageHtml}
+                        <span style="font-weight:700; color:var(--text-main);">${i.quantity}x</span>
+                        <span style="color:#555; max-width:120px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${i.name}</span>
+                    </div>
+                    <span style="font-weight:700; color:var(--text-main);">${formatPrice(i.price * i.quantity)}</span>
+                </div>
+            `;
+        }).join('');
+
         return `
             <div class="order-card-merchant">
                 <div class="order-card-header">
                     <span style="font-weight:700;">#${o.id}</span>
                     <span style="color:#2E7D32;">Prepared</span>
                 </div>
-                <div class="order-card-items-list">${itemsSummary}</div>
-                <div class="order-card-footer">
+                <div class="order-card-items-list" style="display:flex; flex-direction:column; gap:2px; margin:6px 0; border-bottom:1px dashed #EEE; padding-bottom:6px;">
+                    ${itemsListHtml}
+                </div>
+                <div class="order-card-footer" style="margin-top:4px;">
                     <span class="order-card-price">${formatPrice(o.total)}</span>
                     <button class="btn-action-small" style="background:#E28C43; color:white;" onclick="riderAcceptJob('${o.id}')">Accept Delivery</button>
                 </div>
