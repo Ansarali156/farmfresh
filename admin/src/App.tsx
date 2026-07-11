@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import ProductsPage from './pages/ProductsPage';
+import ProductApprovalPage from './pages/ProductApprovalPage';
 import CategoriesPage from './pages/CategoriesPage';
 import OrdersPage from './pages/OrdersPage';
 import OrderIssuesPage from './pages/OrderIssuesPage';
@@ -15,14 +16,15 @@ import ReviewsPage from './pages/ReviewsPage';
 import CouponsPage from './pages/CouponsPage';
 import InventoryAlertsPage from './pages/InventoryAlertsPage';
 import SettingsPage from './pages/SettingsPage';
+import BannersPage from './pages/BannersPage';
+import NotificationsPage from './pages/NotificationsPage';
+import AuditLogsPage from './pages/AuditLogsPage';
+import CmsPage from './pages/CmsPage';
 
 export default function App() {
   return (
     <Routes>
-      {/* Public route */}
       <Route path="/login" element={<LoginPage />} />
-
-      {/* Protected routes */}
       <Route
         element={
           <ProtectedRoute>
@@ -33,6 +35,7 @@ export default function App() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/products" element={<ProductsPage />} />
+        <Route path="/product-approval" element={<ProductApprovalPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/order-issues" element={<OrderIssuesPage />} />
@@ -43,6 +46,10 @@ export default function App() {
         <Route path="/coupons" element={<CouponsPage />} />
         <Route path="/inventory-alerts" element={<InventoryAlertsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/banners" element={<BannersPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/audit-logs" element={<AuditLogsPage />} />
+        <Route path="/cms" element={<CmsPage />} />
       </Route>
     </Routes>
   );
