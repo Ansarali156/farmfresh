@@ -19,19 +19,35 @@ export class AdminService {
       pendingWithdrawals,
       pendingFarmerApprovals,
       lowStockProducts,
+      ordersByStatusRaw,
+      monthlyRevenueRaw,
     ] = await Promise.all([
       this.prisma.user.count({ where: { role: 'CUSTOMER', deletedAt: null } }),
       this.prisma.user.count({ where: { role: 'FARMER', deletedAt: null } }),
       this.prisma.user.count({ where: { role: 'DELIVERY_PARTNER', deletedAt: null } }),
       this.prisma.product.count({ where: { deletedAt: null } }),
       this.prisma.order.count(),
-      this.prisma.order.count({ where: { status: { in: ['PENDING', 'CONFIRMED', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP'] as any } } }),
-      this.prisma.order.count({ where: { status: 'COMPLETED' as any } }),
+      this.prisma.order.count({ where: { status: { in: ['PENDING', 'CONFIRMED', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY'] as any } } }),
+      this.prisma.order.count({ where: { status: { in: ['COMPLETED', 'DELIVERED'] as any } } }),
       this.prisma.order.count({ where: { status: 'CANCELLED' as any } }),
       this.prisma.order.aggregate({ _sum: { total: true }, where: { status: { in: ['COMPLETED', 'DELIVERED'] as any } } }),
       this.prisma.withdrawal.count({ where: { status: 'PENDING' } }),
       this.prisma.farmerProfile.count({ where: { kycStatus: 'PENDING' as any } }),
       this.prisma.inventory.count({ where: { status: { in: ['LOW_STOCK', 'OUT_OF_STOCK'] as any } } }),
+      this.prisma.order.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      }),
+      this.prisma.$queryRaw<any[]>`
+        SELECT 
+          TO_CHAR("created_at", 'YYYY-MM') as month,
+          COALESCE(SUM("total")::float, 0) as "revenue"
+        FROM "orders"
+        WHERE "created_at" >= NOW() - INTERVAL '12 months'
+          AND "status" IN ('COMPLETED', 'DELIVERED')
+        GROUP BY TO_CHAR("created_at", 'YYYY-MM')
+        ORDER BY month ASC
+      `,
     ]);
 
     const recentOrders = await this.prisma.order.findMany({
@@ -90,8 +106,11 @@ export class AdminService {
         orders: f.products.reduce((sum, p) => sum + p.soldCount, 0),
         revenue: f.products.reduce((sum, p) => sum + (Number(p.price || 0) * p.soldCount), 0),
       })),
-      monthlyRevenue: [],
-      ordersByStatus: [],
+      monthlyRevenue: monthlyRevenueRaw,
+      ordersByStatus: ordersByStatusRaw.map(o => ({
+        status: o.status,
+        count: o._count.id,
+      })),
     };
   }
 

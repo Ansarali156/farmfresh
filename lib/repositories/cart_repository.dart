@@ -1,7 +1,5 @@
-import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/cart_item_model.dart';
-import '../core/constants/app_constants.dart';
+import '../core/services/api_client.dart';
 
 class CartSummary {
   final double subtotal;
@@ -30,29 +28,14 @@ abstract class CartRepository {
 }
 
 class PostgresCartRepository implements CartRepository {
-  final Dio _dio;
+  final ApiClient _apiClient;
 
-  PostgresCartRepository() : _dio = Dio(BaseOptions(
-    baseUrl: AppConstants.apiBaseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
-  ));
-
-  Future<Options> _authOptions() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-    return Options(
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-    );
-  }
+  PostgresCartRepository(this._apiClient);
 
   @override
   Future<List<CartItemModel>> getCart() async {
     try {
-      final res = await _dio.get('/cart', options: await _authOptions());
+      final res = await _apiClient.dio.get('/cart');
 
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         final cartData = res.data['data'];
@@ -68,7 +51,7 @@ class PostgresCartRepository implements CartRepository {
   @override
   Future<CartSummary> getCartSummary() async {
     try {
-      final res = await _dio.get('/cart/summary', options: await _authOptions());
+      final res = await _apiClient.dio.get('/cart/summary');
 
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         final d = res.data['data'];
@@ -87,26 +70,26 @@ class PostgresCartRepository implements CartRepository {
   @override
   Future<void> addItemToBackend(String productId, int quantity) async {
     try {
-      await _dio.post('/cart/items', data: {
+      await _apiClient.dio.post('/cart/items', data: {
         'productId': productId,
         'quantity': quantity,
-      }, options: await _authOptions());
+      });
     } catch (_) {}
   }
 
   @override
   Future<void> updateItemQuantity(String cartItemId, int quantity) async {
     try {
-      await _dio.patch('/cart/items/$cartItemId', data: {
+      await _apiClient.dio.patch('/cart/items/$cartItemId', data: {
         'quantity': quantity,
-      }, options: await _authOptions());
+      });
     } catch (_) {}
   }
 
   @override
   Future<void> removeItemById(String cartItemId) async {
     try {
-      await _dio.delete('/cart/items/$cartItemId', options: await _authOptions());
+      await _apiClient.dio.delete('/cart/items/$cartItemId');
     } catch (_) {}
   }
 
@@ -114,10 +97,10 @@ class PostgresCartRepository implements CartRepository {
   Future<void> updateCart(List<CartItemModel> items) async {
     try {
       for (final item in items) {
-        await _dio.post('/cart/items', data: {
+        await _apiClient.dio.post('/cart/items', data: {
           'productId': item.product.id,
           'quantity': item.quantity,
-        }, options: await _authOptions());
+        });
       }
     } catch (_) {}
   }
@@ -125,7 +108,7 @@ class PostgresCartRepository implements CartRepository {
   @override
   Future<void> clearCart() async {
     try {
-      await _dio.delete('/cart/clear', options: await _authOptions());
+      await _apiClient.dio.delete('/cart/clear');
     } catch (_) {}
   }
 }

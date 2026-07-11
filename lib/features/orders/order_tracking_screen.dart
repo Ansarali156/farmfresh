@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:intl/intl.dart';
 import '../../providers/order_provider.dart';
@@ -23,7 +23,6 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
   IO.Socket? _socket;
   String? _driverName;
   double? _driverLatitude;
-  double? _driverLongitude;
   final StreamController<Map<String, dynamic>> _locationController =
       StreamController<Map<String, dynamic>>.broadcast();
 
@@ -45,8 +44,8 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
   }
 
   Future<void> _connectSocket() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
+    const secureStorage = FlutterSecureStorage();
+    final token = await secureStorage.read(key: 'access_token');
     if (token == null) return;
 
     _socket = IO.io(
@@ -75,7 +74,6 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
       if (data['orderId'] == widget.orderId) {
         setState(() {
           _driverLatitude = data['latitude']?.toDouble();
-          _driverLongitude = data['longitude']?.toDouble();
         });
         _locationController.add(data);
       }

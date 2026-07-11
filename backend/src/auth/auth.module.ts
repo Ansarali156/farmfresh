@@ -14,9 +14,9 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'fallbackSuperSecretKey123',
+        secret: configService.get<string>('jwt.secret'),
         signOptions: {
-          expiresIn: configService.get<string>('JWT_ACCESS_EXPIRATION') || '15m',
+          expiresIn: configService.get<string>('jwt.expiresIn') || '15m',
         },
       }),
     }),

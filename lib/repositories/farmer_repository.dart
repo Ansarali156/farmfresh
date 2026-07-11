@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/farmer_dashboard_model.dart';
 import '../models/inventory_model.dart';
 import '../models/earnings_model.dart';
@@ -7,7 +6,7 @@ import '../models/withdrawal_model.dart';
 import '../models/notification_model.dart';
 import '../models/bank_account_model.dart';
 import '../models/user_model.dart';
-import '../core/constants/app_constants.dart';
+import '../core/services/api_client.dart';
 
 abstract class FarmerRepository {
   Future<FarmerDashboardModel> getDashboard();
@@ -34,30 +33,14 @@ abstract class FarmerRepository {
 }
 
 class PostgresFarmerRepository implements FarmerRepository {
-  final Dio _dio;
+  final ApiClient _apiClient;
 
-  PostgresFarmerRepository()
-      : _dio = Dio(BaseOptions(
-          baseUrl: AppConstants.apiBaseUrl,
-          connectTimeout: const Duration(seconds: 10),
-          receiveTimeout: const Duration(seconds: 10),
-        ));
-
-  Future<Options> _authOptions() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-    return Options(
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-    );
-  }
+  PostgresFarmerRepository(this._apiClient);
 
   @override
   Future<FarmerDashboardModel> getDashboard() async {
     try {
-      final res = await _dio.get('/farmer/dashboard', options: await _authOptions());
+      final res = await _apiClient.dio.get('/admin/dashboard');
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         return FarmerDashboardModel.fromJson(res.data['data'] as Map<String, dynamic>);
       }
@@ -68,23 +51,21 @@ class PostgresFarmerRepository implements FarmerRepository {
   @override
   Future<FarmerStatisticsModel> getStatistics() async {
     try {
-      final res = await _dio.get('/farmer/statistics', options: await _authOptions());
+      final res = await _apiClient.dio.get('/admin/statistics');
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         return FarmerStatisticsModel.fromJson(res.data['data'] as Map<String, dynamic>);
       }
     } catch (_) {}
-    return FarmerStatisticsModel();
+    return FarmerStatisticsModel.fromJson({});
   }
 
   @override
   Future<List<InventoryModel>> getInventory({int page = 1, int limit = 20}) async {
     try {
-      final res = await _dio.get('/inventory',
-          queryParameters: {'page': page, 'limit': limit},
-          options: await _authOptions());
+      final res = await _apiClient.dio.get('/inventory', queryParameters: {'page': page, 'limit': limit});
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         final list = res.data['data'] as List;
-        return list.map((e) => InventoryModel.fromJson(e as Map<String, dynamic>)).toList();
+        return list.map((item) => InventoryModel.fromJson(item as Map<String, dynamic>)).toList();
       }
     } catch (_) {}
     return [];
@@ -93,9 +74,7 @@ class PostgresFarmerRepository implements FarmerRepository {
   @override
   Future<InventoryModel> updateStock(String inventoryId, double quantity) async {
     try {
-      final res = await _dio.patch('/inventory/$inventoryId',
-          data: {'currentStock': quantity},
-          options: await _authOptions());
+      final res = await _apiClient.dio.patch('/inventory/$inventoryId', data: {'currentStock': quantity});
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         return InventoryModel.fromJson(res.data['data'] as Map<String, dynamic>);
       }
@@ -108,9 +87,7 @@ class PostgresFarmerRepository implements FarmerRepository {
   @override
   Future<InventoryModel> addStock(String inventoryId, double quantity) async {
     try {
-      final res = await _dio.patch('/inventory/$inventoryId/add',
-          data: {'quantity': quantity},
-          options: await _authOptions());
+      final res = await _apiClient.dio.patch('/inventory/$inventoryId/add', data: {'quantity': quantity});
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         return InventoryModel.fromJson(res.data['data'] as Map<String, dynamic>);
       }
@@ -123,9 +100,7 @@ class PostgresFarmerRepository implements FarmerRepository {
   @override
   Future<InventoryModel> removeStock(String inventoryId, double quantity) async {
     try {
-      final res = await _dio.patch('/inventory/$inventoryId/remove',
-          data: {'quantity': quantity},
-          options: await _authOptions());
+      final res = await _apiClient.dio.patch('/inventory/$inventoryId/remove', data: {'quantity': quantity});
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         return InventoryModel.fromJson(res.data['data'] as Map<String, dynamic>);
       }
@@ -138,23 +113,21 @@ class PostgresFarmerRepository implements FarmerRepository {
   @override
   Future<EarningsModel> getEarnings() async {
     try {
-      final res = await _dio.get('/farmer/earnings', options: await _authOptions());
+      final res = await _apiClient.dio.get('/farmer/earnings');
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         return EarningsModel.fromJson(res.data['data'] as Map<String, dynamic>);
       }
     } catch (_) {}
-    return EarningsModel();
+    return EarningsModel(totalEarnings: 0, pendingWithdrawals: 0, completedWithdrawals: 0);
   }
 
   @override
   Future<List<TransactionModel>> getTransactions({int page = 1, int limit = 20}) async {
     try {
-      final res = await _dio.get('/farmer/transactions',
-          queryParameters: {'page': page, 'limit': limit},
-          options: await _authOptions());
+      final res = await _apiClient.dio.get('/farmer/transactions', queryParameters: {'page': page, 'limit': limit});
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         final list = res.data['data'] as List;
-        return list.map((e) => TransactionModel.fromJson(e as Map<String, dynamic>)).toList();
+        return list.map((item) => TransactionModel.fromJson(item as Map<String, dynamic>)).toList();
       }
     } catch (_) {}
     return [];
@@ -163,12 +136,10 @@ class PostgresFarmerRepository implements FarmerRepository {
   @override
   Future<List<WithdrawalModel>> getWithdrawals({int page = 1, int limit = 20}) async {
     try {
-      final res = await _dio.get('/withdrawals',
-          queryParameters: {'page': page, 'limit': limit},
-          options: await _authOptions());
+      final res = await _apiClient.dio.get('/withdrawals', queryParameters: {'page': page, 'limit': limit});
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         final list = res.data['data'] as List;
-        return list.map((e) => WithdrawalModel.fromJson(e as Map<String, dynamic>)).toList();
+        return list.map((item) => WithdrawalModel.fromJson(item as Map<String, dynamic>)).toList();
       }
     } catch (_) {}
     return [];
@@ -177,16 +148,14 @@ class PostgresFarmerRepository implements FarmerRepository {
   @override
   Future<WithdrawalModel> requestWithdrawal(double amount, {String? bankAccountId}) async {
     try {
-      final res = await _dio.post('/withdrawals',
-          data: {
-            'amount': amount,
-            if (bankAccountId != null) 'bankAccountId': bankAccountId,
-          },
-          options: await _authOptions());
-      if ((res.statusCode == 201 || res.statusCode == 200) &&
-          res.data['success'] == true &&
-          res.data['data'] != null) {
-        return WithdrawalModel.fromJson(res.data['data'] as Map<String, dynamic>);
+      final res = await _apiClient.dio.post('/withdrawals', data: {
+        'amount': amount,
+        if (bankAccountId != null) 'bankAccountId': bankAccountId,
+      });
+      if (res.statusCode == 201 || res.statusCode == 200) {
+        if (res.data['success'] == true && res.data['data'] != null) {
+          return WithdrawalModel.fromJson(res.data['data'] as Map<String, dynamic>);
+        }
       }
       throw Exception('Failed to request withdrawal');
     } on DioException catch (e) {
@@ -197,9 +166,7 @@ class PostgresFarmerRepository implements FarmerRepository {
   @override
   Future<BankAccountModel> updateBankAccount(BankAccountModel account) async {
     try {
-      final res = await _dio.patch('/bank-account',
-          data: account.toJson(),
-          options: await _authOptions());
+      final res = await _apiClient.dio.put('/farmer/bank-account', data: account.toJson());
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         return BankAccountModel.fromJson(res.data['data'] as Map<String, dynamic>);
       }
@@ -212,12 +179,10 @@ class PostgresFarmerRepository implements FarmerRepository {
   @override
   Future<List<AppNotificationModel>> getNotifications({int page = 1, int limit = 20}) async {
     try {
-      final res = await _dio.get('/notifications',
-          queryParameters: {'page': page, 'limit': limit},
-          options: await _authOptions());
+      final res = await _apiClient.dio.get('/notifications', queryParameters: {'page': page, 'limit': limit});
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         final list = res.data['data'] as List;
-        return list.map((e) => AppNotificationModel.fromJson(e as Map<String, dynamic>)).toList();
+        return list.map((item) => AppNotificationModel.fromJson(item as Map<String, dynamic>)).toList();
       }
     } catch (_) {}
     return [];
@@ -226,21 +191,21 @@ class PostgresFarmerRepository implements FarmerRepository {
   @override
   Future<void> markNotificationRead(String notificationId) async {
     try {
-      await _dio.patch('/notifications/$notificationId/read', options: await _authOptions());
+      await _apiClient.dio.patch('/notifications/$notificationId/read');
     } catch (_) {}
   }
 
   @override
   Future<void> markAllNotificationsRead() async {
     try {
-      await _dio.patch('/notifications/read', options: await _authOptions());
+      await _apiClient.dio.patch('/notifications/read-all');
     } catch (_) {}
   }
 
   @override
   Future<UserModel> getProfile() async {
     try {
-      final res = await _dio.get('/farmer/profile', options: await _authOptions());
+      final res = await _apiClient.dio.get('/auth/profile');
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         return UserModel.fromJson(res.data['data'] as Map<String, dynamic>);
       }
@@ -251,12 +216,7 @@ class PostgresFarmerRepository implements FarmerRepository {
   }
 
   @override
-  Future<UserModel> updateProfile({
-    String? name,
-    String? phone,
-    String? farmName,
-    String? farmAddress,
-  }) async {
+  Future<UserModel> updateProfile({String? name, String? phone, String? farmName, String? farmAddress}) async {
     try {
       final data = <String, dynamic>{};
       if (name != null) data['name'] = name;
@@ -264,8 +224,7 @@ class PostgresFarmerRepository implements FarmerRepository {
       if (farmName != null) data['farmName'] = farmName;
       if (farmAddress != null) data['farmAddress'] = farmAddress;
 
-      final res = await _dio.patch('/farmer/profile',
-          data: data, options: await _authOptions());
+      final res = await _apiClient.dio.patch('/users/profile', data: data);
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         return UserModel.fromJson(res.data['data'] as Map<String, dynamic>);
       }

@@ -43,22 +43,33 @@ class DeliveryDashboardState {
 
 class DeliveryDashboardNotifier extends StateNotifier<DeliveryDashboardState> {
   final Ref _ref;
+  bool _mounted = true;
 
   DeliveryDashboardNotifier(this._ref) : super(DeliveryDashboardState()) {
     loadDashboard();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> loadDashboard() async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final dashboard = await _ref.read(deliveryRepositoryProvider).getDashboard();
+      if (!_mounted) return;
       final stats = await _ref.read(deliveryRepositoryProvider).getStatistics();
+      if (!_mounted) return;
       state = state.copyWith(
         dashboard: dashboard,
         stats: stats,
         isLoading: false,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
@@ -113,42 +124,60 @@ class DeliveryOrdersState {
 
 class DeliveryOrdersNotifier extends StateNotifier<DeliveryOrdersState> {
   final Ref _ref;
+  bool _mounted = true;
 
   DeliveryOrdersNotifier(this._ref) : super(DeliveryOrdersState()) {
     loadDeliveries();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> loadDeliveries() async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final pending = await _ref.read(deliveryRepositoryProvider).getDeliveries(status: 'PENDING');
+      if (!_mounted) return;
       final active = await _ref.read(deliveryRepositoryProvider).getDeliveries(status: 'ACCEPTED');
+      if (!_mounted) return;
       final pickedUp = await _ref.read(deliveryRepositoryProvider).getDeliveries(status: 'PICKED_UP');
+      if (!_mounted) return;
       final outForDelivery = await _ref.read(deliveryRepositoryProvider).getDeliveries(status: 'OUT_FOR_DELIVERY');
+      if (!_mounted) return;
       state = state.copyWith(
         pendingDeliveries: pending,
         activeDeliveries: [...active, ...pickedUp, ...outForDelivery],
         isLoading: false,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
 
   Future<void> loadDelivery(String deliveryId) async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final delivery = await _ref.read(deliveryRepositoryProvider).getDelivery(deliveryId);
+      if (!_mounted) return;
       state = state.copyWith(selectedDelivery: delivery, isLoading: false);
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
 
   Future<bool> acceptDelivery(String deliveryId) async {
+    if (!_mounted) return false;
     state = state.copyWith(isPerformingAction: true, errorMessage: null);
     try {
       final updated = await _ref.read(deliveryRepositoryProvider).acceptDelivery(deliveryId);
+      if (!_mounted) return false;
       state = state.copyWith(
         selectedDelivery: updated,
         isPerformingAction: false,
@@ -157,28 +186,34 @@ class DeliveryOrdersNotifier extends StateNotifier<DeliveryOrdersState> {
       await loadDeliveries();
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(isPerformingAction: false, errorMessage: e.toString());
       return false;
     }
   }
 
   Future<bool> rejectDelivery(String deliveryId, {String? reason}) async {
+    if (!_mounted) return false;
     state = state.copyWith(isPerformingAction: true, errorMessage: null);
     try {
       await _ref.read(deliveryRepositoryProvider).rejectDelivery(deliveryId, reason: reason);
+      if (!_mounted) return false;
       state = state.copyWith(isPerformingAction: false, actionMessage: 'Delivery rejected');
       await loadDeliveries();
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(isPerformingAction: false, errorMessage: e.toString());
       return false;
     }
   }
 
   Future<bool> markPickedUp(String deliveryId) async {
+    if (!_mounted) return false;
     state = state.copyWith(isPerformingAction: true, errorMessage: null);
     try {
       final updated = await _ref.read(deliveryRepositoryProvider).markPickedUp(deliveryId);
+      if (!_mounted) return false;
       state = state.copyWith(
         selectedDelivery: updated,
         isPerformingAction: false,
@@ -187,15 +222,18 @@ class DeliveryOrdersNotifier extends StateNotifier<DeliveryOrdersState> {
       await loadDeliveries();
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(isPerformingAction: false, errorMessage: e.toString());
       return false;
     }
   }
 
   Future<bool> startDelivery(String deliveryId) async {
+    if (!_mounted) return false;
     state = state.copyWith(isPerformingAction: true, errorMessage: null);
     try {
       final updated = await _ref.read(deliveryRepositoryProvider).startDelivery(deliveryId);
+      if (!_mounted) return false;
       state = state.copyWith(
         selectedDelivery: updated,
         isPerformingAction: false,
@@ -204,15 +242,18 @@ class DeliveryOrdersNotifier extends StateNotifier<DeliveryOrdersState> {
       await loadDeliveries();
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(isPerformingAction: false, errorMessage: e.toString());
       return false;
     }
   }
 
   Future<bool> verifyOtp(String deliveryId, String otp) async {
+    if (!_mounted) return false;
     state = state.copyWith(isPerformingAction: true, errorMessage: null);
     try {
       final updated = await _ref.read(deliveryRepositoryProvider).verifyOtp(deliveryId, otp);
+      if (!_mounted) return false;
       state = state.copyWith(
         selectedDelivery: updated,
         isPerformingAction: false,
@@ -220,15 +261,18 @@ class DeliveryOrdersNotifier extends StateNotifier<DeliveryOrdersState> {
       );
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(isPerformingAction: false, errorMessage: e.toString());
       return false;
     }
   }
 
   Future<bool> completeDelivery(String deliveryId) async {
+    if (!_mounted) return false;
     state = state.copyWith(isPerformingAction: true, errorMessage: null);
     try {
       final updated = await _ref.read(deliveryRepositoryProvider).completeDelivery(deliveryId);
+      if (!_mounted) return false;
       state = state.copyWith(
         selectedDelivery: updated,
         isPerformingAction: false,
@@ -237,12 +281,14 @@ class DeliveryOrdersNotifier extends StateNotifier<DeliveryOrdersState> {
       await loadDeliveries();
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(isPerformingAction: false, errorMessage: e.toString());
       return false;
     }
   }
 
   void clearMessages() {
+    if (!_mounted) return;
     state = state.copyWith(errorMessage: null, actionMessage: null);
   }
 }
@@ -296,32 +342,45 @@ class DeliveryEarningsState {
 
 class DeliveryEarningsNotifier extends StateNotifier<DeliveryEarningsState> {
   final Ref _ref;
+  bool _mounted = true;
 
   DeliveryEarningsNotifier(this._ref) : super(DeliveryEarningsState()) {
     loadEarnings();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> loadEarnings() async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final earnings = await _ref.read(deliveryRepositoryProvider).getEarnings();
+      if (!_mounted) return;
       final transactions = await _ref.read(deliveryRepositoryProvider).getTransactions(page: 1, limit: 20);
+      if (!_mounted) return;
       state = DeliveryEarningsState(
         earnings: earnings,
         transactions: transactions,
         hasMore: transactions.length >= 20,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = DeliveryEarningsState(errorMessage: e.toString());
     }
   }
 
   Future<void> loadMoreTransactions() async {
+    if (!_mounted) return;
     if (state.isLoadingMore || !state.hasMore) return;
     state = state.copyWith(isLoadingMore: true);
     try {
       final nextPage = state.currentPage + 1;
       final more = await _ref.read(deliveryRepositoryProvider).getTransactions(page: nextPage, limit: 20);
+      if (!_mounted) return;
       state = state.copyWith(
         transactions: [...state.transactions, ...more],
         isLoadingMore: false,
@@ -329,6 +388,7 @@ class DeliveryEarningsNotifier extends StateNotifier<DeliveryEarningsState> {
         hasMore: more.length >= 20,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(isLoadingMore: false);
     }
   }
@@ -383,15 +443,24 @@ class DeliveryNotificationState {
 
 class DeliveryNotificationNotifier extends StateNotifier<DeliveryNotificationState> {
   final Ref _ref;
+  bool _mounted = true;
 
   DeliveryNotificationNotifier(this._ref) : super(DeliveryNotificationState()) {
     loadNotifications();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> loadNotifications() async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final notifications = await _ref.read(deliveryRepositoryProvider).getNotifications(page: 1, limit: 20);
+      if (!_mounted) return;
       final unread = notifications.where((n) => !n.isRead).length;
       state = DeliveryNotificationState(
         notifications: notifications,
@@ -399,16 +468,19 @@ class DeliveryNotificationNotifier extends StateNotifier<DeliveryNotificationSta
         hasMore: notifications.length >= 20,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = DeliveryNotificationState(errorMessage: e.toString());
     }
   }
 
   Future<void> loadMore() async {
+    if (!_mounted) return;
     if (state.isLoadingMore || !state.hasMore) return;
     state = state.copyWith(isLoadingMore: true);
     try {
       final nextPage = state.currentPage + 1;
       final more = await _ref.read(deliveryRepositoryProvider).getNotifications(page: nextPage, limit: 20);
+      if (!_mounted) return;
       final all = [...state.notifications, ...more];
       state = state.copyWith(
         notifications: all,
@@ -418,12 +490,15 @@ class DeliveryNotificationNotifier extends StateNotifier<DeliveryNotificationSta
         hasMore: more.length >= 20,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(isLoadingMore: false);
     }
   }
 
   Future<void> markRead(String notificationId) async {
+    if (!_mounted) return;
     await _ref.read(deliveryRepositoryProvider).markNotificationRead(notificationId);
+    if (!_mounted) return;
     final updated = state.notifications
         .map((n) => n.id == notificationId
             ? AppNotificationModel(
@@ -444,7 +519,9 @@ class DeliveryNotificationNotifier extends StateNotifier<DeliveryNotificationSta
   }
 
   Future<void> markAllRead() async {
+    if (!_mounted) return;
     await _ref.read(deliveryRepositoryProvider).markAllNotificationsRead();
+    if (!_mounted) return;
     final updated = state.notifications
         .map((n) => AppNotificationModel(
               id: n.id,
@@ -465,7 +542,7 @@ final deliveryNotificationProvider =
   return DeliveryNotificationNotifier(ref);
 });
 
-// ── Profile ────────────────────────────────────────────────
+// ── Profile ──────────────────────────────────────────────────
 
 class DeliveryProfileState {
   final DeliveryProfile profile;
@@ -503,17 +580,27 @@ class DeliveryProfileState {
 
 class DeliveryProfileNotifier extends StateNotifier<DeliveryProfileState> {
   final Ref _ref;
+  bool _mounted = true;
 
   DeliveryProfileNotifier(this._ref) : super(DeliveryProfileState()) {
     loadProfile();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> loadProfile() async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final profile = await _ref.read(deliveryRepositoryProvider).getProfile();
+      if (!_mounted) return;
       state = state.copyWith(profile: profile, isLoading: false);
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
@@ -526,6 +613,7 @@ class DeliveryProfileNotifier extends StateNotifier<DeliveryProfileState> {
     DeliveryLicenseInfo? license,
     DeliveryBankInfo? bankAccount,
   }) async {
+    if (!_mounted) return false;
     state = state.copyWith(errorMessage: null, actionMessage: null);
     try {
       final updated = await _ref.read(deliveryRepositoryProvider).updateProfile(
@@ -536,29 +624,35 @@ class DeliveryProfileNotifier extends StateNotifier<DeliveryProfileState> {
         license: license,
         bankAccount: bankAccount,
       );
+      if (!_mounted) return false;
       state = state.copyWith(profile: updated, actionMessage: 'Profile updated');
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(errorMessage: e.toString());
       return false;
     }
   }
 
   Future<bool> toggleAvailability() async {
+    if (!_mounted) return false;
     try {
       await _ref.read(deliveryRepositoryProvider).toggleAvailability();
+      if (!_mounted) return false;
       state = state.copyWith(
         profile: state.profile.copyWith(isAvailable: !state.profile.isAvailable),
         actionMessage: state.profile.isAvailable ? 'You are now offline' : 'You are now online',
       );
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(errorMessage: e.toString());
       return false;
     }
   }
 
   void clearMessages() {
+    if (!_mounted) return;
     state = state.copyWith(errorMessage: null, actionMessage: null);
   }
 }
@@ -568,7 +662,7 @@ final deliveryProfileProvider =
   return DeliveryProfileNotifier(ref);
 });
 
-// ── History ────────────────────────────────────────────────
+// ── History ──────────────────────────────────────────────────
 
 class DeliveryHistoryState {
   final List<DeliveryOrder> orders;
@@ -612,31 +706,43 @@ class DeliveryHistoryState {
 
 class DeliveryHistoryNotifier extends StateNotifier<DeliveryHistoryState> {
   final Ref _ref;
+  bool _mounted = true;
 
   DeliveryHistoryNotifier(this._ref) : super(DeliveryHistoryState()) {
     loadHistory();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> loadHistory() async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final history = await _ref.read(deliveryRepositoryProvider).getHistory(page: 1, limit: 20);
+      if (!_mounted) return;
       state = DeliveryHistoryState(
         orders: history.orders,
         total: history.total,
         hasMore: history.orders.length >= 20,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = DeliveryHistoryState(errorMessage: e.toString());
     }
   }
 
   Future<void> loadMore() async {
+    if (!_mounted) return;
     if (state.isLoadingMore || !state.hasMore) return;
     state = state.copyWith(isLoadingMore: true);
     try {
       final nextPage = state.currentPage + 1;
       final history = await _ref.read(deliveryRepositoryProvider).getHistory(page: nextPage, limit: 20);
+      if (!_mounted) return;
       state = state.copyWith(
         orders: [...state.orders, ...history.orders],
         isLoadingMore: false,
@@ -644,6 +750,7 @@ class DeliveryHistoryNotifier extends StateNotifier<DeliveryHistoryState> {
         hasMore: history.orders.length >= 20,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(isLoadingMore: false);
     }
   }

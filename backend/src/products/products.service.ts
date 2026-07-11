@@ -129,10 +129,13 @@ export class ProductsService {
     if (filters.featured !== undefined) where.featured = filters.featured;
     if (filters.seasonal !== undefined) where.seasonal = filters.seasonal;
 
-    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+    const minPriceNum = filters.minPrice !== undefined && !isNaN(Number(filters.minPrice)) ? Number(filters.minPrice) : undefined;
+    const maxPriceNum = filters.maxPrice !== undefined && !isNaN(Number(filters.maxPrice)) ? Number(filters.maxPrice) : undefined;
+
+    if (minPriceNum !== undefined || maxPriceNum !== undefined) {
       where.price = {};
-      if (filters.minPrice !== undefined) where.price.gte = filters.minPrice;
-      if (filters.maxPrice !== undefined) where.price.lte = filters.maxPrice;
+      if (minPriceNum !== undefined) where.price.gte = minPriceNum;
+      if (maxPriceNum !== undefined) where.price.lte = maxPriceNum;
     }
 
     if (filters.search) {
@@ -160,6 +163,7 @@ export class ProductsService {
       where,
       orderBy,
       include: {
+        category: true,
         images: true,
         inventory: true,
         farmer: {

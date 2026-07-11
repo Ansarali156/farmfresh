@@ -107,8 +107,6 @@ class _FarmerEditProfileScreenState
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(authProvider).user;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Profile'),

@@ -156,9 +156,9 @@ class ProductCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.star, size: 12, color: Colors.amber),
                       const SizedBox(width: 2),
-                      const Text(
-                        '4.8',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                      Text(
+                        product.rating > 0 ? '${product.rating}' : 'New',
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                       const Spacer(),
                       Text(
@@ -172,7 +172,7 @@ class ProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.between,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
                         child: Column(

@@ -10,7 +10,7 @@ class FarmerDashboardModel {
   final List<WeeklyOrders> weeklyOrders;
   final int unreadNotifications;
 
-  FarmerDashboardModel({
+  const FarmerDashboardModel({
     this.todaySales = 0,
     this.totalRevenue = 0,
     this.pendingOrders = 0,
@@ -85,7 +85,7 @@ class FarmerStatisticsModel {
   final int totalOrders;
   final int totalProducts;
 
-  FarmerStatisticsModel({
+  const FarmerStatisticsModel({
     this.totalEarnings = 0,
     this.monthlyEarnings = 0,
     this.weeklyEarnings = 0,

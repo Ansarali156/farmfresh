@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../models/product_model.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/cart_provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/widgets/product_card.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {
@@ -204,7 +205,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.between,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Filters', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       TextButton(
@@ -347,10 +348,14 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       return Container(
                         margin: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
-                          label: Text(cat),
+                          label: Text(
+                            cat,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black,
+                            ),
+                          ),
                           selected: isSelected,
                           selectedColor: Colors.green,
-                          textColor: isSelected ? Colors.white : Colors.black,
                           onSelected: (val) {
                             if (val) {
                               setState(() {
@@ -393,7 +398,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.search_off, size: 64, color: Colors.grey),
-                                const SizedBox(height: 12),
+                                SizedBox(height: 12),
                                 Text('No crops match your filters.', style: TextStyle(color: Colors.grey)),
                               ],
                             ),
@@ -479,7 +484,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.between,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(prod.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         if (prod.organic)
@@ -489,7 +494,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                     Text(prod.farmName, style: const TextStyle(color: Colors.grey, fontSize: 12)),
                     const SizedBox(height: 6),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.between,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('\$${prod.price.toStringAsFixed(2)} / ${prod.weight}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 14)),
                         IconButton(

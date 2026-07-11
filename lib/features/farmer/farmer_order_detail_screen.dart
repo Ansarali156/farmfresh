@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../providers/order_provider.dart';
 import '../../models/order_model.dart';
-import '../../models/cart_item_model.dart';
 import '../../core/constants/app_enums.dart';
 
 class FarmerOrderDetailScreen extends ConsumerStatefulWidget {
@@ -55,7 +54,7 @@ class _FarmerOrderDetailScreenState
       case 'ACCEPTED':
         return Icons.check_circle_outline;
       case 'PREPARING':
-        return Icons.cooking_outlined;
+        return Icons.restaurant;
       case 'READY_FOR_PICKUP':
         return Icons.inventory_2_outlined;
       case 'OUT_FOR_DELIVERY':

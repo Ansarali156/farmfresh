@@ -90,46 +90,62 @@ class CartState {
 
 class CartNotifier extends StateNotifier<CartState> {
   final Ref _ref;
+  bool _mounted = true;
 
   CartNotifier(this._ref) : super(CartState()) {
     _loadCart();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   CartRepository get _repo => _ref.read(cartRepositoryProvider);
 
   Future<void> _loadCart() async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final items = await _repo.getCart();
-      state = state.copyWith(items: items, isLoading: false);
-      await _refreshSummary(); // fetch backend totals after items load
+      if (_mounted) {
+        state = state.copyWith(items: items, isLoading: false);
+        await _refreshSummary();
+      }
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Failed to load cart. Please try again.',
-      );
+      if (_mounted) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'Failed to load cart. Please try again.',
+        );
+      }
     }
   }
 
   Future<void> reload() => _loadCart();
 
   Future<void> _refreshSummary() async {
+    if (!_mounted) return;
     try {
       final summary = await _repo.getCartSummary();
-      state = state.copyWith(
-        backendSubtotal: summary.subtotal,
-        backendDiscount: summary.discount,
-        backendTax: summary.tax,
-        backendDeliveryCharge: summary.deliveryCharge,
-        backendGrandTotal: summary.grandTotal,
-        hasFetchedSummary: true,
-      );
+      if (_mounted) {
+        state = state.copyWith(
+          backendSubtotal: summary.subtotal,
+          backendDiscount: summary.discount,
+          backendTax: summary.tax,
+          backendDeliveryCharge: summary.deliveryCharge,
+          backendGrandTotal: summary.grandTotal,
+          hasFetchedSummary: true,
+        );
+      }
     } catch (_) {
       // Fall back to local calculations — no state update needed
     }
   }
 
   Future<void> addItem(ProductModel product) async {
+    if (!_mounted) return;
     // Optimistic UI update first
     final index = state.items.indexWhere((item) => item.product.id == product.id);
     List<CartItemModel> newList;
@@ -139,11 +155,15 @@ class CartNotifier extends StateNotifier<CartState> {
     } else {
       newList = [...state.items, CartItemModel(product: product, quantity: 1)];
     }
-    state = state.copyWith(items: newList, hasFetchedSummary: false);
+    if (_mounted) {
+      state = state.copyWith(items: newList, hasFetchedSummary: false);
+    }
 
     // Sync to backend then refresh totals
     await _repo.addItemToBackend(product.id, 1);
-    await _refreshSummary();
+    if (_mounted) {
+      await _refreshSummary();
+    }
   }
 
   Future<void> increaseQuantity(CartItemModel item) async {
@@ -159,12 +179,15 @@ class CartNotifier extends StateNotifier<CartState> {
   }
 
   Future<void> _updateQuantity(CartItemModel item, int newQty) async {
+    if (!_mounted) return;
     final index = state.items.indexWhere((i) => i.product.id == item.product.id);
     if (index == -1) return;
 
     final newList = List<CartItemModel>.from(state.items);
     newList[index] = newList[index].copyWith(quantity: newQty);
-    state = state.copyWith(items: newList, hasFetchedSummary: false);
+    if (_mounted) {
+      state = state.copyWith(items: newList, hasFetchedSummary: false);
+    }
 
     // Use per-item PATCH if we have the cart item ID, else fall back to full POST
     if (item.cartItemId != null) {
@@ -172,10 +195,13 @@ class CartNotifier extends StateNotifier<CartState> {
     } else {
       await _repo.addItemToBackend(item.product.id, newQty);
     }
-    await _refreshSummary();
+    if (_mounted) {
+      await _refreshSummary();
+    }
   }
 
   Future<void> removeItem(String productId) async {
+    if (!_mounted) return;
     final index = state.items.indexWhere((i) => i.product.id == productId);
     if (index == -1) return;
 
@@ -188,33 +214,41 @@ class CartNotifier extends StateNotifier<CartState> {
   }
 
   Future<void> deleteItemCompletely(String productId) async {
+    if (!_mounted) return;
     final index = state.items.indexWhere((i) => i.product.id == productId);
     if (index == -1) return;
 
     final item = state.items[index];
     final newList = List<CartItemModel>.from(state.items)..removeAt(index);
-    state = state.copyWith(items: newList, hasFetchedSummary: false);
+    if (_mounted) {
+      state = state.copyWith(items: newList, hasFetchedSummary: false);
+    }
 
     if (item.cartItemId != null) {
       await _repo.removeItemById(item.cartItemId!);
     } else {
       await _repo.updateCart(newList);
     }
-    await _refreshSummary();
+    if (_mounted) {
+      await _refreshSummary();
+    }
   }
 
   bool applyCoupon(String code) {
+    if (!_mounted) return false;
     if (code.trim().isEmpty) return false;
     state = state.copyWith(couponCode: code.trim().toUpperCase(), discountPercent: 0.0, hasFetchedSummary: false);
     return true;
   }
 
   void removeCoupon() {
+    if (!_mounted) return;
     state = state.copyWith(couponCode: null, discountPercent: 0.0, hasFetchedSummary: false);
     _refreshSummary();
   }
 
   Future<void> clearCart() async {
+    if (!_mounted) return;
     state = CartState();
     await _repo.clearCart();
   }

@@ -172,17 +172,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
               ],
               const SizedBox(height: 24),
               CustomButton(
-                onPressed: _isSaving ? null : _changePassword,
-                child: _isSaving
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text('Change Password'),
+                text: 'Change Password',
+                onPressed: _changePassword,
+                isLoading: _isSaving,
               ),
             ],
           ),

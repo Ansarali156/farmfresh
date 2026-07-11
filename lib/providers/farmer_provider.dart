@@ -40,23 +40,35 @@ class FarmerDashboardState {
 
 class FarmerDashboardNotifier extends StateNotifier<FarmerDashboardState> {
   final Ref _ref;
+  bool _mounted = true;
 
   FarmerDashboardNotifier(this._ref) : super(FarmerDashboardState()) {
     loadDashboard();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> loadDashboard() async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final dashboard = await _ref.read(farmerRepositoryProvider).getDashboard();
+      if (!_mounted) return;
       final statistics = await _ref.read(farmerRepositoryProvider).getStatistics();
+      if (!_mounted) return;
       state = state.copyWith(
         dashboard: dashboard,
         statistics: statistics,
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      if (_mounted) {
+        state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      }
     }
   }
 }
@@ -110,30 +122,42 @@ class FarmerInventoryState {
 
 class FarmerInventoryNotifier extends StateNotifier<FarmerInventoryState> {
   final Ref _ref;
+  bool _mounted = true;
 
   FarmerInventoryNotifier(this._ref) : super(FarmerInventoryState()) {
     loadInventory();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> loadInventory() async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final items = await _ref.read(farmerRepositoryProvider).getInventory(page: 1, limit: 20);
+      if (!_mounted) return;
       state = FarmerInventoryState(
         items: items,
         hasMore: items.length >= 20,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = FarmerInventoryState(errorMessage: e.toString());
     }
   }
 
   Future<void> loadMore() async {
+    if (!_mounted) return;
     if (state.isLoadingMore || !state.hasMore) return;
     state = state.copyWith(isLoadingMore: true);
     try {
       final nextPage = state.currentPage + 1;
       final more = await _ref.read(farmerRepositoryProvider).getInventory(page: nextPage, limit: 20);
+      if (!_mounted) return;
       state = state.copyWith(
         items: [...state.items, ...more],
         isLoadingMore: false,
@@ -141,47 +165,58 @@ class FarmerInventoryNotifier extends StateNotifier<FarmerInventoryState> {
         hasMore: more.length >= 20,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(isLoadingMore: false);
     }
   }
 
   Future<bool> updateStock(String inventoryId, double quantity) async {
+    if (!_mounted) return false;
     try {
       final updated = await _ref.read(farmerRepositoryProvider).updateStock(inventoryId, quantity);
       final newList = state.items.map((i) => i.id == inventoryId ? updated : i).toList();
+      if (!_mounted) return false;
       state = state.copyWith(items: newList, actionMessage: 'Stock updated');
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(errorMessage: e.toString());
       return false;
     }
   }
 
   Future<bool> addStock(String inventoryId, double quantity) async {
+    if (!_mounted) return false;
     try {
       final updated = await _ref.read(farmerRepositoryProvider).addStock(inventoryId, quantity);
       final newList = state.items.map((i) => i.id == inventoryId ? updated : i).toList();
+      if (!_mounted) return false;
       state = state.copyWith(items: newList, actionMessage: 'Stock added');
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(errorMessage: e.toString());
       return false;
     }
   }
 
   Future<bool> removeStock(String inventoryId, double quantity) async {
+    if (!_mounted) return false;
     try {
       final updated = await _ref.read(farmerRepositoryProvider).removeStock(inventoryId, quantity);
       final newList = state.items.map((i) => i.id == inventoryId ? updated : i).toList();
+      if (!_mounted) return false;
       state = state.copyWith(items: newList, actionMessage: 'Stock removed');
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(errorMessage: e.toString());
       return false;
     }
   }
 
   void clearMessages() {
+    if (!_mounted) return;
     state = state.copyWith(errorMessage: null, actionMessage: null);
   }
 }
@@ -235,32 +270,45 @@ class FarmerEarningsState {
 
 class FarmerEarningsNotifier extends StateNotifier<FarmerEarningsState> {
   final Ref _ref;
+  bool _mounted = true;
 
   FarmerEarningsNotifier(this._ref) : super(FarmerEarningsState()) {
     loadEarnings();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> loadEarnings() async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final earnings = await _ref.read(farmerRepositoryProvider).getEarnings();
+      if (!_mounted) return;
       final transactions = await _ref.read(farmerRepositoryProvider).getTransactions(page: 1, limit: 20);
+      if (!_mounted) return;
       state = FarmerEarningsState(
         earnings: earnings,
         transactions: transactions,
         hasMore: transactions.length >= 20,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = FarmerEarningsState(errorMessage: e.toString());
     }
   }
 
   Future<void> loadMoreTransactions() async {
+    if (!_mounted) return;
     if (state.isLoadingMore || !state.hasMore) return;
     state = state.copyWith(isLoadingMore: true);
     try {
       final nextPage = state.currentPage + 1;
       final more = await _ref.read(farmerRepositoryProvider).getTransactions(page: nextPage, limit: 20);
+      if (!_mounted) return;
       state = state.copyWith(
         transactions: [...state.transactions, ...more],
         isLoadingMore: false,
@@ -268,6 +316,7 @@ class FarmerEarningsNotifier extends StateNotifier<FarmerEarningsState> {
         hasMore: more.length >= 20,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(isLoadingMore: false);
     }
   }
@@ -322,30 +371,42 @@ class FarmerWithdrawalState {
 
 class FarmerWithdrawalNotifier extends StateNotifier<FarmerWithdrawalState> {
   final Ref _ref;
+  bool _mounted = true;
 
   FarmerWithdrawalNotifier(this._ref) : super(FarmerWithdrawalState()) {
     loadWithdrawals();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> loadWithdrawals() async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final withdrawals = await _ref.read(farmerRepositoryProvider).getWithdrawals(page: 1, limit: 20);
+      if (!_mounted) return;
       state = FarmerWithdrawalState(
         withdrawals: withdrawals,
         hasMore: withdrawals.length >= 20,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = FarmerWithdrawalState(errorMessage: e.toString());
     }
   }
 
   Future<void> loadMore() async {
+    if (!_mounted) return;
     if (state.isLoadingMore || !state.hasMore) return;
     state = state.copyWith(isLoadingMore: true);
     try {
       final nextPage = state.currentPage + 1;
       final more = await _ref.read(farmerRepositoryProvider).getWithdrawals(page: nextPage, limit: 20);
+      if (!_mounted) return;
       state = state.copyWith(
         withdrawals: [...state.withdrawals, ...more],
         isLoadingMore: false,
@@ -353,36 +414,44 @@ class FarmerWithdrawalNotifier extends StateNotifier<FarmerWithdrawalState> {
         hasMore: more.length >= 20,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(isLoadingMore: false);
     }
   }
 
   Future<bool> requestWithdrawal(double amount, {String? bankAccountId}) async {
+    if (!_mounted) return false;
     try {
       final withdrawal = await _ref.read(farmerRepositoryProvider).requestWithdrawal(amount, bankAccountId: bankAccountId);
+      if (!_mounted) return false;
       state = state.copyWith(
         withdrawals: [withdrawal, ...state.withdrawals],
         actionMessage: 'Withdrawal request submitted',
       );
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(errorMessage: e.toString());
       return false;
     }
   }
 
   Future<bool> updateBankAccount(BankAccountModel account) async {
+    if (!_mounted) return false;
     try {
       await _ref.read(farmerRepositoryProvider).updateBankAccount(account);
+      if (!_mounted) return false;
       state = state.copyWith(actionMessage: 'Bank account updated');
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(errorMessage: e.toString());
       return false;
     }
   }
 
   void clearMessages() {
+    if (!_mounted) return;
     state = state.copyWith(errorMessage: null, actionMessage: null);
   }
 }
@@ -436,15 +505,24 @@ class FarmerNotificationState {
 
 class FarmerNotificationNotifier extends StateNotifier<FarmerNotificationState> {
   final Ref _ref;
+  bool _mounted = true;
 
   FarmerNotificationNotifier(this._ref) : super(FarmerNotificationState()) {
     loadNotifications();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> loadNotifications() async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final notifications = await _ref.read(farmerRepositoryProvider).getNotifications(page: 1, limit: 20);
+      if (!_mounted) return;
       final unread = notifications.where((n) => !n.isRead).length;
       state = FarmerNotificationState(
         notifications: notifications,
@@ -452,16 +530,19 @@ class FarmerNotificationNotifier extends StateNotifier<FarmerNotificationState> 
         hasMore: notifications.length >= 20,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = FarmerNotificationState(errorMessage: e.toString());
     }
   }
 
   Future<void> loadMore() async {
+    if (!_mounted) return;
     if (state.isLoadingMore || !state.hasMore) return;
     state = state.copyWith(isLoadingMore: true);
     try {
       final nextPage = state.currentPage + 1;
       final more = await _ref.read(farmerRepositoryProvider).getNotifications(page: nextPage, limit: 20);
+      if (!_mounted) return;
       final all = [...state.notifications, ...more];
       state = state.copyWith(
         notifications: all,
@@ -471,12 +552,15 @@ class FarmerNotificationNotifier extends StateNotifier<FarmerNotificationState> 
         hasMore: more.length >= 20,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(isLoadingMore: false);
     }
   }
 
   Future<void> markRead(String notificationId) async {
+    if (!_mounted) return;
     await _ref.read(farmerRepositoryProvider).markNotificationRead(notificationId);
+    if (!_mounted) return;
     final updated = state.notifications
         .map((n) => n.id == notificationId
             ? AppNotificationModel(
@@ -497,7 +581,9 @@ class FarmerNotificationNotifier extends StateNotifier<FarmerNotificationState> 
   }
 
   Future<void> markAllRead() async {
+    if (!_mounted) return;
     await _ref.read(farmerRepositoryProvider).markAllNotificationsRead();
+    if (!_mounted) return;
     final updated = state.notifications
         .map((n) => AppNotificationModel(
               id: n.id,
@@ -574,15 +660,24 @@ class FarmerOrderState {
 
 class FarmerOrderNotifier extends StateNotifier<FarmerOrderState> {
   final Ref _ref;
+  bool _mounted = true;
 
   FarmerOrderNotifier(this._ref) : super(FarmerOrderState()) {
     loadOrders();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> loadOrders() async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final all = await _ref.read(orderRepositoryProvider).getFarmerOrders(page: 1, limit: 100);
+      if (!_mounted) return;
       state = state.copyWith(
         pendingOrders: all.where((o) => o.status.toUpperCase() == 'PENDING').toList(),
         acceptedOrders: all.where((o) => o.status.toUpperCase() == 'ACCEPTED').toList(),
@@ -593,23 +688,28 @@ class FarmerOrderNotifier extends StateNotifier<FarmerOrderState> {
         isLoading: false,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
   }
 
   Future<bool> updateOrderStatus(String orderId, String status) async {
+    if (!_mounted) return false;
     try {
       await _ref.read(orderRepositoryProvider).updateOrderStatus(orderId, status);
+      if (!_mounted) return false;
       state = state.copyWith(actionMessage: 'Order updated to $status');
       await loadOrders();
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(errorMessage: e.toString());
       return false;
     }
   }
 
   void clearMessages() {
+    if (!_mounted) return;
     state = state.copyWith(errorMessage: null, actionMessage: null);
   }
 }

@@ -248,7 +248,7 @@ class _FarmerOrdersScreenState extends ConsumerState<FarmerOrdersScreen>
                       color: Colors.green,
                     ),
                   ),
-                  _buildActionButton(order),
+                  _buildActionButton(order) ?? const SizedBox.shrink(),
                 ],
               ),
             ],

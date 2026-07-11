@@ -1,15 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../constants/app_constants.dart';
 
 /// Centralized Dio-based HTTP client with automatic JWT token refresh.
-///
-/// All repository HTTP calls should use this client instead of raw `http` package.
 class ApiClient {
   late final Dio _dio;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   bool _isRefreshing = false;
   final List<Function(String)> _pendingRequests = [];
+  void Function()? onAuthFailure;
 
   ApiClient() {
     _dio = Dio(BaseOptions(
@@ -34,8 +34,7 @@ class ApiClient {
 
   /// Attaches the current access token to a request.
   Future<void> _attachToken(RequestOptions options) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
+    final token = await _secureStorage.read(key: 'access_token');
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
     }
@@ -50,9 +49,11 @@ class ApiClient {
     _isRefreshing = true;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final refreshToken = prefs.getString('refresh_token');
-      if (refreshToken == null) return null;
+      final refreshToken = await _secureStorage.read(key: 'refresh_token');
+      if (refreshToken == null) {
+        onAuthFailure?.call();
+        return null;
+      }
 
       final response = await Dio().post(
         '${AppConstants.apiBaseUrl}/auth/refresh',
@@ -66,35 +67,22 @@ class ApiClient {
         final newRefreshToken = data['refreshToken'] as String?;
 
         if (newAccessToken != null) {
-          await prefs.setString('access_token', newAccessToken);
+          await _secureStorage.write(key: 'access_token', value: newAccessToken);
         }
         if (newRefreshToken != null) {
-          await prefs.setString('refresh_token', newRefreshToken);
+          await _secureStorage.write(key: 'refresh_token', value: newRefreshToken);
         }
         return newAccessToken;
       }
     } catch (_) {
-      // Refresh failed — clear tokens and let caller handle auth failure
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('access_token');
-      await prefs.remove('refresh_token');
+      // Refresh failed — clear tokens and trigger auth failure callback
+      await _secureStorage.delete(key: 'access_token');
+      await _secureStorage.delete(key: 'refresh_token');
+      onAuthFailure?.call();
     } finally {
       _isRefreshing = false;
     }
     return null;
-  }
-
-  /// Queues a failed request to be retried after token refresh.
-  void _queuePendingRequest(Function(String) retry) {
-    _pendingRequests.add(retry);
-  }
-
-  /// Retries all queued requests with the new token.
-  void _retryPendingRequests(String newToken) {
-    for (final retry in _pendingRequests) {
-      retry(newToken);
-    }
-    _pendingRequests.clear();
   }
 
   /// Clears all pending requests (called on logout or fatal auth failure).
@@ -130,6 +118,8 @@ class _AuthInterceptor extends Interceptor {
         } catch (_) {
           // Retry failed even with new token
         }
+      } else {
+        _client.onAuthFailure?.call();
       }
     }
     handler.next(err);
@@ -138,5 +128,6 @@ class _AuthInterceptor extends Interceptor {
 
 /// Riverpod provider for the singleton ApiClient.
 final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient();
+  final client = ApiClient();
+  return client;
 });

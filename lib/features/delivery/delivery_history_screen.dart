@@ -107,7 +107,7 @@ class _DeliveryHistoryScreenState extends ConsumerState<DeliveryHistoryScreen> {
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        order.deliveryAddress!.fullAddress!,
+                        order.deliveryAddress?.fullAddress ?? 'No address',
                         style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -127,7 +127,7 @@ class _DeliveryHistoryScreenState extends ConsumerState<DeliveryHistoryScreen> {
                           style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
                       if (order.rating != null) ...[
                         const SizedBox(width: 8),
-                        Icon(Icons.star, color: Colors.amber, size: 14),
+                        const Icon(Icons.star, color: Colors.amber, size: 14),
                         Text('${order.rating}', style: const TextStyle(fontSize: 12)),
                       ],
                     ],

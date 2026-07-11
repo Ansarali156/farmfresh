@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../models/user_model.dart';
 import '../../core/widgets/custom_text_field.dart';
 import '../../core/widgets/custom_button.dart';
 
@@ -160,17 +159,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ],
               const SizedBox(height: 24),
               CustomButton(
-                onPressed: _isSaving ? null : _saveProfile,
-                child: _isSaving
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text('Save Changes'),
+                text: 'Save Changes',
+                onPressed: _saveProfile,
+                isLoading: _isSaving,
               ),
             ],
           ),

@@ -1,9 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/user_model.dart';
-import '../core/constants/app_constants.dart';
 import '../core/services/api_client.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class AuthRepository {
   Future<UserModel?> getCurrentUser();
@@ -16,35 +14,15 @@ abstract class AuthRepository {
 }
 
 class PostgresAuthRepository implements AuthRepository {
-  final Dio _dio;
+  final ApiClient _apiClient;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
-  PostgresAuthRepository() : _dio = Dio(BaseOptions(
-    baseUrl: AppConstants.apiBaseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
-    headers: {'Content-Type': 'application/json'},
-  ));
-
-  Future<Map<String, String>> _getAuthHeaders() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-    return {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    };
-  }
+  PostgresAuthRepository(this._apiClient);
 
   @override
   Future<UserModel?> getCurrentUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-    if (token == null) return null;
-
     try {
-      final res = await _dio.get(
-        '/auth/profile',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
+      final res = await _apiClient.dio.get('/auth/profile');
 
       if (res.statusCode == 200 && res.data['success'] == true) {
         final profile = res.data['data'];
@@ -57,7 +35,7 @@ class PostgresAuthRepository implements AuthRepository {
   @override
   Future<UserModel> login(String email, String password, String role) async {
     try {
-      final res = await _dio.post('/auth/login', data: {
+      final res = await _apiClient.dio.post('/auth/login', data: {
         'username': email,
         'password': password,
       });
@@ -67,9 +45,8 @@ class PostgresAuthRepository implements AuthRepository {
         throw Exception(data['message'] ?? 'Login failed');
       }
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('access_token', data['data']['accessToken']);
-      await prefs.setString('refresh_token', data['data']['refreshToken']);
+      await _secureStorage.write(key: 'access_token', value: data['data']['accessToken']);
+      await _secureStorage.write(key: 'refresh_token', value: data['data']['refreshToken']);
 
       final profile = data['data']['user'];
       return UserModel(
@@ -137,7 +114,7 @@ class PostgresAuthRepository implements AuthRepository {
           };
       }
 
-      final res = await _dio.post(endpoint, data: body);
+      final res = await _apiClient.dio.post(endpoint, data: body);
 
       if (res.statusCode != 201) {
         throw Exception(res.data['message'] ?? 'Signup failed');
@@ -155,18 +132,12 @@ class PostgresAuthRepository implements AuthRepository {
 
   @override
   Future<UserModel> updateProfile({String? name, String? phone}) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-    if (token == null) throw Exception('Not authenticated');
-
     try {
       final data = <String, dynamic>{};
       if (name != null) data['name'] = name;
       if (phone != null) data['phone'] = phone;
 
-      final res = await _dio.patch('/users/profile',
-          data: data,
-          options: Options(headers: {'Authorization': 'Bearer $token'}));
+      final res = await _apiClient.dio.patch('/users/profile', data: data);
 
       if (res.statusCode == 200 && res.data['success'] == true) {
         final profile = res.data['data'] as Map<String, dynamic>;
@@ -174,80 +145,66 @@ class PostgresAuthRepository implements AuthRepository {
       }
       throw Exception('Failed to update profile');
     } on DioException catch (e) {
-      throw Exception(
-          e.response?.data['message'] ?? e.message ?? 'Failed to update profile');
+      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to update profile');
     }
   }
 
   @override
-  Future<void> changePassword(
-      {required String currentPassword, required String newPassword}) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-    if (token == null) throw Exception('Not authenticated');
-
+  Future<void> changePassword({required String currentPassword, required String newPassword}) async {
     try {
-      final res = await _dio.post('/users/change-password',
-          data: {
-            'currentPassword': currentPassword,
-            'newPassword': newPassword,
-          },
-          options: Options(headers: {'Authorization': 'Bearer $token'}));
+      final res = await _apiClient.dio.post('/users/change-password', data: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      });
 
       if (res.statusCode != 200) {
-        throw Exception(
-            res.data['message'] ?? 'Failed to change password');
+        throw Exception(res.data['message'] ?? 'Failed to change password');
       }
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ??
-          e.message ??
-          'Failed to change password');
+      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to change password');
     }
   }
 
   @override
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    final refreshToken = prefs.getString('refresh_token');
-    final accessToken = prefs.getString('access_token');
+    final refreshToken = await _secureStorage.read(key: 'refresh_token');
 
-    if (accessToken != null && refreshToken != null) {
+    if (refreshToken != null) {
       try {
-        await _dio.post(
+        await _apiClient.dio.post(
           '/auth/logout',
           data: {'refreshToken': refreshToken},
-          options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
         );
       } catch (_) {}
     }
 
-    await prefs.remove('access_token');
-    await prefs.remove('refresh_token');
+    await _secureStorage.delete(key: 'access_token');
+    await _secureStorage.delete(key: 'refresh_token');
+    _apiClient.clearPendingRequests();
   }
 
   @override
   Future<void> refreshToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    final refreshToken = prefs.getString('refresh_token');
+    final refreshToken = await _secureStorage.read(key: 'refresh_token');
     if (refreshToken == null) return;
 
     try {
-      final res = await _dio.post('/auth/refresh', data: {
+      final res = await _apiClient.dio.post('/auth/refresh', data: {
         'refreshToken': refreshToken,
       });
 
       if (res.statusCode == 200 && res.data['success'] == true) {
         final data = res.data['data'];
         if (data['accessToken'] != null) {
-          await prefs.setString('access_token', data['accessToken']);
+          await _secureStorage.write(key: 'access_token', value: data['accessToken']);
         }
         if (data['refreshToken'] != null) {
-          await prefs.setString('refresh_token', data['refreshToken']);
+          await _secureStorage.write(key: 'refresh_token', value: data['refreshToken']);
         }
       }
     } catch (_) {
-      await prefs.remove('access_token');
-      await prefs.remove('refresh_token');
+      await _secureStorage.delete(key: 'access_token');
+      await _secureStorage.delete(key: 'refresh_token');
     }
   }
 }

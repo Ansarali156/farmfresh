@@ -177,7 +177,7 @@ class DeliveryRatingInfo {
   final int twoStarCount;
   final int oneStarCount;
 
-  DeliveryRatingInfo({
+  const DeliveryRatingInfo({
     required this.average,
     required this.totalRatings,
     required this.fiveStarCount,

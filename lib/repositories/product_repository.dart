@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/product_model.dart';
-import '../core/constants/app_constants.dart';
+import '../core/services/api_client.dart';
 
 abstract class ProductRepository {
   Future<List<ProductModel>> getProducts({String? search, String? category, String? sortBy});
@@ -16,58 +15,49 @@ abstract class ProductRepository {
 }
 
 class PostgresProductRepository implements ProductRepository {
-  final Dio _dio;
+  final ApiClient _apiClient;
 
-  PostgresProductRepository() : _dio = Dio(BaseOptions(
-    baseUrl: AppConstants.apiBaseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
-  ));
-
-  Future<Options> _authOptions() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-    return Options(
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-    );
-  }
+  PostgresProductRepository(this._apiClient);
 
   @override
   Future<List<ProductModel>> getFeaturedProducts() async {
     try {
-      final res = await _dio.get('/products/featured');
+      final res = await _apiClient.dio.get('/products/featured');
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         final list = res.data['data'] as List;
         return list.map((item) => ProductModel.fromBackendJson(item)).toList();
       }
-    } catch (_) {}
+    } catch (e) {
+      // Error in getFeaturedProducts handled silently
+    }
     return [];
   }
 
   @override
   Future<List<ProductModel>> getPopularProducts() async {
     try {
-      final res = await _dio.get('/products/popular');
+      final res = await _apiClient.dio.get('/products/popular');
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         final list = res.data['data'] as List;
         return list.map((item) => ProductModel.fromBackendJson(item)).toList();
       }
-    } catch (_) {}
+    } catch (e) {
+      // Error in getPopularProducts handled silently
+    }
     return [];
   }
 
   @override
   Future<List<String>> getCategories() async {
     try {
-      final res = await _dio.get('/categories');
+      final res = await _apiClient.dio.get('/categories');
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         final list = res.data['data'] as List;
         return ['All', ...list.map((item) => item['name'] as String)];
       }
-    } catch (_) {}
+    } catch (e) {
+      // Error in getCategories handled silently
+    }
     return ['All', 'Vegetables', 'Fruits', 'Dairy', 'Grains'];
   }
 
@@ -79,20 +69,22 @@ class PostgresProductRepository implements ProductRepository {
       if (category != null && category != 'All') query['category'] = category;
       if (sortBy != null) query['sortBy'] = sortBy;
 
-      final res = await _dio.get('/products', queryParameters: query);
+      final res = await _apiClient.dio.get('/products', queryParameters: query);
 
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         final list = res.data['data'] as List;
         return list.map((item) => ProductModel.fromBackendJson(item)).toList();
       }
-    } catch (_) {}
+    } catch (e) {
+      // Error in getProducts handled silently
+    }
     return [];
   }
 
   @override
   Future<ProductModel> addProduct(ProductModel product) async {
     try {
-      final res = await _dio.post('/products', data: product.toCreatePayload(), options: await _authOptions());
+      final res = await _apiClient.dio.post('/products', data: product.toCreatePayload());
       if (res.statusCode == 201 || res.statusCode == 200) {
         if (res.data['success'] == true && res.data['data'] != null) {
           return ProductModel.fromBackendJson(res.data['data']);
@@ -107,7 +99,7 @@ class PostgresProductRepository implements ProductRepository {
   @override
   Future<ProductModel> updateProduct(ProductModel product) async {
     try {
-      final res = await _dio.patch('/products/${product.id}', data: product.toCreatePayload(), options: await _authOptions());
+      final res = await _apiClient.dio.patch('/products/${product.id}', data: product.toCreatePayload());
       if (res.statusCode == 200) {
         if (res.data['success'] == true && res.data['data'] != null) {
           return ProductModel.fromBackendJson(res.data['data']);
@@ -122,7 +114,7 @@ class PostgresProductRepository implements ProductRepository {
   @override
   Future<void> deleteProduct(String id) async {
     try {
-      final res = await _dio.delete('/products/$id', options: await _authOptions());
+      final res = await _apiClient.dio.delete('/products/$id');
       if (res.statusCode != 200 && res.statusCode != 204) {
         throw Exception('Failed to delete product');
       }
@@ -141,7 +133,7 @@ class PostgresProductRepository implements ProductRepository {
       if (search != null && search.isNotEmpty) query['search'] = search;
       if (status != null) query['status'] = status;
 
-      final res = await _dio.get('/farmer/products', queryParameters: query, options: await _authOptions());
+      final res = await _apiClient.dio.get('/farmer/products', queryParameters: query);
       if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
         final list = res.data['data'] as List;
         return list.map((item) => ProductModel.fromBackendJson(item)).toList();
@@ -156,9 +148,7 @@ class PostgresProductRepository implements ProductRepository {
       final formData = FormData.fromMap({
         'image': await MultipartFile.fromFile(filePath),
       });
-      final res = await _dio.post('/products/$productId/images',
-          data: formData,
-          options: await _authOptions());
+      final res = await _apiClient.dio.post('/products/$productId/images', data: formData);
       if (res.statusCode == 201 || res.statusCode == 200) {
         if (res.data['success'] == true && res.data['data'] != null) {
           final images = res.data['data']['images'] as List?;

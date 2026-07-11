@@ -195,17 +195,9 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
               ),
               const SizedBox(height: 24),
               CustomButton(
-                onPressed: _isSaving ? null : _saveAddress,
-                child: _isSaving
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text(_isEditing ? 'Update Address' : 'Add Address'),
+                text: _isEditing ? 'Update Address' : 'Add Address',
+                onPressed: _saveAddress,
+                isLoading: _isSaving,
               ),
             ],
           ),

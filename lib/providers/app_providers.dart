@@ -6,31 +6,39 @@ import '../repositories/order_repository.dart';
 import '../repositories/address_repository.dart';
 import '../repositories/farmer_repository.dart';
 import '../repositories/delivery_repository.dart';
+import '../core/services/api_client.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return PostgresAuthRepository();
+  final apiClient = ref.watch(apiClientProvider);
+  return PostgresAuthRepository(apiClient);
 });
 
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
-  return PostgresProductRepository();
+  final apiClient = ref.watch(apiClientProvider);
+  return PostgresProductRepository(apiClient);
 });
 
 final cartRepositoryProvider = Provider<CartRepository>((ref) {
-  return PostgresCartRepository();
+  final apiClient = ref.watch(apiClientProvider);
+  return PostgresCartRepository(apiClient);
 });
 
 final orderRepositoryProvider = Provider<OrderRepository>((ref) {
-  return PostgresOrderRepository();
+  final apiClient = ref.watch(apiClientProvider);
+  return PostgresOrderRepository(apiClient);
 });
 
 final addressRepositoryProvider = Provider<AddressRepository>((ref) {
-  return PostgresAddressRepository();
+  final apiClient = ref.watch(apiClientProvider);
+  return PostgresAddressRepository(apiClient);
 });
 
 final farmerRepositoryProvider = Provider<FarmerRepository>((ref) {
-  return PostgresFarmerRepository();
+  final apiClient = ref.watch(apiClientProvider);
+  return PostgresFarmerRepository(apiClient);
 });
 
 final deliveryRepositoryProvider = Provider<DeliveryRepository>((ref) {
-  return PostgresDeliveryRepository();
+  final apiClient = ref.watch(apiClientProvider);
+  return PostgresDeliveryRepository(apiClient);
 });

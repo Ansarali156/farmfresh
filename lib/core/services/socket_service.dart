@@ -11,7 +11,7 @@ class SocketService {
     if (_socket?.connected == true) return;
 
     _socket = io.io(
-      AppConstants.apiBaseUrl.replaceAll('/api/v1', ''),
+      AppConstants.socketBaseUrl,
       io.OptionBuilder()
           .setTransports(['websocket'])
           .enableAutoConnect()

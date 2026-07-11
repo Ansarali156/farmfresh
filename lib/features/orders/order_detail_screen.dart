@@ -603,13 +603,13 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
     if (!mounted) return;
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Items added to cart'),
+        SnackBar(
+          content: const Text('Items added to cart'),
           backgroundColor: Colors.green,
           action: SnackBarAction(
             label: 'View Cart',
             textColor: Colors.white,
-            onPressed: null,
+            onPressed: () => context.go('/cart'),
           ),
         ),
       );

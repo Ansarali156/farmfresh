@@ -53,9 +53,16 @@ class OrderState {
 
 class OrderNotifier extends StateNotifier<OrderState> {
   final Ref _ref;
+  bool _mounted = true;
 
   OrderNotifier(this._ref) : super(OrderState()) {
     loadOrders();
+  }
+
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
   }
 
   static const _activeStatuses = {
@@ -68,6 +75,7 @@ class OrderNotifier extends StateNotifier<OrderState> {
   };
 
   Future<void> loadOrders() async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final allOrders =
@@ -75,6 +83,8 @@ class OrderNotifier extends StateNotifier<OrderState> {
                 page: 1,
                 limit: 50,
               );
+
+      if (!_mounted) return;
 
       final current = allOrders
           .where((o) => _activeStatuses.contains(o.status.toUpperCase()))
@@ -91,6 +101,7 @@ class OrderNotifier extends StateNotifier<OrderState> {
         hasMoreHistory: history.length >= 10,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(
         isLoading: false,
         errorMessage: e.toString(),
@@ -99,7 +110,7 @@ class OrderNotifier extends StateNotifier<OrderState> {
   }
 
   Future<void> loadMoreHistory() async {
-    if (state.isLoadingMore || !state.hasMoreHistory) return;
+    if (!_mounted || state.isLoadingMore || !state.hasMoreHistory) return;
 
     state = state.copyWith(isLoadingMore: true);
     try {
@@ -109,6 +120,8 @@ class OrderNotifier extends StateNotifier<OrderState> {
                 page: nextPage,
                 limit: 10,
               );
+
+      if (!_mounted) return;
 
       if (moreOrders.isEmpty) {
         state = state.copyWith(isLoadingMore: false, hasMoreHistory: false);
@@ -123,17 +136,21 @@ class OrderNotifier extends StateNotifier<OrderState> {
         hasMoreHistory: moreOrders.length >= 10,
       );
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(isLoadingMore: false);
     }
   }
 
   Future<void> loadOrderById(String orderId) async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final order =
           await _ref.read(orderRepositoryProvider).getOrderById(orderId);
+      if (!_mounted) return;
       state = state.copyWith(selectedOrder: order, isLoading: false);
     } catch (e) {
+      if (!_mounted) return;
       state = state.copyWith(
         isLoading: false,
         errorMessage: e.toString(),
@@ -148,6 +165,7 @@ class OrderNotifier extends StateNotifier<OrderState> {
     String? address,
     String? notes,
   }) async {
+    if (!_mounted) return null;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final newOrder = OrderModel(
@@ -167,6 +185,7 @@ class OrderNotifier extends StateNotifier<OrderState> {
       await loadOrders();
       return created;
     } catch (e) {
+      if (!_mounted) return null;
       state = state.copyWith(
           isLoading: false, errorMessage: e.toString());
       return null;
@@ -174,6 +193,7 @@ class OrderNotifier extends StateNotifier<OrderState> {
   }
 
   Future<bool> updateStatus(String orderId, String status) async {
+    if (!_mounted) return false;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       await _ref
@@ -182,6 +202,7 @@ class OrderNotifier extends StateNotifier<OrderState> {
       await loadOrders();
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(
           isLoading: false, errorMessage: e.toString());
       return false;
@@ -189,11 +210,13 @@ class OrderNotifier extends StateNotifier<OrderState> {
   }
 
   Future<bool> cancelOrder(String orderId, {String? reason}) async {
+    if (!_mounted) return false;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       await _ref
           .read(orderRepositoryProvider)
           .cancelOrder(orderId, reason: reason);
+      if (!_mounted) return false;
       state = state.copyWith(
         isLoading: false,
         actionMessage: 'Order cancelled successfully',
@@ -201,6 +224,7 @@ class OrderNotifier extends StateNotifier<OrderState> {
       await loadOrders();
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(
           isLoading: false, errorMessage: e.toString());
       return false;
@@ -208,15 +232,18 @@ class OrderNotifier extends StateNotifier<OrderState> {
   }
 
   Future<bool> reorder(String orderId) async {
+    if (!_mounted) return false;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       await _ref.read(orderRepositoryProvider).reorder(orderId);
+      if (!_mounted) return false;
       state = state.copyWith(
         isLoading: false,
         actionMessage: 'Items added to cart successfully',
       );
       return true;
     } catch (e) {
+      if (!_mounted) return false;
       state = state.copyWith(
           isLoading: false, errorMessage: e.toString());
       return false;
@@ -224,6 +251,7 @@ class OrderNotifier extends StateNotifier<OrderState> {
   }
 
   void clearMessages() {
+    if (!_mounted) return;
     state = state.copyWith(errorMessage: null, actionMessage: null);
   }
 }

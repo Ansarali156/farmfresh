@@ -15,18 +15,19 @@ class FarmerHomeScreen extends ConsumerWidget {
     // Calculate metrics dynamically
     final activeProductsCount = productState.products.where((p) => p.stock > 0).length;
     final outOfStockCount = productState.products.where((p) => p.stock == 0).length;
-    final pendingOrdersCount = orderState.orders.where((o) {
+    final allOrders = [...orderState.currentOrders, ...orderState.historyOrders];
+    final pendingOrdersCount = allOrders.where((o) {
       final s = o.status.toUpperCase();
       return s != 'DELIVERED' && s != 'COMPLETED' && s != 'CANCELLED';
     }).length;
 
     // Total Earnings: Sum of delivered orders total
-    final totalEarnings = orderState.orders
+    final totalEarnings = allOrders
         .where((o) => o.status.toUpperCase() == 'DELIVERED' || o.status.toUpperCase() == 'COMPLETED')
         .fold(0.0, (sum, o) => sum + o.total);
 
     // Filter recent orders
-    final recentOrders = orderState.orders.take(3).toList();
+    final recentOrders = allOrders.take(3).toList();
 
     return Scaffold(
       appBar: AppBar(

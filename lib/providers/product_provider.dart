@@ -40,12 +40,20 @@ class ProductState {
 
 class ProductNotifier extends StateNotifier<ProductState> {
   final Ref _ref;
+  bool _mounted = true;
 
   ProductNotifier(this._ref) : super(ProductState()) {
     loadProducts();
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> loadProducts({String? search, String? category, String? sortBy}) async {
+    if (!_mounted) return;
     state = state.copyWith(isLoading: true);
     try {
       final repo = _ref.read(productRepositoryProvider);
@@ -54,9 +62,13 @@ class ProductNotifier extends StateNotifier<ProductState> {
         category: category,
         sortBy: sortBy,
       );
+      if (!_mounted) return;
       final featured = await repo.getFeaturedProducts();
+      if (!_mounted) return;
       final popular = await repo.getPopularProducts();
+      if (!_mounted) return;
       final cats = await repo.getCategories();
+      if (!_mounted) return;
       state = ProductState(
         products: list,
         featuredProducts: featured,
@@ -64,42 +76,59 @@ class ProductNotifier extends StateNotifier<ProductState> {
         categories: cats,
       );
     } catch (e) {
-      state = ProductState(errorMessage: e.toString());
+      if (_mounted) {
+        state = ProductState(errorMessage: e.toString());
+      }
     }
   }
 
   Future<bool> addProduct(ProductModel product) async {
+    if (!_mounted) return false;
     state = state.copyWith(isLoading: true);
     try {
       await _ref.read(productRepositoryProvider).addProduct(product);
-      await loadProducts();
+      if (_mounted) {
+        await loadProducts();
+      }
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      if (_mounted) {
+        state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      }
       return false;
     }
   }
 
   Future<bool> updateProduct(ProductModel product) async {
+    if (!_mounted) return false;
     state = state.copyWith(isLoading: true);
     try {
       await _ref.read(productRepositoryProvider).updateProduct(product);
-      await loadProducts();
+      if (_mounted) {
+        await loadProducts();
+      }
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      if (_mounted) {
+        state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      }
       return false;
     }
   }
 
   Future<bool> deleteProduct(String id) async {
+    if (!_mounted) return false;
     state = state.copyWith(isLoading: true);
     try {
       await _ref.read(productRepositoryProvider).deleteProduct(id);
-      await loadProducts();
+      if (_mounted) {
+        await loadProducts();
+      }
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      if (_mounted) {
+        state = state.copyWith(isLoading: false, errorMessage: e.toString());
+      }
       return false;
     }
   }

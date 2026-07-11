@@ -6,6 +6,7 @@ import '../../models/product_model.dart';
 import '../../models/cart_item_model.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/cart_provider.dart';
+import '../../core/widgets/product_card.dart';
 
 class ProductDetailsScreen extends ConsumerWidget {
   final ProductModel? product;
@@ -94,7 +95,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                 children: [
                   // Title & Price Info
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.between,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(

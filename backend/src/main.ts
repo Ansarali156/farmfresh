@@ -40,9 +40,18 @@ async function bootstrap() {
   );
 
   // Security Middleware
+  const allowedOrigins = config.get<string>('CORS_ORIGINS')?.split(',') || [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:8080',
+    'http://localhost:8081',
+  ];
+  
   app.enableCors({
-    origin: true, // Allow resource requests from dynamic clients
+    origin: allowedOrigins,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
   });
   
   // Cast helper to bypass helmet default ESImport issues

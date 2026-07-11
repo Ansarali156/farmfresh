@@ -273,7 +273,7 @@ class _DeliveryOrdersScreenState extends ConsumerState<DeliveryOrdersScreen>
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        delivery.deliveryAddress!.fullAddress ?? 'Delivery address',
+                        delivery.deliveryAddress?.fullAddress ?? 'Delivery address',
                         style: TextStyle(color: Colors.grey[600], fontSize: 13),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

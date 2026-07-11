@@ -1,4 +1,4 @@
-import 'package:farmfresh/models/address_model.dart';
+import 'package:ecommerce_app/models/address_model.dart';
 
 enum DeliveryOrderStatus {
   pending('PENDING'),

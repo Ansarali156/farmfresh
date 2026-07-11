@@ -10,7 +10,6 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => {
-          // Extract from cookies if present, otherwise header
           if (req.cookies && req.cookies['refreshToken']) {
             return req.cookies['refreshToken'];
           }
@@ -22,7 +21,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
         },
       ]),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_REFRESH_SECRET') || 'fallbackSuperRefreshSecretKey456',
+      secretOrKey: configService.get<string>('jwt.refreshSecret'),
       passReqToCallback: true,
     });
   }
@@ -32,7 +31,6 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
       throw new UnauthorizedException('Invalid refresh validation payload');
     }
     
-    // Extract raw token for database revocation / matching checks
     let refreshToken: string | null = null;
     if (req.cookies && req.cookies['refreshToken']) {
       refreshToken = req.cookies['refreshToken'];

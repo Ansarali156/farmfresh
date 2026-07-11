@@ -4,9 +4,9 @@ export default () => ({
     url: process.env.DATABASE_URL,
   },
   jwt: {
-    secret: process.env.JWT_SECRET || 'fallbackSuperSecretKey123',
+    secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_ACCESS_EXPIRATION || '15m',
-    refreshSecret: process.env.JWT_REFRESH_SECRET || 'fallbackSuperRefreshSecretKey456',
+    refreshSecret: process.env.JWT_REFRESH_SECRET,
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRATION || '7d',
   },
   rateLimit: {

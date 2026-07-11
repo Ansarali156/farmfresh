@@ -1,5 +1,5 @@
-/// All enums that mirror the backend Prisma schema enums.
-/// These MUST stay in sync with backend/prisma/schema.prisma
+// All enums that mirror the backend Prisma schema enums.
+// These MUST stay in sync with backend/prisma/schema.prisma
 
 enum UserRole {
   customer,

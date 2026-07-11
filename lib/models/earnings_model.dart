@@ -6,7 +6,7 @@ class EarningsModel {
   final double pendingWithdrawals;
   final double completedWithdrawals;
 
-  EarningsModel({
+  const EarningsModel({
     this.totalEarnings = 0,
     this.monthlyEarnings = 0,
     this.weeklyEarnings = 0,

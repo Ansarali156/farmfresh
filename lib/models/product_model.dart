@@ -103,9 +103,24 @@ class ProductModel {
     );
   }
 
+  static double _toNum(dynamic v, [double fallback = 0]) {
+    if (v == null) return fallback;
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v) ?? fallback;
+    return fallback;
+  }
+
+  static int _toInt(dynamic v, [int fallback = 0]) {
+    if (v == null) return fallback;
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v) ?? fallback;
+    return fallback;
+  }
+
   factory ProductModel.fromBackendJson(Map<String, dynamic> json) {
-    final price = (json['price'] as num).toDouble();
-    final discountPrice = json['discountPrice'] != null ? (json['discountPrice'] as num).toDouble() : null;
+    final price = _toNum(json['price']);
+    final discountPrice = json['discountPrice'] != null ? _toNum(json['discountPrice']) : null;
     final discountPct = discountPrice != null && price > 0
         ? '${(((price - discountPrice) / price) * 100).round()}% OFF'
         : null;
@@ -131,17 +146,17 @@ class ProductModel {
       description: json['description'] as String? ?? '',
       weight: json['unit'] as String? ?? '1 kg',
       stock: inventoryData != null
-          ? (inventoryData['currentStock'] as num).toDouble()
+          ? _toNum(inventoryData['currentStock'])
           : 50.0,
       farmName: farmerData != null ? farmerData['farmName'] as String : 'Farm',
       farmerId: json['farmerId'] as String?,
       organic: json['organic'] as bool? ?? false,
       featured: json['featured'] as bool? ?? false,
       seasonal: json['seasonal'] as bool? ?? false,
-      viewCount: json['viewCount'] as int? ?? 0,
-      soldCount: json['soldCount'] as int? ?? 0,
-      reviewCount: json['reviewCount'] as int? ?? 0,
-      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+      viewCount: _toInt(json['viewCount']),
+      soldCount: _toInt(json['soldCount']),
+      reviewCount: _toInt(json['reviewCount']),
+      rating: _toNum(json['rating']),
       status: json['status'] as String? ?? 'APPROVED',
     );
   }
@@ -167,8 +182,8 @@ class ProductModel {
       description: '',
       weight: productJson['unit'] as String? ?? '1 kg',
       stock: productJson['inventory'] != null
-          ? ((productJson['inventory']['currentStock'] as num).toDouble() -
-              (productJson['inventory']['reservedStock'] as num?)?.toDouble() ?? 0)
+          ? (((productJson['inventory']['currentStock'] as num?)?.toDouble() ?? 0.0) -
+              ((productJson['inventory']['reservedStock'] as num?)?.toDouble() ?? 0.0))
           : 50.0,
       farmName: 'Farm',
     );
