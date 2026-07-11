@@ -924,6 +924,7 @@ function updateCartStats() {
     
     syncCartAddress();
     renderCart();
+    renderFarmerInventory();
 }
 
 function renderCart() {
@@ -1474,6 +1475,11 @@ function renderFarmerInventory() {
     
     container.innerHTML = farmerProds.map(p => {
         let priceStr = typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : p.price;
+        const inCart = STATE.cart.some(item => item.productId === p.id);
+        const addBtnHtml = inCart 
+            ? `<button class="btn-action-small" style="background:#E0EAE2; color:#555; border:none; padding:4px 8px; font-weight:700;" onclick="farmerAddAndVisitProduct('${p.id}')">Added ✓</button>`
+            : `<button class="btn-action-small" style="background:#EAF6EC; color:#2E7D32; border:none; padding:4px 8px; font-weight:700;" onclick="farmerAddAndVisitProduct('${p.id}')">Add</button>`;
+            
         return `
             <div class="order-card-merchant" style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
                 <div>
@@ -1481,7 +1487,7 @@ function renderFarmerInventory() {
                     <div style="font-size:10px; color:var(--text-muted);">${p.weight} | ${priceStr}</div>
                 </div>
                 <div style="display:flex; gap:6px;">
-                    <button class="btn-action-small" style="background:#EAF6EC; color:#2E7D32; border:none; padding:4px 8px; font-weight:700;" onclick="farmerAddAndVisitProduct('${p.id}')">Add</button>
+                    ${addBtnHtml}
                     <button class="btn-action-small" style="background:#fee2e2; color:#ef4444; border:none; padding:4px 8px;" onclick="farmerDeleteProduct('${p.id}')">Delete</button>
                 </div>
             </div>
