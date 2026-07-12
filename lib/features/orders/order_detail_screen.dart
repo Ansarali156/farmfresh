@@ -323,7 +323,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis),
                             Text(
-                              '${item.quantity}x \$${item.unitPrice.toStringAsFixed(2)}',
+                              '${item.quantity}x ₹${item.unitPrice.toStringAsFixed(2)}',
                               style: TextStyle(
                                   fontSize: 12, color: Colors.grey[600]),
                             ),
@@ -331,7 +331,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                         ),
                       ),
                       Text(
-                        '\$${item.totalPrice.toStringAsFixed(2)}',
+                        '₹${item.totalPrice.toStringAsFixed(2)}',
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 14),
                       ),
@@ -362,15 +362,15 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
             const Text('Price Summary',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            _priceRow('Subtotal', '\$${order.subtotal.toStringAsFixed(2)}'),
+            _priceRow('Subtotal', '₹${order.subtotal.toStringAsFixed(2)}'),
             if (order.discount > 0)
-              _priceRow('Discount', '-\$${order.discount.toStringAsFixed(2)}',
+              _priceRow('Discount', '-₹${order.discount.toStringAsFixed(2)}',
                   valueColor: Colors.green),
             _priceRow(
                 'Delivery Fee',
                 order.deliveryFee == 0
                     ? 'FREE'
-                    : '\$${order.deliveryFee.toStringAsFixed(2)}',
+                    : '₹${order.deliveryFee.toStringAsFixed(2)}',
                 valueColor:
                     order.deliveryFee == 0 ? Colors.green : Colors.black),
             const Divider(height: 20),
@@ -381,7 +381,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 Text(
-                  '\$${order.total.toStringAsFixed(2)}',
+                  '₹${order.total.toStringAsFixed(2)}',
                   style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

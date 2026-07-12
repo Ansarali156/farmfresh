@@ -275,7 +275,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   Row(
                     children: [
                       Text(
-                        '\$${item.product.price.toStringAsFixed(2)} / ${item.product.weight}',
+                        '₹${item.product.price.toStringAsFixed(2)} / ${item.product.weight}',
                         style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                       ),
                       if (item.product.organic) ...[
@@ -285,7 +285,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     ],
                   ),
                   Text(
-                    'Item total: \$${item.totalPrice.toStringAsFixed(2)}',
+                    'Item total: ₹${item.totalPrice.toStringAsFixed(2)}',
                     style: const TextStyle(fontSize: 11, color: Colors.grey),
                   ),
                 ],
@@ -357,27 +357,27 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       ),
       child: Column(
         children: [
-          _priceRow('Subtotal', '\$${cartState.subtotal.toStringAsFixed(2)}'),
+          _priceRow('Subtotal', '₹${cartState.subtotal.toStringAsFixed(2)}'),
           if (cartState.discountAmount > 0) ...[
             const SizedBox(height: 6),
             _priceRow(
               cartState.couponCode != null
                   ? 'Discount (${(cartState.discountPercent * 100).toInt()}% OFF)'
                   : 'Discount',
-              '-\$${cartState.discountAmount.toStringAsFixed(2)}',
+              '-₹${cartState.discountAmount.toStringAsFixed(2)}',
               valueColor: Colors.orange,
             ),
           ],
           const SizedBox(height: 6),
           _priceRow(
             'Delivery',
-            cartState.deliveryFee == 0.0 ? 'FREE' : '\$${cartState.deliveryFee.toStringAsFixed(2)}',
+            cartState.deliveryFee == 0.0 ? 'FREE' : '₹${cartState.deliveryFee.toStringAsFixed(2)}',
             valueColor: cartState.deliveryFee == 0.0 ? Colors.green : Colors.black,
           ),
           const SizedBox(height: 6),
           _priceRow(
             'Tax (5%)',
-            '\$${cartState.tax.toStringAsFixed(2)}',
+            '₹${cartState.tax.toStringAsFixed(2)}',
             valueColor: Colors.grey[700],
           ),
           const Divider(height: 20),
@@ -386,7 +386,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             children: [
               const Text('Grand Total', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               Text(
-                '\$${cartState.grandTotal.toStringAsFixed(2)}',
+                '₹${cartState.grandTotal.toStringAsFixed(2)}',
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
               ),
             ],

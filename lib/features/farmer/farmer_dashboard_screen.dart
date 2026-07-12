@@ -118,13 +118,13 @@ class _FarmerDashboardScreenState extends ConsumerState<FarmerDashboardScreen> {
       children: [
         _buildStatCard(
           "Today's Sales",
-          '\$${dashboard.todaySales.toStringAsFixed(2)}',
+          '₹${dashboard.todaySales.toStringAsFixed(2)}',
           Icons.attach_money,
           Colors.green,
         ),
         _buildStatCard(
           'Total Revenue',
-          '\$${dashboard.totalRevenue.toStringAsFixed(2)}',
+          '₹${dashboard.totalRevenue.toStringAsFixed(2)}',
           Icons.account_balance,
           Colors.blue,
         ),
@@ -258,7 +258,7 @@ class _FarmerDashboardScreenState extends ConsumerState<FarmerDashboardScreen> {
                       SizedBox(
                         width: 70,
                         child: Text(
-                          '\$${item.revenue.toStringAsFixed(2)}',
+                          '₹${item.revenue.toStringAsFixed(2)}',
                           style: const TextStyle(
                               fontSize: 12, fontWeight: FontWeight.w600),
                           textAlign: TextAlign.end,
@@ -397,7 +397,7 @@ class _FarmerDashboardScreenState extends ConsumerState<FarmerDashboardScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text('\$${order.total.toStringAsFixed(2)}',
+                          Text('₹${order.total.toStringAsFixed(2)}',
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 13)),
                           const SizedBox(height: 4),

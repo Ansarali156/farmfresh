@@ -286,7 +286,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
                           ),
                         ),
                         Text(
-                          '\$${item.totalPrice.toStringAsFixed(2)}',
+                          '₹${item.totalPrice.toStringAsFixed(2)}',
                           style:
                               TextStyle(fontSize: 13, color: Colors.grey[700]),
                         ),
@@ -306,7 +306,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Total: \$${order.total.toStringAsFixed(2)}',
+                    'Total: ₹${order.total.toStringAsFixed(2)}',
                     style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,

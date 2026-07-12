@@ -241,7 +241,7 @@ class _FarmerOrdersScreenState extends ConsumerState<FarmerOrdersScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Total: \$${order.total.toStringAsFixed(2)}',
+                    'Total: ₹${order.total.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,

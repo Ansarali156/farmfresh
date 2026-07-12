@@ -128,7 +128,7 @@ class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '\$${withdrawal.amount.toStringAsFixed(2)}',
+                  '₹${withdrawal.amount.toStringAsFixed(2)}',
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green),
                 ),
                 _buildStatusBadge(withdrawal.status),
@@ -214,7 +214,7 @@ class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen>
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           decoration: const InputDecoration(
                             labelText: 'Amount',
-                            prefixText: '\$ ',
+                            prefixText: '₹ ',
                             border: OutlineInputBorder(),
                           ),
                         ),

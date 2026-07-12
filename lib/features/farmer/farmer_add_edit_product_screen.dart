@@ -150,7 +150,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     decoration: const InputDecoration(
                       labelText: 'Price',
-                      prefixText: '\$ ',
+                      prefixText: '₹ ',
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {

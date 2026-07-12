@@ -394,7 +394,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
             _infoRow('Order ID', orderDisplay),
             _infoRow('Status', displayStatus),
             _infoRow('Items', '${order.items.length} items'),
-            _infoRow('Total', '\$${order.total.toStringAsFixed(2)}'),
+            _infoRow('Total', '₹${order.total.toStringAsFixed(2)}'),
             _infoRow(
                 'Ordered', DateFormat('MMM dd, hh:mm a').format(order.date)),
             if (order.notes != null && order.notes!.isNotEmpty)
