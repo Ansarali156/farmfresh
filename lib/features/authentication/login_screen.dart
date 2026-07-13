@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
+import '../../core/theme/app_theme.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -33,19 +34,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
 
     if (success) {
-      if (!mounted) return;
-      if (_selectedRole == 'Farmer') {
-        context.go('/farmer-main');
-      } else if (_selectedRole == 'Delivery Partner') {
-        context.go('/delivery-main');
-      } else {
-        context.go('/customer-main');
-      }
+      // Navigation is handled by GoRouter redirect (app_router.dart) based on authState.user.role
+      // No manual context.go() needed here
     } else {
       if (!mounted) return;
       final error = ref.read(authProvider).errorMessage ?? 'Login failed';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(error),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
       );
     }
   }
@@ -53,8 +53,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -64,28 +67,64 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.spa, size: 80, color: Colors.green),
+                // Logo with subtle green tint
+                Container(
+                  width: 80,
+                  height: 80,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.dimmedGreen.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Icon(
+                    Icons.spa,
+                    size: 40,
+                    color: colorScheme.primary,
+                  ),
+                ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'FarmFresh Portal',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green),
+                  style: textTheme.titleLarge?.copyWith(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                    letterSpacing: -0.5,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Connecting local farms directly with you',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey),
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 32),
                 
                 // Role Selector Dropdown
                 DropdownButtonFormField<String>(
                   value: _selectedRole,
-                  decoration: const InputDecoration(
+                  dropdownColor: colorScheme.surface,
+                  decoration: InputDecoration(
                     labelText: 'Select Portal Role',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person_outline),
+                    labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colorScheme.outline, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colorScheme.outline, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                    ),
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainerHighest,
+                    prefixIcon: Icon(Icons.person_outline, color: colorScheme.onSurfaceVariant),
                   ),
                   items: const [
                     DropdownMenuItem(value: 'Customer', child: Text('Customer Marketplace')),
@@ -99,6 +138,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       });
                     }
                   },
+                  validator: (value) => value == null ? 'Please select a role' : null,
                 ),
                 const SizedBox(height: 16),
                 
@@ -106,10 +146,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: colorScheme.onSurface),
+                  decoration: InputDecoration(
                     labelText: 'Email Address',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.email_outlined),
+                    labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                    hintText: 'you@example.com',
+                    hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
+                    prefixIcon: Icon(Icons.email_outlined, color: colorScheme.onSurfaceVariant),
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainerHighest,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colorScheme.outline, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colorScheme.outline, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colorScheme.error, width: 1),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colorScheme.error, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -127,10 +193,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: colorScheme.onSurface),
+                  decoration: InputDecoration(
                     labelText: 'Password',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.lock_outline),
+                    labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                    hintText: 'Enter your password',
+                    hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
+                    prefixIcon: Icon(Icons.lock_outline, color: colorScheme.onSurfaceVariant),
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainerHighest,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colorScheme.outline, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colorScheme.outline, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colorScheme.error, width: 1),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colorScheme.error, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -148,17 +240,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ElevatedButton(
                   onPressed: authState.isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 0,
                   ),
                   child: authState.isLoading
-                      ? const SizedBox(
+                      ? SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            color: colorScheme.onPrimary,
+                            strokeWidth: 2,
+                          ),
                         )
-                      : Text('Login as $_selectedRole', style: const TextStyle(fontSize: 16)),
+                      : Text(
+                          'Login as $_selectedRole',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
                 ),
                 const SizedBox(height: 16),
                 
@@ -167,7 +269,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   onPressed: () {
                     context.push('/signup');
                   },
-                  child: const Text('Don\'t have an account? Sign Up', style: TextStyle(color: Colors.green)),
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.primary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: Text(
+                    'Don\'t have an account? Sign Up',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: colorScheme.primary,
+                    ),
+                  ),
                 ),
               ],
             ),
