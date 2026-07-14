@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/product_model.dart';
 import '../../providers/product_provider.dart';
+import '../../providers/category_provider.dart';
+import '../../models/category_model.dart';
 
 class FarmerAddEditProductScreen extends ConsumerStatefulWidget {
   final ProductModel? product;
@@ -62,6 +64,13 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
 
     setState(() => _isSaving = true);
 
+    final categories = ref.read(categoryProvider).categories;
+    final matchedCategory = categories.firstWhere(
+      (c) => c.name.toLowerCase() == _selectedCategory.toLowerCase(),
+      orElse: () => categories.isNotEmpty ? categories.first : CategoryModel(id: '', name: '', slug: ''),
+    );
+    final categoryIdStr = matchedCategory.id;
+
     final product = ProductModel(
       id: widget.product?.id ?? '',
       name: _nameController.text.trim(),
@@ -79,7 +88,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
       farmName: widget.product?.farmName ?? 'Green Valley Organic Farms',
       farmerId: widget.product?.farmerId,
       slug: widget.product?.slug ?? '',
-      categoryId: widget.product?.categoryId,
+      categoryId: categoryIdStr.isNotEmpty ? categoryIdStr : widget.product?.categoryId,
       status: widget.product?.status ?? 'PENDING_APPROVAL',
     );
 
@@ -111,6 +120,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
 
   @override
   Widget build(BuildContext context) {
+    final categoryState = ref.watch(categoryProvider);
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -255,7 +265,9 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _selectedCategory,
+                    value: categoryState.categories.any((c) => c.name.toLowerCase() == _selectedCategory.toLowerCase())
+                        ? categoryState.categories.firstWhere((c) => c.name.toLowerCase() == _selectedCategory.toLowerCase()).name
+                        : (categoryState.categories.isNotEmpty ? categoryState.categories.first.name : _selectedCategory),
                     dropdownColor: Colors.white,
                     style: GoogleFonts.plusJakartaSans(
                       color: const Color(0xFF23312B),
@@ -263,14 +275,12 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                       fontSize: 13,
                     ),
                     decoration: _inputDecoration('Category', Icons.category_outlined),
-                    items: const [
-                      DropdownMenuItem(value: 'Vegetables', child: Text('Vegetables')),
-                      DropdownMenuItem(value: 'Fruits', child: Text('Fruits')),
-                      DropdownMenuItem(value: 'Dairy', child: Text('Dairy')),
-                      DropdownMenuItem(value: 'Grains', child: Text('Grains')),
-                      DropdownMenuItem(value: 'Herbs', child: Text('Herbs')),
-                      DropdownMenuItem(value: 'Other', child: Text('Other')),
-                    ],
+                    items: categoryState.categories.map((c) {
+                      return DropdownMenuItem<String>(
+                        value: c.name,
+                        child: Text(c.name),
+                      );
+                    }).toList(),
                     onChanged: (val) {
                       if (val != null) {
                         setState(() => _selectedCategory = val);

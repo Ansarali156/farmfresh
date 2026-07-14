@@ -313,7 +313,33 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
                 child: ElevatedButton(
                   onPressed: () => _markPickedUp(delivery.id),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-                  child: const Text('Mark Picked Up', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text('Start Route to Farm', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+          ],
+        );
+      case DeliveryOrderStatus.headingToPickup:
+        return Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: OutlinedButton(
+                  onPressed: () => context.push('/delivery-navigation', extra: delivery),
+                  style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.green), foregroundColor: Colors.green),
+                  child: const Text('Open Map / GPS'),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () => _confirmPickup(delivery.id),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
+                  child: const Text('Confirm Pickup', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ),
@@ -376,7 +402,16 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
     final ok = await ref.read(deliveryOrdersProvider.notifier).markPickedUp(id);
     if (mounted && ok) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Packages picked up. Ready for transit!'), backgroundColor: Colors.green),
+        const SnackBar(content: Text('Route to farm started!'), backgroundColor: Colors.green),
+      );
+    }
+  }
+
+  void _confirmPickup(String id) async {
+    final ok = await ref.read(deliveryOrdersProvider.notifier).confirmPickup(id);
+    if (mounted && ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Packages picked up. Ready for transit!'), backgroundColor: Colors.teal),
       );
     }
   }
@@ -433,14 +468,10 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
               final ok = await ref.read(deliveryOrdersProvider.notifier).verifyOtp(id, otp);
               if (mounted) {
                 if (ok) {
-                  // Complete
-                  final done = await ref.read(deliveryOrdersProvider.notifier).completeDelivery(id);
-                  if (mounted && done) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Order verified and delivered!'), backgroundColor: Colors.green),
-                    );
-                    context.pop();
-                  }
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Order verified and delivered!'), backgroundColor: Colors.green),
+                  );
+                  context.pop();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Invalid OTP code. Please retry.'), backgroundColor: Colors.red),

@@ -158,21 +158,44 @@ class PostgresAuthRepository implements AuthRepository {
 
   @override
   Future<UserModel> updateProfile({String? name, String? phone}) async {
-    // Backend doesn't support generic profile updates, so we return a simulated model.
-    final currentUser = await getCurrentUser();
-    return UserModel(
-      id: currentUser?.id ?? '',
-      name: name ?? currentUser?.name ?? '',
-      email: currentUser?.email ?? '',
-      role: currentUser?.role ?? '',
-      phone: phone ?? currentUser?.phone,
-    );
+    try {
+      final res = await _apiClient.dio.patch('/auth/profile', data: {
+        if (name != null) 'name': name,
+        if (phone != null) 'phone': phone,
+      });
+
+      if (res.statusCode == 200 && res.data['success'] == true) {
+        final profile = res.data['data'];
+        return UserModel.fromJson(profile as Map<String, dynamic>);
+      }
+      throw Exception('Failed to update profile');
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? e.message;
+      throw Exception(message ?? 'Connection failed');
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Connection failed');
+    }
   }
 
   @override
   Future<void> changePassword({required String currentPassword, required String newPassword}) async {
-    // Backend doesn't support change password endpoint.
-    return;
+    try {
+      final res = await _apiClient.dio.post('/auth/change-password', data: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      });
+
+      if (res.statusCode != 200 || res.data['success'] != true) {
+        throw Exception(res.data['message'] ?? 'Failed to change password');
+      }
+    } on DioException catch (e) {
+      final message = e.response?.data['message'] ?? e.message;
+      throw Exception(message ?? 'Connection failed');
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Connection failed');
+    }
   }
 
   @override

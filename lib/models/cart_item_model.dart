@@ -6,6 +6,7 @@ class CartItemModel {
   final int quantity;
   final double unitPrice;  // Price at time of adding to cart
   final double totalPrice; // unitPrice * quantity
+  final String? status;    // Status of this item (e.g. for OrderItems: PENDING, ACCEPTED, REJECTED, etc.)
 
   CartItemModel({
     this.cartItemId,
@@ -13,6 +14,7 @@ class CartItemModel {
     required this.quantity,
     double? unitPrice,
     double? totalPrice,
+    this.status,
   })  : unitPrice = unitPrice ?? product.price,
         totalPrice = totalPrice ?? (product.price * quantity);
 
@@ -20,6 +22,7 @@ class CartItemModel {
     return CartItemModel(
       product: ProductModel.fromJson(json['product'] as Map<String, dynamic>),
       quantity: json['quantity'] as int,
+      status: json['status'] as String?,
     );
   }
 
@@ -63,6 +66,7 @@ class CartItemModel {
     int? quantity,
     double? unitPrice,
     double? totalPrice,
+    String? status,
   }) {
     return CartItemModel(
       cartItemId: cartItemId ?? this.cartItemId,
@@ -70,6 +74,7 @@ class CartItemModel {
       quantity: quantity ?? this.quantity,
       unitPrice: unitPrice ?? this.unitPrice,
       totalPrice: totalPrice ?? this.totalPrice,
+      status: status ?? this.status,
     );
   }
 }

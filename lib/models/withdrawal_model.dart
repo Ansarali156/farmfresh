@@ -1,3 +1,5 @@
+import '../core/utils/helpers.dart';
+
 class WithdrawalModel {
   final String id;
   final double amount;
@@ -31,9 +33,9 @@ class WithdrawalModel {
       accountNumber: bankAccount?['accountNumber'] as String? ?? json['accountNumber'] as String?,
       accountHolder: bankAccount?['accountHolder'] as String? ?? json['accountHolder'] as String?,
       reason: json['reason'] as String?,
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+      createdAt: Helpers.toIst(DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now()),
       processedAt: json['processedAt'] != null
-          ? DateTime.tryParse(json['processedAt'] as String)
+          ? Helpers.toIst(DateTime.tryParse(json['processedAt'] as String) ?? DateTime.now())
           : null,
     );
   }

@@ -76,6 +76,7 @@ class _DeliveryProfileScreenState extends ConsumerState<DeliveryProfileScreen> {
     });
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('My Driver Profile', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.green,

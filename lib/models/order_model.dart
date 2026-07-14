@@ -1,5 +1,6 @@
 import 'cart_item_model.dart';
 import 'product_model.dart';
+import '../core/utils/helpers.dart';
 
 class OrderModel {
   final String id;
@@ -43,7 +44,11 @@ class OrderModel {
     return OrderModel(
       id: json['id'] as String,
       orderNumber: json['orderNumber'] as String? ?? '',
-      date: DateTime.parse(json['date'] as String),
+      date: Helpers.toIst(
+        DateTime.tryParse(json['date'] as String? ?? '') ??
+        DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+        DateTime.now(),
+      ),
       items: (json['items'] as List<dynamic>)
           .map((item) => CartItemModel.fromJson(item as Map<String, dynamic>))
           .toList(),
@@ -63,7 +68,7 @@ class OrderModel {
     return OrderModel(
       id: json['id'] as String,
       orderNumber: json['orderNumber'] as String? ?? '',
-      date: DateTime.parse(json['createdAt'] as String),
+      date: Helpers.toIst(DateTime.parse(json['createdAt'] as String)),
       items: json['items'] != null
           ? (json['items'] as List)
               .map((item) {
@@ -77,6 +82,7 @@ class OrderModel {
                   quantity: item['quantity'] as int,
                   unitPrice: _toDouble(item['price']),
                   totalPrice: _toDouble(item['total']),
+                  status: item['status'] as String?,
                 );
               })
               .toList()

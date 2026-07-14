@@ -31,6 +31,7 @@ class _DeliveryOrdersScreenState extends ConsumerState<DeliveryOrdersScreen> wit
     final ordersState = ref.watch(deliveryOrdersProvider);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Delivery Jobs', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.green,
@@ -158,20 +159,42 @@ class _DeliveryOrdersScreenState extends ConsumerState<DeliveryOrdersScreen> wit
                     'Order #${delivery.orderNumber ?? delivery.orderId.substring(0, 8)}',
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: isAvailable ? Colors.orange.shade50 : Colors.green.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      isAvailable ? 'Available' : _getStatusLabel(delivery.status),
-                      style: TextStyle(
-                        color: isAvailable ? Colors.orange.shade700 : Colors.green.shade700,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                  Row(
+                    children: [
+                      if (delivery.orderStatus == 'READY_FOR_PICKUP') ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade600,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            'READY',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isAvailable ? Colors.orange.shade50 : Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          isAvailable ? 'Available' : _getStatusLabel(delivery.status),
+                          style: TextStyle(
+                            color: isAvailable ? Colors.orange.shade700 : Colors.green.shade700,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -245,6 +268,8 @@ class _DeliveryOrdersScreenState extends ConsumerState<DeliveryOrdersScreen> wit
         return 'PENDING';
       case DeliveryOrderStatus.accepted:
         return 'ACCEPTED';
+      case DeliveryOrderStatus.headingToPickup:
+        return 'HEADING TO PICKUP';
       case DeliveryOrderStatus.pickedUp:
         return 'PICKED UP';
       case DeliveryOrderStatus.outForDelivery:

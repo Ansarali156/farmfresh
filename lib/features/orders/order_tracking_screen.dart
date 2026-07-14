@@ -171,6 +171,8 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
               children: [
                 _buildLiveMapPlaceholder(order),
                 const SizedBox(height: 16),
+                _buildOtpCard(order),
+                const SizedBox(height: 16),
                 _buildStatusSteps(order),
                 const SizedBox(height: 16),
                 _buildOrderSummary(order),
@@ -569,6 +571,81 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2E7D32),
                 foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOtpCard(OrderModel order) {
+    if (order.otpCode == null || order.otpCode!.isEmpty) return const SizedBox.shrink();
+    if (order.status.toUpperCase() == 'DELIVERED' || order.status.toUpperCase() == 'COMPLETED') {
+      return const SizedBox.shrink();
+    }
+    return Card(
+      elevation: 2,
+      color: const Color(0xFFE8F5E9),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFC8E6C9), width: 1.5),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: const Color(0xFF2E7D32).withOpacity(0.1),
+              child: const Icon(Icons.key, color: Color(0xFF2E7D32)),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Delivery OTP Code',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: const Color(0xFF23312B),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Share this with your driver to verify and complete delivery.',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      color: const Color(0xFF647C72),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFC8E6C9), width: 1),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x05000000),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                order.otpCode!,
+                style: GoogleFonts.outfit(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                  color: const Color(0xFF2E7D32),
+                ),
               ),
             ),
           ],

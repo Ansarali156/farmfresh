@@ -144,13 +144,15 @@ class DeliveryOrdersNotifier extends StateNotifier<DeliveryOrdersState> {
       if (!_mounted) return;
       final active = await _ref.read(deliveryRepositoryProvider).getDeliveries(status: 'ACCEPTED');
       if (!_mounted) return;
+      final headingToPickup = await _ref.read(deliveryRepositoryProvider).getDeliveries(status: 'HEADING_TO_PICKUP');
+      if (!_mounted) return;
       final pickedUp = await _ref.read(deliveryRepositoryProvider).getDeliveries(status: 'PICKED_UP');
       if (!_mounted) return;
       final outForDelivery = await _ref.read(deliveryRepositoryProvider).getDeliveries(status: 'OUT_FOR_DELIVERY');
       if (!_mounted) return;
       state = state.copyWith(
         pendingDeliveries: pending,
-        activeDeliveries: [...active, ...pickedUp, ...outForDelivery],
+        activeDeliveries: [...active, ...headingToPickup, ...pickedUp, ...outForDelivery],
         isLoading: false,
       );
     } catch (e) {
@@ -218,6 +220,26 @@ class DeliveryOrdersNotifier extends StateNotifier<DeliveryOrdersState> {
         selectedDelivery: updated,
         isPerformingAction: false,
         actionMessage: 'Picked up from farmer',
+      );
+      await loadDeliveries();
+      return true;
+    } catch (e) {
+      if (!_mounted) return false;
+      state = state.copyWith(isPerformingAction: false, errorMessage: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> confirmPickup(String deliveryId) async {
+    if (!_mounted) return false;
+    state = state.copyWith(isPerformingAction: true, errorMessage: null);
+    try {
+      final updated = await _ref.read(deliveryRepositoryProvider).confirmPickup(deliveryId);
+      if (!_mounted) return false;
+      state = state.copyWith(
+        selectedDelivery: updated,
+        isPerformingAction: false,
+        actionMessage: 'Pickup confirmed at farm',
       );
       await loadDeliveries();
       return true;

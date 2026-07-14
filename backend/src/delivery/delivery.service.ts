@@ -116,6 +116,7 @@ export class DeliveryService {
               total: true,
               address: true,
               customerId: true,
+              status: true,
               customer: { select: { id: true, name: true, phone: true, email: true } },
             },
           },
@@ -143,7 +144,10 @@ export class DeliveryService {
       const ordersWithoutAssignment = await this.prisma.order.findMany({
         where: {
           status: { in: ['CONFIRMED', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP'] as any },
-          delivery: null,
+          OR: [
+            { delivery: null },
+            { delivery: { status: { in: ['REJECTED', 'CANCELLED'] as any } } }
+          ],
         },
         include: {
           customer: { select: { id: true, name: true, phone: true, email: true } },
@@ -166,6 +170,7 @@ export class DeliveryService {
           total: o.total,
           address: o.address,
           customerId: o.customerId,
+          status: o.status,
         },
         customer: o.customer
           ? {
@@ -211,6 +216,7 @@ export class DeliveryService {
             total: true,
             address: true,
             customerId: true,
+            status: true,
             customer: { select: { id: true, name: true, phone: true, email: true } },
           },
         },

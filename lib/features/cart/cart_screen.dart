@@ -5,7 +5,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/order_provider.dart';
+import '../../providers/address_provider.dart';
 import '../../models/cart_item_model.dart';
+import '../../models/address_model.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -16,6 +18,15 @@ class CartScreen extends ConsumerStatefulWidget {
 
 class _CartScreenState extends ConsumerState<CartScreen> {
   final _couponController = TextEditingController();
+  AddressModel? _selectedAddress;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(addressProvider.notifier).loadAddresses();
+    });
+  }
 
   @override
   void dispose() {
@@ -45,10 +56,23 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final cartState = ref.read(cartProvider);
     if (cartState.items.isEmpty) return;
 
+    if (_selectedAddress == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select or add a delivery address first!'),
+          backgroundColor: Color(0xFFE63946),
+        ),
+      );
+      return;
+    }
+
+    final fullAddress = _selectedAddress!.fullAddress;
+
     final createdOrder = await ref.read(orderProvider.notifier).createOrder(
       items: cartState.items,
       total: cartState.grandTotal,
       deliveryFee: cartState.deliveryFee,
+      address: fullAddress,
     );
 
     if (!mounted) return;
@@ -75,6 +99,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   Widget build(BuildContext context) {
     final cartState = ref.watch(cartProvider);
+    final addressState = ref.watch(addressProvider);
+    final defaultAddress = addressState.defaultAddress;
+
+    if (_selectedAddress == null && defaultAddress != null) {
+      _selectedAddress = defaultAddress;
+    }
 
     return Container(
       decoration: const BoxDecoration(
@@ -358,7 +388,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 ),
 
                 // Price summary & checkout matching Demo App
-                _buildPriceSummary(cartState),
+                _buildPriceSummary(cartState, addressState),
               ],
             ],
           ),
@@ -527,7 +557,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     );
   }
 
-  Widget _buildPriceSummary(CartState cartState) {
+  Widget _buildPriceSummary(CartState cartState, AddressState addressState) {
     return Container(
       padding: const EdgeInsets.all(20.0),
       decoration: const BoxDecoration(
@@ -570,6 +600,113 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             '₹${cartState.tax.toStringAsFixed(2)}',
             valueColor: const Color(0xFF647C72),
           ),
+          const Divider(height: 20, color: Color(0xFFECECEC)),
+
+          // Address Selection widget
+          GestureDetector(
+            onTap: () async {
+              if (addressState.addresses.isEmpty) {
+                context.push('/add-address');
+              } else {
+                showModalBottomSheet(
+                  context: context,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                  ),
+                  builder: (context) {
+                    return Container(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Select Delivery Address',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF23312B),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: addressState.addresses.length,
+                              itemBuilder: (context, index) {
+                                final addr = addressState.addresses[index];
+                                return ListTile(
+                                  title: Text(addr.street),
+                                  subtitle: Text('${addr.city ?? ''}, ${addr.state ?? ''} - ${addr.zipCode ?? ''}'),
+                                  trailing: _selectedAddress?.id == addr.id
+                                      ? const Icon(Icons.check_circle, color: Color(0xFF2E7D32))
+                                      : null,
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedAddress = addr;
+                                    });
+                                    Navigator.pop(context);
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                context.push('/add-address');
+                              },
+                              icon: const Icon(Icons.add, color: Color(0xFF2E7D32)),
+                              label: const Text('Add New Address', style: TextStyle(color: Color(0xFF2E7D32))),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Row(
+                children: [
+                  const Icon(Icons.location_on_outlined, color: Color(0xFFE28C43), size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Delivery Address',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: const Color(0xFF23312B),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _selectedAddress != null
+                              ? '${_selectedAddress!.street}, ${_selectedAddress!.city ?? ""}'
+                              : 'No address selected. Tap to add/select.',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11,
+                            color: const Color(0xFF647C72),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right, color: Color(0xFF647C72), size: 20),
+                ],
+              ),
+            ),
+          ),
+
           const Divider(height: 20, color: Color(0xFFECECEC)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

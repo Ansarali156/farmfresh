@@ -678,13 +678,19 @@ class FarmerOrderNotifier extends StateNotifier<FarmerOrderState> {
     try {
       final all = await _ref.read(orderRepositoryProvider).getFarmerOrders(page: 1, limit: 100);
       if (!_mounted) return;
+      
+      String getStatus(OrderModel o) {
+        final itemStatus = o.items.map((i) => i.status).where((s) => s != null).firstOrNull;
+        return itemStatus?.toUpperCase() ?? o.status.toUpperCase();
+      }
+
       state = state.copyWith(
-        pendingOrders: all.where((o) => o.status.toUpperCase() == 'PENDING').toList(),
-        acceptedOrders: all.where((o) => o.status.toUpperCase() == 'ACCEPTED').toList(),
-        preparingOrders: all.where((o) => o.status.toUpperCase() == 'PREPARING').toList(),
-        readyOrders: all.where((o) => o.status.toUpperCase() == 'READY_FOR_PICKUP').toList(),
-        deliveredOrders: all.where((o) => const {'DELIVERED', 'COMPLETED'}.contains(o.status.toUpperCase())).toList(),
-        cancelledOrders: all.where((o) => const {'CANCELLED', 'REJECTED'}.contains(o.status.toUpperCase())).toList(),
+        pendingOrders: all.where((o) => getStatus(o) == 'PENDING').toList(),
+        acceptedOrders: all.where((o) => getStatus(o) == 'ACCEPTED').toList(),
+        preparingOrders: all.where((o) => getStatus(o) == 'PREPARING').toList(),
+        readyOrders: all.where((o) => getStatus(o) == 'READY_FOR_PICKUP').toList(),
+        deliveredOrders: all.where((o) => const {'DELIVERED', 'COMPLETED'}.contains(getStatus(o))).toList(),
+        cancelledOrders: all.where((o) => const {'CANCELLED', 'REJECTED'}.contains(getStatus(o))).toList(),
         isLoading: false,
       );
     } catch (e) {

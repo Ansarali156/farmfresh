@@ -4,6 +4,7 @@ import 'delivery_dashboard_screen.dart';
 import 'delivery_orders_screen.dart';
 import 'delivery_earnings_screen.dart';
 import 'delivery_profile_screen.dart';
+import '../../core/theme/app_theme.dart';
 
 class DeliveryMainScreen extends ConsumerStatefulWidget {
   const DeliveryMainScreen({super.key});
@@ -24,11 +25,16 @@ class _DeliveryMainScreenState extends ConsumerState<DeliveryMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 250),
-        child: _screens[_currentIndex],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppTheme.getBackgroundGradient(context),
       ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: _screens[_currentIndex],
+        ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
@@ -64,6 +70,6 @@ class _DeliveryMainScreenState extends ConsumerState<DeliveryMainScreen> {
           ),
         ],
       ),
-    );
+    ),);
   }
 }

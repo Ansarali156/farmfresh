@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
+import '../../core/theme/app_theme.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -18,6 +19,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _passwordController = TextEditingController();
   String _selectedRole = 'Customer';
   final _formKey = GlobalKey<FormState>();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -60,15 +62,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final authState = ref.watch(authProvider);
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFF2F8F4),
-            Color(0xFFE6F2EA),
-          ],
-        ),
+      decoration: BoxDecoration(
+        gradient: AppTheme.getBackgroundGradient(context),
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -305,7 +300,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     // Password Field
                     TextFormField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: _obscurePassword,
                       style: GoogleFonts.plusJakartaSans(
                         color: const Color(0xFF23312B),
                         fontSize: 13,
@@ -331,6 +326,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           borderSide: const BorderSide(color: Color(0xFF2E7D32)),
                         ),
                         prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF647C72)),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                            color: const Color(0xFF647C72),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
                         fillColor: const Color(0xFFFAFBF9),
                         filled: true,
                       ),

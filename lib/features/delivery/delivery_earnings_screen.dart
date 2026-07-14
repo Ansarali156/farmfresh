@@ -22,6 +22,7 @@ class _DeliveryEarningsScreenState extends ConsumerState<DeliveryEarningsScreen>
     final state = ref.watch(deliveryEarningsProvider);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Earnings & Wallet', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.green,

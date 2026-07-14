@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../providers/farmer_provider.dart';
 import '../../models/farmer_dashboard_model.dart';
 import '../../models/order_model.dart';
+import '../../core/utils/helpers.dart';
 
 class FarmerDashboardScreen extends ConsumerStatefulWidget {
   const FarmerDashboardScreen({super.key});
@@ -427,7 +428,7 @@ class _FarmerDashboardScreenState extends ConsumerState<FarmerDashboardScreen> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '${order.items.length} items • ${DateFormat('hh:mm a').format(order.date)}',
+                            '${order.items.length} items • ${Helpers.formatIst(order.date, 'hh:mm a')}',
                             style: GoogleFonts.plusJakartaSans(
                               color: const Color(0xFF647C72),
                               fontSize: 10,

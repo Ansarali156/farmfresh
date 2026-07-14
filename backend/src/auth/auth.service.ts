@@ -327,10 +327,50 @@ export class AuthService {
         name: true,
         email: true,
         role: true,
+        phone: true,
         createdAt: true,
       },
     });
     if (!user) throw new NotFoundException('User profile not found');
     return user;
+  }
+
+  async updateProfile(userId: string, name?: string, phone?: string) {
+    const data: any = {};
+    if (name !== undefined) data.name = name;
+    if (phone !== undefined) data.phone = phone;
+
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        phone: true,
+        createdAt: true,
+      },
+    });
+    return user;
+  }
+
+  async changePassword(userId: string, currentPass: string, newPass: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    const match = await this._comparePassword(currentPass, user.passwordHash);
+    if (!match) {
+      throw new BadRequestException('Incorrect current password');
+    }
+
+    const passwordHash = await this._hashPassword(newPass);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+    return { success: true };
   }
 }

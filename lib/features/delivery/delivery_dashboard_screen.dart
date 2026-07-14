@@ -31,6 +31,7 @@ class _DeliveryDashboardScreenState extends ConsumerState<DeliveryDashboardScree
     final allActive = [...ordersState.pendingDeliveries, ...ordersState.activeDeliveries];
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text(
           'Logistics & Delivery',
@@ -204,9 +205,27 @@ class _DeliveryDashboardScreenState extends ConsumerState<DeliveryDashboardScree
                       backgroundColor: _getStatusColor(delivery.status).withOpacity(0.1),
                       child: Icon(_getStatusIcon(delivery.status), color: _getStatusColor(delivery.status)),
                     ),
-                    title: Text(
-                      'Order #${delivery.orderNumber ?? delivery.orderId.substring(0, 8)}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    title: Row(
+                      children: [
+                        Text(
+                          'Order #${delivery.orderNumber ?? delivery.orderId.substring(0, 8)}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        if (delivery.orderStatus == 'READY_FOR_PICKUP') ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade600,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text(
+                              'READY',
+                              style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     subtitle: Text(
                       delivery.deliveryAddress?.street ?? 'Unknown Destination',
@@ -272,6 +291,8 @@ class _DeliveryDashboardScreenState extends ConsumerState<DeliveryDashboardScree
         return Colors.orange;
       case DeliveryOrderStatus.accepted:
         return Colors.blue;
+      case DeliveryOrderStatus.headingToPickup:
+        return Colors.cyan;
       case DeliveryOrderStatus.pickedUp:
         return Colors.teal;
       case DeliveryOrderStatus.outForDelivery:
@@ -291,6 +312,8 @@ class _DeliveryDashboardScreenState extends ConsumerState<DeliveryDashboardScree
         return Icons.pending;
       case DeliveryOrderStatus.accepted:
         return Icons.assignment_turned_in;
+      case DeliveryOrderStatus.headingToPickup:
+        return Icons.directions_bike;
       case DeliveryOrderStatus.pickedUp:
         return Icons.shopping_bag;
       case DeliveryOrderStatus.outForDelivery:

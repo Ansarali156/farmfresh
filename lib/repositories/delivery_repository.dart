@@ -19,6 +19,7 @@ abstract class DeliveryRepository {
   Future<DeliveryOrder> acceptDelivery(String deliveryId);
   Future<DeliveryOrder> rejectDelivery(String deliveryId, {String? reason});
   Future<DeliveryOrder> markPickedUp(String deliveryId);
+  Future<DeliveryOrder> confirmPickup(String deliveryId);
   Future<DeliveryOrder> startDelivery(String deliveryId);
   Future<DeliveryOrder> verifyOtp(String deliveryId, String otp);
   Future<DeliveryOrder> completeDelivery(String deliveryId);
@@ -146,6 +147,19 @@ class PostgresDeliveryRepository implements DeliveryRepository {
       throw Exception('Failed to mark delivery picked up');
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to mark delivery picked up');
+    }
+  }
+
+  @override
+  Future<DeliveryOrder> confirmPickup(String deliveryId) async {
+    try {
+      final res = await _apiClient.dio.patch('/delivery/$deliveryId/confirm-pickup');
+      if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
+        return DeliveryOrder.fromJson(res.data['data'] as Map<String, dynamic>);
+      }
+      throw Exception('Failed to confirm pickup');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to confirm pickup');
     }
   }
 

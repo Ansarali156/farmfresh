@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards, Req, Query, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, UseGuards, Req, Query, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterCustomerDto } from './dto/register-customer.dto';
@@ -141,5 +141,34 @@ export class AuthController {
   async getProfile(@CurrentUser() user: CurrentUserPayload) {
     const data = await this.authService.getProfile(user.id);
     return new SuccessResponseDto('Profile loaded successfully', data);
+  }
+
+  @Patch('profile')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Update active authenticated user profile' })
+  async updateProfile(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body('name') name?: string,
+    @Body('phone') phone?: string,
+  ) {
+    const data = await this.authService.updateProfile(user.id, name, phone);
+    return new SuccessResponseDto('Profile updated successfully', data);
+  }
+
+  @Post('change-password')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Change password for authenticated user' })
+  async changePassword(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body('currentPassword') currentPassword?: string,
+    @Body('newPassword') newPassword?: string,
+  ) {
+    if (!currentPassword || !newPassword) {
+      throw new BadRequestException('currentPassword and newPassword are required');
+    }
+    const data = await this.authService.changePassword(user.id, currentPassword, newPassword);
+    return new SuccessResponseDto('Password changed successfully', data);
   }
 }

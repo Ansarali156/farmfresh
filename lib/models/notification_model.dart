@@ -1,3 +1,5 @@
+import '../core/utils/helpers.dart';
+
 class AppNotificationModel {
   final String id;
   final String title;
@@ -24,7 +26,7 @@ class AppNotificationModel {
       body: json['body'] as String? ?? json['message'] as String? ?? '',
       type: json['type'] as String? ?? 'GENERAL',
       isRead: json['isRead'] as bool? ?? false,
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+      createdAt: Helpers.toIst(DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now()),
       data: json['data'] as Map<String, dynamic>?,
     );
   }

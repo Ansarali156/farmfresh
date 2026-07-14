@@ -10,32 +10,32 @@ class AppColors {
 
   static const Color accentOrange = Color(0xFFF59E0B);
 
+  // Background Colors - Light Theme
+  static const Color backgroundLight = Color(0xFFF2F8F4); // Light green background
+  static const Color surfaceLight = Color(0xFFFFFFFF); // White card background
+  static const Color surfaceContainerHighestLight = Color(0xFFF5F9F6); // Input fill
+  
   // Background Colors - Dark Theme
-  static const Color backgroundLight = Color(0xFF0B0D0C); // Near-black background
-  static const Color surfaceLight = Color(0xFF131614); // Card background
-  static const Color surfaceContainerHighest = Color(0xFF1A1D1B); // For input fields
-
-  // Background Colors - Dark (kept for compatibility)
-  static const Color backgroundDark = Color(0xFF0B0D0C);
-  static const Color surfaceDark = Color(0xFF131614);
-  static const Color surfaceContainerHighestDark = Color(0xFF1A1D1B);
+  static const Color backgroundDark = Color(0xFF0F172A); // Slate dark background
+  static const Color surfaceDark = Color(0xFF1E293B); // Slate card background
+  static const Color surfaceContainerHighestDark = Color(0xFF334155); // Slate input fill
 
   // Text Colors
-  static const Color textPrimaryLight = Color(0xFFFFFFFF);
-  static const Color textSecondaryLight = Color(0xFF7C877D); // Muted text
+  static const Color textPrimaryLight = Color(0xFF0F172A); // Slate dark text
+  static const Color textSecondaryLight = Color(0xFF475569); // Muted slate text
 
-  static const Color textPrimaryDark = Color(0xFFFFFFFF);
-  static const Color textSecondaryDark = Color(0xFF7C877D);
+  static const Color textPrimaryDark = Color(0xFFF8FAFC); // White/light text
+  static const Color textSecondaryDark = Color(0xFF94A3B8); // Muted light text
 
   // Border
-  static const Color borderLight = Color(0xFF232823);
-  static const Color borderDark = Color(0xFF232823);
+  static const Color borderLight = Color(0xFFE2E8F0);
+  static const Color borderDark = Color(0xFF334155);
 
   // Status Colors
-  static const Color error = Color(0xFFEF6B6B); // Danger/alert red
-  static const Color success = Color(0xFF4ADE80);
+  static const Color error = Color(0xFFEF4444); // Danger/alert red
+  static const Color success = Color(0xFF22C55E);
 
   // Chip backgrounds
-  static const Color chipBackgroundLight = Color(0xFF1F5B3A);
-  static const Color chipBackgroundDark = Color(0xFF1F5B3A);
+  static const Color chipBackgroundLight = Color(0xFFDCFCE7);
+  static const Color chipBackgroundDark = Color(0xFF1E293B);
 }

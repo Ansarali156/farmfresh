@@ -3,6 +3,7 @@ import 'package:ecommerce_app/models/address_model.dart';
 enum DeliveryOrderStatus {
   pending('PENDING'),
   accepted('ACCEPTED'),
+  headingToPickup('HEADING_TO_PICKUP'),
   pickedUp('PICKED_UP'),
   outForDelivery('OUT_FOR_DELIVERY'),
   delivered('DELIVERED'),
@@ -27,6 +28,7 @@ class DeliveryOrder {
   final String? farmerId;
   final String? customerId;
   final DeliveryOrderStatus status;
+  final String? orderStatus;
   final double? total;
   final String? assignedAt;
   final String? acceptedAt;
@@ -53,6 +55,7 @@ class DeliveryOrder {
     this.farmerId,
     this.customerId,
     required this.status,
+    this.orderStatus,
     this.total,
     this.assignedAt,
     this.acceptedAt,
@@ -77,10 +80,11 @@ class DeliveryOrder {
     return DeliveryOrder(
       id: json['id'] ?? '',
       orderId: json['orderId'] ?? json['order_id'] ?? '',
-      orderNumber: json['orderNumber'] ?? json['order_number'],
+      orderNumber: json['orderNumber'] ?? json['order_number'] ?? json['order']?['orderNumber'] ?? json['order']?['order_number'],
       farmerId: json['farmerId'] ?? json['farmer_id'],
       customerId: json['customerId'] ?? json['customer_id'],
       status: DeliveryOrderStatus.fromApiValue(json['status'] ?? 'PENDING'),
+      orderStatus: json['orderStatus'] ?? json['order_status'] ?? json['order']?['status'],
       total: _parseDouble(json['total'] ?? json['order']?['total']),
       assignedAt: json['assignedAt'] ?? json['assigned_at'],
       acceptedAt: json['acceptedAt'] ?? json['accepted_at'],
@@ -117,6 +121,7 @@ class DeliveryOrder {
 
   DeliveryOrder copyWith({
     DeliveryOrderStatus? status,
+    String? orderStatus,
     String? acceptedAt,
     String? pickedUpAt,
     String? deliveredAt,
@@ -129,6 +134,7 @@ class DeliveryOrder {
       farmerId: farmerId,
       customerId: customerId,
       status: status ?? this.status,
+      orderStatus: orderStatus ?? this.orderStatus,
       assignedAt: assignedAt,
       acceptedAt: acceptedAt ?? this.acceptedAt,
       pickedUpAt: pickedUpAt ?? this.pickedUpAt,

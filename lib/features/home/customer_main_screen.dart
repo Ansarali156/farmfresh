@@ -6,6 +6,7 @@ import 'home_screen.dart';
 import '../cart/cart_screen.dart';
 import '../orders/orders_screen.dart';
 import '../profile/profile_screen.dart';
+import '../../core/theme/app_theme.dart';
 
 class CustomerMainScreen extends ConsumerStatefulWidget {
   const CustomerMainScreen({super.key});
@@ -29,15 +30,8 @@ class _CustomerMainScreenState extends ConsumerState<CustomerMainScreen> {
     final cartItemCount = ref.watch(cartProvider).itemCount;
 
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFF2F8F4),
-            Color(0xFFE6F2EA),
-          ],
-        ),
+      decoration: BoxDecoration(
+        gradient: AppTheme.getBackgroundGradient(context),
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -47,9 +41,9 @@ class _CustomerMainScreenState extends ConsumerState<CustomerMainScreen> {
         ),
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.85),
-            border: const Border(
-              top: BorderSide(color: Color(0x0A000000), width: 1),
+            color: Theme.of(context).cardTheme.color?.withOpacity(0.85) ?? Colors.white.withOpacity(0.85),
+            border: Border(
+              top: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.1), width: 1),
             ),
           ),
           child: BottomNavigationBar(

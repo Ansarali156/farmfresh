@@ -131,6 +131,10 @@ class ProductModel {
     final inventoryData = json['inventory'] as Map<String, dynamic>?;
     final farmerData = json['farmer'] as Map<String, dynamic>?;
 
+    final rawImage = imagesList != null && imagesList.isNotEmpty
+        ? imagesList[0]['imageUrl'] as String? ?? ''
+        : '';
+
     return ProductModel(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -141,9 +145,7 @@ class ProductModel {
       origin: json['organic'] == true ? 'Organic' : 'Local',
       category: categoryData != null ? categoryData['name'] as String : 'Other',
       categoryId: json['categoryId'] as String?,
-      image: imagesList != null && imagesList.isNotEmpty
-          ? imagesList[0]['imageUrl'] as String
-          : '',
+      image: _sanitizeImageUrl(rawImage),
       description: json['description'] as String? ?? '',
       weight: json['unit'] as String? ?? '1 kg',
       stock: inventoryData != null
@@ -160,6 +162,20 @@ class ProductModel {
       rating: _toNum(json['rating']),
       status: json['status'] as String? ?? 'APPROVED',
     );
+  }
+
+  /// Replaces known-broken image URLs with working alternatives.
+  static const Map<String, String> _brokenImageFixes = {
+    'https://images.unsplash.com/photo-1627998826726-2580790757a6?w=500':
+        'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=500',
+    'https://images.unsplash.com/photo-1571244856353-fb0b1f2efb4d?w=500':
+        'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=500',
+    'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=500':
+        'https://images.unsplash.com/photo-1612630742789-cae0c79c5f13?w=500',
+  };
+
+  static String _sanitizeImageUrl(String url) {
+    return _brokenImageFixes[url] ?? url;
   }
 
   factory ProductModel.fromCartItemBackendJson(

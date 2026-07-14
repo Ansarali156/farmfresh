@@ -1,3 +1,5 @@
+import '../core/utils/helpers.dart';
+
 class EarningsModel {
   final double totalEarnings;
   final double monthlyEarnings;
@@ -53,7 +55,7 @@ class TransactionModel {
       amount: (json['amount'] as num?)?.toDouble() ?? 0,
       description: json['description'] as String? ?? '',
       status: json['status'] as String? ?? 'COMPLETED',
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+      createdAt: Helpers.toIst(DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now()),
       orderId: json['orderId'] as String?,
     );
   }

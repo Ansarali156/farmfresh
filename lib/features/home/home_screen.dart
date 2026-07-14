@@ -228,7 +228,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 ),
                               ],
                             ),
-                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -324,7 +324,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     crossAxisCount: 2,
                                     crossAxisSpacing: 10,
                                     mainAxisSpacing: 10,
-                                    childAspectRatio: 0.85,
+                                    childAspectRatio: 0.78,
                                   ),
                                   itemCount: filteredProducts.length,
                                   itemBuilder: (context, index) {
