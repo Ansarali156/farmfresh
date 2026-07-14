@@ -265,8 +265,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       sliver: SliverGrid(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: MediaQuery.of(context).size.width > 800 ? 4 : 2,
                           crossAxisSpacing: 8,
                           mainAxisSpacing: 8,
                           childAspectRatio: 0.72,

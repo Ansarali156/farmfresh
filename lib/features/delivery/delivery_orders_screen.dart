@@ -11,8 +11,7 @@ class DeliveryOrdersScreen extends ConsumerStatefulWidget {
   ConsumerState<DeliveryOrdersScreen> createState() => _DeliveryOrdersScreenState();
 }
 
-class _DeliveryOrdersScreenState extends ConsumerState<DeliveryOrdersScreen>
-    with SingleTickerProviderStateMixin {
+class _DeliveryOrdersScreenState extends ConsumerState<DeliveryOrdersScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -31,423 +30,206 @@ class _DeliveryOrdersScreenState extends ConsumerState<DeliveryOrdersScreen>
   Widget build(BuildContext context) {
     final ordersState = ref.watch(deliveryOrdersProvider);
 
-    ref.listen<DeliveryOrdersState>(deliveryOrdersProvider, (prev, next) {
-      if (next.actionMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.actionMessage!), backgroundColor: Colors.green.shade600),
-        );
-        ref.read(deliveryOrdersProvider.notifier).clearMessages();
-      }
-      if (next.errorMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.errorMessage!), backgroundColor: Colors.red.shade600),
-        );
-        ref.read(deliveryOrdersProvider.notifier).clearMessages();
-      }
-    });
-
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        elevation: 0,
-        title: const Text('My Deliveries', style: TextStyle(fontWeight: FontWeight.w700)),
-        backgroundColor: Colors.green.shade700,
+        title: const Text('Delivery Jobs', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.green,
         foregroundColor: Colors.white,
+        elevation: 2,
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
-          indicatorWeight: 3,
-          labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
           tabs: [
-            Tab(text: 'Available (${ordersState.pendingDeliveries.length})'),
-            Tab(text: 'Active (${ordersState.activeDeliveries.length})'),
+            Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Available'),
+                  const SizedBox(width: 6),
+                  if (ordersState.pendingDeliveries.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.orange,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '${ordersState.pendingDeliveries.length}',
+                        style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Active'),
+                  const SizedBox(width: 6),
+                  if (ordersState.activeDeliveries.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.blue,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '${ordersState.activeDeliveries.length}',
+                        style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
       body: ordersState.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: () => ref.read(deliveryOrdersProvider.notifier).loadDeliveries(),
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildPendingList(ordersState.pendingDeliveries),
-                  _buildActiveList(ordersState.activeDeliveries),
-                ],
-              ),
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                _buildJobsList(ordersState.pendingDeliveries, isAvailable: true),
+                _buildJobsList(ordersState.activeDeliveries, isAvailable: false),
+              ],
             ),
     );
   }
 
-  Widget _buildPendingList(List<DeliveryOrder> pending) {
-    if (pending.isEmpty) {
-      return const _EmptyState(
-        icon: Icons.assignment_late_outlined,
-        title: 'No available deliveries',
-        subtitle: 'New orders ready for pickup will appear here.',
+  Widget _buildJobsList(List<DeliveryOrder> list, {required bool isAvailable}) {
+    if (list.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: () => ref.read(deliveryOrdersProvider.notifier).loadDeliveries(),
+        child: ListView(
+          children: [
+            SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+            Center(
+              child: Text(
+                isAvailable ? 'No open delivery jobs right now.' : 'You have no active deliveries.',
+                style: const TextStyle(fontSize: 15, color: Colors.grey),
+              ),
+            ),
+          ],
+        ),
       );
     }
 
-    return ListView.separated(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16),
-      separatorBuilder: (_, __) => const SizedBox(height: 14),
-      itemCount: pending.length,
-      itemBuilder: (context, index) => _AvailableCard(
-        delivery: pending[index],
-        onAccept: () => _acceptDelivery(pending[index].id),
-        onReject: () => _showRejectDialog(pending[index]),
-      ),
-    );
-  }
+    final width = MediaQuery.of(context).size.width;
+    final crossAxisCount = width > 800 ? 4 : 2;
 
-  Widget _buildActiveList(List<DeliveryOrder> active) {
-    if (active.isEmpty) {
-      return const _EmptyState(
-        icon: Icons.local_shipping_outlined,
-        title: 'No active deliveries',
-        subtitle: 'Accept an available delivery to get started.',
-      );
-    }
-
-    return ListView.separated(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16),
-      separatorBuilder: (_, __) => const SizedBox(height: 14),
-      itemCount: active.length,
-      itemBuilder: (context, index) => _ActiveCard(
-        delivery: active[index],
-        onTap: () => context.push('/delivery-detail', extra: active[index].id),
-      ),
-    );
-  }
-
-  Future<void> _acceptDelivery(String deliveryId) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Accept Delivery?'),
-        content: const Text('You will be assigned to pick up and deliver this order.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green.shade700,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Accept'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      await ref.read(deliveryOrdersProvider.notifier).acceptDelivery(deliveryId);
-    }
-  }
-
-  void _showRejectDialog(DeliveryOrder delivery) {
-    final reasonController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Decline Delivery'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Let us know why you are declining this delivery.'),
-            const SizedBox(height: 12),
-            TextField(
-              controller: reasonController,
-              decoration: InputDecoration(
-                labelText: 'Reason (optional)',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              maxLines: 2,
-            ),
-          ],
+    return RefreshIndicator(
+      onRefresh: () => ref.read(deliveryOrdersProvider.notifier).loadDeliveries(),
+      child: GridView.builder(
+        padding: const EdgeInsets.all(12),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 0.95,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ref.read(deliveryOrdersProvider.notifier).rejectDelivery(
-                    delivery.id,
-                    reason: reasonController.text.trim().isEmpty
-                        ? null
-                        : reasonController.text.trim(),
-                  );
-            },
-            child: const Text('Decline', style: TextStyle(color: Colors.red)),
-          ),
-        ],
+        itemCount: list.length,
+        itemBuilder: (context, index) {
+          final delivery = list[index];
+          return _buildJobCard(delivery, isAvailable: isAvailable);
+        },
       ),
     );
   }
-}
 
-class _EmptyState extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  const _EmptyState({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 56, color: Colors.green.shade400),
-            ),
-            const SizedBox(height: 20),
-            Text(title,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AvailableCard extends StatelessWidget {
-  final DeliveryOrder delivery;
-  final VoidCallback onAccept;
-  final VoidCallback onReject;
-
-  const _AvailableCard({
-    required this.delivery,
-    required this.onAccept,
-    required this.onReject,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final id = (delivery.orderNumber != null && delivery.orderNumber!.isNotEmpty)
-        ? delivery.orderNumber!
-        : delivery.orderId;
-
+  Widget _buildJobCard(DeliveryOrder delivery, {required bool isAvailable}) {
     return Card(
-      elevation: 3,
-      shadowColor: Colors.black12,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    'Order #$id',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Earn ₹${(delivery.deliveryFee ?? 0).toStringAsFixed(0)}',
-                    style: TextStyle(
-                      color: Colors.green.shade700,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (delivery.customer != null)
-              _InfoRow(
-                icon: Icons.person_outline,
-                iconColor: Colors.blue.shade600,
-                label: 'Customer',
-                value: delivery.customer!.name,
-              ),
-            if (delivery.deliveryAddress?.fullAddress != null)
-              _InfoRow(
-                icon: Icons.location_on_outlined,
-                iconColor: Colors.red.shade500,
-                label: 'Drop',
-                value: delivery.deliveryAddress!.fullAddress,
-              ),
-            if (delivery.distance != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  children: [
-                    Icon(Icons.straighten, size: 15, color: Colors.grey.shade600),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${delivery.distance!.toStringAsFixed(1)} km away',
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-                    ),
-                    if (delivery.total != null) ...[
-                      const SizedBox(width: 16),
-                      Icon(Icons.receipt_long, size: 15, color: Colors.grey.shade600),
-                      const SizedBox(width: 6),
-                      Text(
-                        '₹${delivery.total!.toStringAsFixed(0)}',
-                        style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: onReject,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red.shade600,
-                      side: BorderSide(color: Colors.red.shade300),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text('Decline'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: onAccept,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade700,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text('Accept'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ActiveCard extends StatelessWidget {
-  final DeliveryOrder delivery;
-  final VoidCallback onTap;
-
-  const _ActiveCard({required this.delivery, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final id = (delivery.orderNumber != null && delivery.orderNumber!.isNotEmpty)
-        ? delivery.orderNumber!
-        : delivery.orderId;
-    final color = _statusColor(delivery.status);
-
-    return Card(
-      elevation: 3,
-      shadowColor: Colors.black12,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => context.push('/delivery-detail', extra: delivery.id),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    child: Text(
-                      'Order #$id',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  Text(
+                    'Order #${delivery.orderNumber ?? delivery.orderId.substring(0, 8)}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.12),
+                      color: isAvailable ? Colors.orange.shade50 : Colors.green.shade50,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      _statusText(delivery.status),
+                      isAvailable ? 'Available' : _getStatusLabel(delivery.status),
                       style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
+                        color: isAvailable ? Colors.orange.shade700 : Colors.green.shade700,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              if (delivery.deliveryAddress?.fullAddress != null)
-                Row(
-                  children: [
-                    Icon(Icons.location_on, size: 16, color: Colors.red.shade400),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        delivery.deliveryAddress!.fullAddress,
-                        style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.location_on, size: 14, color: Colors.green),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      delivery.deliveryAddress?.street ?? 'No delivery address',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12),
                     ),
-                  ],
-                ),
-              const SizedBox(height: 10),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  const Icon(Icons.store, size: 14, color: Colors.blue),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      delivery.farmer?.farmName ?? 'Swarna Bharat Farms',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              const Divider(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Earn ₹${(delivery.deliveryFee ?? 0).toStringAsFixed(0)}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green.shade700,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('EARNINGS', style: TextStyle(fontSize: 9, color: Colors.grey)),
+                      Text(
+                        '₹${(delivery.deliveryFee ?? 50.0).toStringAsFixed(0)}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 16),
+                      ),
+                    ],
                   ),
-                  Icon(Icons.chevron_right, color: color),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      const Text('DISTANCE', style: TextStyle(fontSize: 9, color: Colors.grey)),
+                      Text(
+                        '${(delivery.distance ?? 3.5).toStringAsFixed(1)} km',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ],
@@ -457,83 +239,22 @@ class _ActiveCard extends StatelessWidget {
     );
   }
 
-  Color _statusColor(DeliveryOrderStatus status) {
+  String _getStatusLabel(DeliveryOrderStatus status) {
     switch (status) {
       case DeliveryOrderStatus.pending:
-        return Colors.orange.shade700;
+        return 'PENDING';
       case DeliveryOrderStatus.accepted:
-        return Colors.blue.shade700;
+        return 'ACCEPTED';
       case DeliveryOrderStatus.pickedUp:
-        return Colors.teal.shade700;
+        return 'PICKED UP';
       case DeliveryOrderStatus.outForDelivery:
-        return Colors.purple.shade700;
+        return 'IN TRANSIT';
       case DeliveryOrderStatus.delivered:
-        return Colors.green.shade700;
+        return 'DELIVERED';
       case DeliveryOrderStatus.cancelled:
+        return 'CANCELLED';
       case DeliveryOrderStatus.rejected:
-        return Colors.red.shade700;
+        return 'REJECTED';
     }
-  }
-
-  String _statusText(DeliveryOrderStatus status) {
-    switch (status) {
-      case DeliveryOrderStatus.pending:
-        return 'Pending';
-      case DeliveryOrderStatus.accepted:
-        return 'Accepted';
-      case DeliveryOrderStatus.pickedUp:
-        return 'Picked Up';
-      case DeliveryOrderStatus.outForDelivery:
-        return 'Out for Delivery';
-      case DeliveryOrderStatus.delivered:
-        return 'Delivered';
-      case DeliveryOrderStatus.cancelled:
-        return 'Cancelled';
-      case DeliveryOrderStatus.rejected:
-        return 'Rejected';
-    }
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final String label;
-  final String value;
-
-  const _InfoRow({
-    required this.icon,
-    required this.iconColor,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 17, color: iconColor),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                ),
-                Text(
-                  value,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

@@ -29,7 +29,7 @@ class AddressModel {
     return AddressModel(
       id: json['id'] as String? ?? '',
       label: json['label'] as String? ?? 'Home',
-      street: json['street'] as String? ?? json['address'] as String? ?? '',
+      street: json['street'] as String? ?? json['address'] as String? ?? json['fullAddress'] as String? ?? '',
       city: json['city'] as String?,
       state: json['state'] as String?,
       zipCode: json['zipCode'] as String?,

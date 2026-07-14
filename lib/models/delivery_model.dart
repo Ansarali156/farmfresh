@@ -81,15 +81,15 @@ class DeliveryOrder {
       farmerId: json['farmerId'] ?? json['farmer_id'],
       customerId: json['customerId'] ?? json['customer_id'],
       status: DeliveryOrderStatus.fromApiValue(json['status'] ?? 'PENDING'),
-      total: (json['total'] ?? json['order']?['total'])?.toDouble(),
+      total: _parseDouble(json['total'] ?? json['order']?['total']),
       assignedAt: json['assignedAt'] ?? json['assigned_at'],
       acceptedAt: json['acceptedAt'] ?? json['accepted_at'],
       pickedUpAt: json['pickedUpAt'] ?? json['picked_up_at'],
       deliveredAt: json['deliveredAt'] ?? json['delivered_at'],
       estimatedDeliveryTime:
           json['estimatedDeliveryTime'] ?? json['estimated_delivery_time'],
-      distance: json['distance']?.toDouble(),
-      deliveryFee: (json['deliveryFee'] ?? json['deliveryCharge'])?.toDouble(),
+      distance: _parseDouble(json['distance']),
+      deliveryFee: _parseDouble(json['deliveryFee'] ?? json['deliveryCharge']),
       specialInstructions: json['specialInstructions'],
       cancellationReason: json['cancellationReason'],
       pickupAddress: json['pickupAddress'] != null
@@ -110,7 +110,7 @@ class DeliveryOrder {
       orderSummary: json['orderSummary'] != null
           ? DeliveryOrderSummary.fromJson(json['orderSummary'])
           : null,
-      rating: json['rating']?.toDouble(),
+      rating: _parseDouble(json['rating']),
       feedback: json['feedback'],
     );
   }
@@ -218,8 +218,8 @@ class DeliveryItem {
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       quantity: json['quantity'] ?? 0,
-      unitPrice: (json['unitPrice'] ?? 0).toDouble(),
-      totalPrice: (json['totalPrice'] ?? 0).toDouble(),
+      unitPrice: _parseDouble(json['unitPrice']) ?? 0.0,
+      totalPrice: _parseDouble(json['totalPrice']) ?? 0.0,
       imageUrl: json['imageUrl'],
     );
   }
@@ -238,11 +238,18 @@ class DeliveryOrderSummary {
 
   factory DeliveryOrderSummary.fromJson(Map<String, dynamic> json) {
     return DeliveryOrderSummary(
-      subtotal: (json['subtotal'] ?? 0).toDouble(),
-      deliveryFee: (json['deliveryFee'] ?? 0).toDouble(),
-      total: (json['total'] ?? 0).toDouble(),
+      subtotal: _parseDouble(json['subtotal']) ?? 0.0,
+      deliveryFee: _parseDouble(json['deliveryFee']) ?? 0.0,
+      total: _parseDouble(json['total']) ?? 0.0,
     );
   }
+}
+
+double? _parseDouble(dynamic val) {
+  if (val == null) return null;
+  if (val is num) return val.toDouble();
+  if (val is String) return double.tryParse(val);
+  return null;
 }
 
 class DeliveryHistory {

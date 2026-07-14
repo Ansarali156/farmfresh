@@ -411,8 +411,8 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                                 ? GridView.builder(
                                     controller: _scrollController,
                                     padding: const EdgeInsets.all(12),
-                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
+                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: MediaQuery.of(context).size.width > 800 ? 4 : 2,
                                       crossAxisSpacing: 10,
                                       mainAxisSpacing: 10,
                                       childAspectRatio: 0.73,

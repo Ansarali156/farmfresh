@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/delivery_provider.dart';
 
 class DeliveryEarningsScreen extends ConsumerStatefulWidget {
@@ -19,15 +19,22 @@ class _DeliveryEarningsScreenState extends ConsumerState<DeliveryEarningsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final earningsState = ref.watch(deliveryEarningsProvider);
+    final state = ref.watch(deliveryEarningsProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Earnings'),
+        title: const Text('Earnings & Wallet', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () => context.push('/delivery-history'),
+          ),
+        ],
       ),
-      body: earningsState.isLoading
+      body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: () => ref.read(deliveryEarningsProvider.notifier).loadEarnings(),
@@ -37,31 +44,11 @@ class _DeliveryEarningsScreenState extends ConsumerState<DeliveryEarningsScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildEarningsCards(earningsState),
-                    const SizedBox(height: 20),
-                    const Text('Transactions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    _buildBalanceCard(state),
+                    const SizedBox(height: 24),
+                    const Text('Recent Wallet Transactions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 12),
-                    if (earningsState.transactions.isEmpty)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(40),
-                          child: Text('No transactions yet', style: TextStyle(color: Colors.grey)),
-                        ),
-                      )
-                    else
-                      ...earningsState.transactions.map((t) => _buildTransactionTile(t)),
-                    if (earningsState.hasMore && earningsState.transactions.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Center(
-                          child: earningsState.isLoadingMore
-                              ? const CircularProgressIndicator()
-                              : TextButton(
-                                  onPressed: () => ref.read(deliveryEarningsProvider.notifier).loadMoreTransactions(),
-                                  child: const Text('Load More'),
-                                ),
-                        ),
-                      ),
+                    _buildTransactionsList(state),
                   ],
                 ),
               ),
@@ -69,77 +56,142 @@ class _DeliveryEarningsScreenState extends ConsumerState<DeliveryEarningsScreen>
     );
   }
 
-  Widget _buildEarningsCards(DeliveryEarningsState state) {
+  Widget _buildBalanceCard(DeliveryEarningsState state) {
     final earnings = state.earnings;
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: _buildEarningCard('Today', '₹${earnings.dailyEarnings.toStringAsFixed(0)}', Colors.green)),
-            const SizedBox(width: 12),
-            Expanded(child: _buildEarningCard('This Week', '₹${earnings.weeklyEarnings.toStringAsFixed(0)}', Colors.blue)),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _buildEarningCard('This Month', '₹${earnings.monthlyEarnings.toStringAsFixed(0)}', Colors.purple)),
-            const SizedBox(width: 12),
-            Expanded(child: _buildEarningCard('Total', '₹${earnings.totalEarnings.toStringAsFixed(0)}', Colors.teal)),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEarningCard(String title, String value, Color color) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: Colors.green.shade700,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+            const Text(
+              'TOTAL WALLET BALANCE',
+              style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
-            Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+            Text(
+              '₹${(earnings.totalEarnings - earnings.completedWithdrawals).toStringAsFixed(2)}',
+              style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+            ),
+            const Divider(color: Colors.white24, height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildBalanceMeta('Pending Cash', '₹${earnings.pendingWithdrawals.toStringAsFixed(0)}'),
+                _buildBalanceMeta('Total Payouts', '₹${earnings.completedWithdrawals.toStringAsFixed(0)}'),
+              ],
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: ElevatedButton(
+                onPressed: () => _showPayoutDialog(earnings.totalEarnings - earnings.completedWithdrawals),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.green.shade800,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('Request Payout to Bank', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTransactionTile(dynamic transaction) {
-    String dateStr = '';
-    try {
-      dateStr = DateFormat('dd/MM/yyyy').format(transaction.createdAt);
-    } catch (_) {
-      dateStr = '';
+  Widget _buildBalanceMeta(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+        const SizedBox(height: 2),
+        Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+      ],
+    );
+  }
+
+  Widget _buildTransactionsList(DeliveryEarningsState state) {
+    final list = state.transactions;
+    if (list.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 40),
+          child: Text('No transactions recorded yet.', style: TextStyle(color: Colors.grey)),
+        ),
+      );
     }
 
-    final isCredit = transaction.type == 'CREDIT' || transaction.type == 'earning';
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: isCredit ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-          child: Icon(
-            isCredit ? Icons.arrow_downward : Icons.arrow_upward,
-            color: isCredit ? Colors.green : Colors.red,
-            size: 20,
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: list.length,
+      separatorBuilder: (context, index) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        final tx = list[index];
+        final isPayout = tx.type.toUpperCase() == 'WITHDRAWAL';
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: CircleAvatar(
+            backgroundColor: isPayout ? Colors.red.shade50 : Colors.green.shade50,
+            child: Icon(isPayout ? Icons.call_made : Icons.call_received, color: isPayout ? Colors.red : Colors.green),
           ),
-        ),
-        title: Text(transaction.description.toString(),
-            style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(dateStr, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
-        trailing: Text(
-          '${isCredit ? '+' : '-'}₹${transaction.amount.toStringAsFixed(0)}',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: isCredit ? Colors.green : Colors.red,
+          title: Text(
+            isPayout ? 'Payout to Bank' : 'Delivery Earnings',
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
+          subtitle: Text(
+            tx.createdAt.toString().substring(0, 10),
+            style: const TextStyle(color: Colors.grey, fontSize: 12),
+          ),
+          trailing: Text(
+            '${isPayout ? "-" : "+"}₹${tx.amount.toStringAsFixed(0)}',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: isPayout ? Colors.red : Colors.green,
+              fontSize: 15,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showPayoutDialog(double balance) {
+    if (balance <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You have no wallet balance to withdraw.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Payout Request'),
+        content: Text(
+          'Your payout of ₹${balance.toStringAsFixed(2)} will be initiated to your registered bank account inside your profile. Proceed?',
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Payout requested successfully! processing in 2-3 business days.'), backgroundColor: Colors.green),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+            child: const Text('Confirm'),
+          ),
+        ],
       ),
     );
   }

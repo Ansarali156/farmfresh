@@ -53,7 +53,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   ),
                   const SizedBox(height: 12),
                   GridView.count(
-                    crossAxisCount: 2,
+                    crossAxisCount: MediaQuery.of(context).size.width > 800 ? 4 : 2,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     mainAxisSpacing: 12,

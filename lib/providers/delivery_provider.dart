@@ -643,6 +643,7 @@ class DeliveryProfileNotifier extends StateNotifier<DeliveryProfileState> {
         profile: state.profile.copyWith(isAvailable: !state.profile.isAvailable),
         actionMessage: state.profile.isAvailable ? 'You are now offline' : 'You are now online',
       );
+      _ref.read(deliveryOrdersProvider.notifier).loadDeliveries();
       return true;
     } catch (e) {
       if (!_mounted) return false;

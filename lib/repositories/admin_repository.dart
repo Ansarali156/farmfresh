@@ -41,7 +41,7 @@ class PostgresAdminRepository implements AdminRepository {
     
     final res = await _apiClient.dio.get('/admin/farmers', queryParameters: query);
     if (res.statusCode == 200 && res.data['success'] == true) {
-      final list = res.data['data']['data'] as List? ?? [];
+      final list = res.data['data']['items'] as List? ?? [];
       return list.map((item) => item as Map<String, dynamic>).toList();
     }
     return [];
@@ -69,7 +69,7 @@ class PostgresAdminRepository implements AdminRepository {
 
     final res = await _apiClient.dio.get('/admin/products', queryParameters: query);
     if (res.statusCode == 200 && res.data['success'] == true) {
-      final list = res.data['data']['data'] as List? ?? [];
+      final list = res.data['data']['items'] as List? ?? [];
       return list.map((item) => ProductModel.fromBackendJson(item as Map<String, dynamic>)).toList();
     }
     return [];
@@ -87,7 +87,7 @@ class PostgresAdminRepository implements AdminRepository {
 
     final res = await _apiClient.dio.get('/admin/orders', queryParameters: query);
     if (res.statusCode == 200 && res.data['success'] == true) {
-      final list = res.data['data']['data'] as List? ?? [];
+      final list = res.data['data']['items'] as List? ?? [];
       return list.map((item) => OrderModel.fromBackendJson(item as Map<String, dynamic>)).toList();
     }
     return [];
@@ -97,7 +97,7 @@ class PostgresAdminRepository implements AdminRepository {
   Future<List<UserModel>> getCustomers() async {
     final res = await _apiClient.dio.get('/admin/customers');
     if (res.statusCode == 200 && res.data['success'] == true) {
-      final list = res.data['data']['data'] as List? ?? [];
+      final list = res.data['data']['items'] as List? ?? [];
       return list.map((item) => UserModel.fromJson(item as Map<String, dynamic>)).toList();
     }
     return [];
@@ -112,7 +112,7 @@ class PostgresAdminRepository implements AdminRepository {
   Future<List<UserModel>> getDeliveryPartners() async {
     final res = await _apiClient.dio.get('/admin/delivery-partners');
     if (res.statusCode == 200 && res.data['success'] == true) {
-      final list = res.data['data']['data'] as List? ?? [];
+      final list = res.data['data']['items'] as List? ?? [];
       return list.map((item) => UserModel.fromJson(item as Map<String, dynamic>)).toList();
     }
     return [];

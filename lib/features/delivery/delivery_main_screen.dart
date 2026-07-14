@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/delivery_provider.dart';
 import 'delivery_dashboard_screen.dart';
 import 'delivery_orders_screen.dart';
 import 'delivery_earnings_screen.dart';
-import 'delivery_history_screen.dart';
 import 'delivery_profile_screen.dart';
 
 class DeliveryMainScreen extends ConsumerStatefulWidget {
@@ -15,94 +13,53 @@ class DeliveryMainScreen extends ConsumerStatefulWidget {
 }
 
 class _DeliveryMainScreenState extends ConsumerState<DeliveryMainScreen> {
-  int _currentTabIndex = 0;
+  int _currentIndex = 0;
 
-  final _screens = const [
+  final List<Widget> _screens = const [
     DeliveryDashboardScreen(),
     DeliveryOrdersScreen(),
     DeliveryEarningsScreen(),
-    DeliveryHistoryScreen(),
     DeliveryProfileScreen(),
   ];
 
   @override
-  void initState() {
-    super.initState();
-    Future.microtask(() {
-      ref.read(deliveryOrdersProvider.notifier).loadDeliveries();
-      ref.read(deliveryNotificationProvider.notifier).loadNotifications();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final notifState = ref.watch(deliveryNotificationProvider);
-
     return Scaffold(
-      body: IndexedStack(
-        index: _currentTabIndex,
-        children: _screens,
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 250),
+        child: _screens[_currentIndex],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentTabIndex,
-        onTap: (index) => setState(() => _currentTabIndex = index),
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.green,
         unselectedItemColor: Colors.grey,
-        selectedFontSize: 11,
-        unselectedFontSize: 11,
-        items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), label: 'Dashboard'),
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+        unselectedLabelStyle: const TextStyle(fontSize: 11),
+        items: const [
           BottomNavigationBarItem(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(Icons.local_shipping_outlined),
-                if (ref.watch(deliveryOrdersProvider).pendingDeliveries.isNotEmpty)
-                  Positioned(
-                    right: -4,
-                    top: -4,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        '${ref.watch(deliveryOrdersProvider).pendingDeliveries.length}',
-                        style: const TextStyle(color: Colors.white, fontSize: 8),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            label: 'Deliveries',
+            icon: Icon(Icons.dashboard_outlined),
+            activeIcon: Icon(Icons.dashboard),
+            label: 'Dashboard',
           ),
-          const BottomNavigationBarItem(icon: Icon(Icons.attach_money), label: 'Earnings'),
-          const BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
           BottomNavigationBarItem(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(Icons.person_outlined),
-                if (notifState.unreadCount > 0)
-                  Positioned(
-                    right: -4,
-                    top: -4,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        '${notifState.unreadCount}',
-                        style: const TextStyle(color: Colors.white, fontSize: 8),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+            icon: Icon(Icons.local_shipping_outlined),
+            activeIcon: Icon(Icons.local_shipping),
+            label: 'Jobs',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            activeIcon: Icon(Icons.account_balance_wallet),
+            label: 'Earnings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
             label: 'Profile',
           ),
         ],
