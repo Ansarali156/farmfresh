@@ -256,6 +256,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: _selectedCategory,
+                    dropdownColor: Colors.white,
                     style: GoogleFonts.plusJakartaSans(
                       color: const Color(0xFF23312B),
                       fontWeight: FontWeight.w700,

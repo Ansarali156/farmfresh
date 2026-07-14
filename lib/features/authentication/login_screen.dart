@@ -117,6 +117,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     // Role Selector Dropdown
                     DropdownButtonFormField<String>(
                       value: _selectedRole,
+                      dropdownColor: Colors.white,
                       style: GoogleFonts.plusJakartaSans(
                         color: const Color(0xFF23312B),
                         fontWeight: FontWeight.w700,
