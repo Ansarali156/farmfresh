@@ -1,5 +1,6 @@
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/product_model.dart';
 import 'product_provider.dart';
 
@@ -9,21 +10,26 @@ class WishlistNotifier extends StateNotifier<List<String>> {
   }
 
   static const _key = 'wishlist_product_ids';
+  final _storage = const FlutterSecureStorage();
 
   Future<void> _loadWishlist() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = prefs.getStringList(_key) ?? [];
+    final raw = await _storage.read(key: _key);
+    if (raw != null && raw.isNotEmpty) {
+      final decoded = jsonDecode(raw);
+      if (decoded is List) {
+        state = decoded.cast<String>();
+      }
+    }
   }
 
   Future<void> toggleWishlist(String productId) async {
-    final prefs = await SharedPreferences.getInstance();
     final current = List<String>.from(state);
     if (current.contains(productId)) {
       current.remove(productId);
     } else {
       current.add(productId);
     }
-    await prefs.setStringList(_key, current);
+    await _storage.write(key: _key, value: jsonEncode(current));
     state = current;
   }
 

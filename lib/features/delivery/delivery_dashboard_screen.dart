@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/delivery_provider.dart';
-import '../../models/delivery_dashboard_model.dart';
 import '../../models/delivery_model.dart';
 
 class DeliveryDashboardScreen extends ConsumerStatefulWidget {

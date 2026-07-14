@@ -191,7 +191,7 @@ class _DeliveryProfileScreenState extends ConsumerState<DeliveryProfileScreen> {
               const Icon(Icons.star, color: Colors.amber, size: 18),
               const SizedBox(width: 4),
               Text(
-                '${(profile.rating?.average ?? 5.0).toStringAsFixed(1)} Rating',
+                '${profile.rating.average.toStringAsFixed(1)} Rating',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
               ),
             ],

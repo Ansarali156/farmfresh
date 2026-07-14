@@ -233,7 +233,7 @@ export class AuthService {
       },
     });
 
-    return { message: 'Password reset link sent to your email address', debugToken: token };
+    return { message: 'Password reset link sent to your email address' };
   }
 
   async resetPassword(dto: ResetPasswordDto) {
@@ -271,7 +271,8 @@ export class AuthService {
       },
     });
 
-    return { message: 'Verification link sent to your email', debugToken: token };
+    // In production, send email via email service. Token is NOT returned to client.
+    return { message: 'Verification link sent to your email' };
   }
 
   async verifyEmail(token: string) {
@@ -297,7 +298,8 @@ export class AuthService {
       create: { phone, code, expiresAt },
     });
 
-    return { message: 'OTP verification code sent', debugCode: code };
+    // In production, send via SMS provider. Code is NOT returned to client.
+    return { message: 'OTP verification code sent' };
   }
 
   async verifyOtp(phone: string, code: string) {

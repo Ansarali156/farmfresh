@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/product_model.dart';
 import '../../providers/wishlist_provider.dart';
@@ -56,14 +55,19 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                       padding: const EdgeInsets.all(8.0),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: CachedNetworkImage(
-                          imageUrl: widget.product.image,
-                          fit: BoxFit.cover,
-                          errorWidget: (context, url, error) => Container(
-                            color: const Color(0xFFF1F8F4),
-                            child: const Icon(Icons.spa, color: Color(0xFF2E7D32), size: 30),
-                          ),
-                        ),
+                        child: widget.product.image.isEmpty
+                            ? Container(
+                                color: const Color(0xFFF1F8F4),
+                                child: const Icon(Icons.spa, color: Color(0xFF2E7D32), size: 30),
+                              )
+                            : Image.network(
+                                widget.product.image,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  color: const Color(0xFFF1F8F4),
+                                  child: const Icon(Icons.spa, color: Color(0xFF2E7D32), size: 30),
+                                ),
+                              ),
                       ),
                     ),
                   ),

@@ -75,8 +75,6 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                         itemCount: list.length,
                         itemBuilder: (context, index) {
                           final u = list[index];
-                          // Simple mock suspension check or check deletedAt
-                          final isSuspended = false; // Simulated for display
 
                           return ListTile(
                             leading: CircleAvatar(
@@ -92,12 +90,12 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                               ],
                             ),
                             trailing: ElevatedButton(
-                              onPressed: () => _toggleSuspension(u, isSuspended),
+                              onPressed: () => _toggleSuspension(u, false),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: isSuspended ? Colors.green : Colors.red,
+                                backgroundColor: Colors.red,
                                 foregroundColor: Colors.white,
                               ),
-                              child: Text(isSuspended ? 'Activate' : 'Suspend'),
+                              child: const Text('Suspend'),
                             ),
                           );
                         },

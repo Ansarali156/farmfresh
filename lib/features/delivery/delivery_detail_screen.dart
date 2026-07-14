@@ -40,8 +40,6 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
       );
     }
 
-    final isAvailable = delivery.status == DeliveryOrderStatus.pending;
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Order #${delivery.orderNumber ?? delivery.orderId.substring(0, 8)}'),

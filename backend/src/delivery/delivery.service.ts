@@ -507,8 +507,20 @@ export class DeliveryService {
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
+      include: {
+        deliveries: {
+          where: { status: 'DELIVERED' as any },
+          select: { deliveryCharge: true },
+        },
+      },
     });
     if (!user) throw new NotFoundException('Delivery partner user profile not found');
+
+    const completedDeliveries = user.deliveries || [];
+    const totalEarnings = completedDeliveries.reduce(
+      (sum, d) => sum + Number(d.deliveryCharge),
+      0,
+    );
 
     return {
       id: user.id,
@@ -516,26 +528,14 @@ export class DeliveryService {
       phone: user.phone || '',
       email: user.email,
       profileImage: null,
-      vehicle: {
-        type: 'Motorcycle',
-        model: 'Hero Splendor',
-        plateNumber: 'AP-07-BX-1234',
-        color: 'Black',
-      },
-      license: {
-        number: 'DL-1420110012345',
-        expiryDate: '2030-12-31',
-      },
-      bankAccount: {
-        accountName: user.name,
-        accountNumber: '1234567890',
-        bankName: 'State Bank of India',
-        ifscCode: 'SBIN0001234',
-      },
+      vehicle: null,
+      license: null,
+      bankAccount: null,
       rating: {
-        average: 4.8,
-        total: 24,
+        average: 0,
+        total: 0,
       },
+      totalEarnings,
       isAvailable: true,
       createdAt: user.createdAt,
     };
