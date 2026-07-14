@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../providers/delivery_provider.dart';
 
 class DeliveryEarningsScreen extends ConsumerStatefulWidget {
@@ -22,46 +23,133 @@ class _DeliveryEarningsScreenState extends ConsumerState<DeliveryEarningsScreen>
     final earningsState = ref.watch(deliveryEarningsProvider);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Earnings'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
+        title: Text(
+          'Earnings Log',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFF23312B)),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
       ),
       body: earningsState.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF2E7D32)))
           : RefreshIndicator(
+              color: const Color(0xFF2E7D32),
               onRefresh: () => ref.read(deliveryEarningsProvider.notifier).loadEarnings(),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildEarningsCards(earningsState),
-                    const SizedBox(height: 20),
-                    const Text('Transactions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    // Green Gradient Main Wallet Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x1F2E7D32),
+                            offset: Offset(0, 8),
+                            blurRadius: 16,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'TOTAL ACCUMULATED PAYOUT',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white.withOpacity(0.8),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '₹${earningsState.earnings.totalEarnings.toStringAsFixed(2)}',
+                            style: GoogleFonts.outfit(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Stats Grid Row Cards
+                    Row(
+                      children: [
+                        Expanded(child: _buildEarningCard('Today', '₹${earningsState.earnings.dailyEarnings.toStringAsFixed(2)}', const Color(0xFF2E7D32))),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildEarningCard('This Week', '₹${earningsState.earnings.weeklyEarnings.toStringAsFixed(2)}', const Color(0xFF219EBC))),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: _buildEarningCard('This Month', '₹${earningsState.earnings.monthlyEarnings.toStringAsFixed(2)}', const Color(0xFF8338EC))),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildEarningCard('Base Balance', '₹${earningsState.earnings.totalEarnings.toStringAsFixed(2)}', const Color(0xFFE28C43))),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    Text(
+                      'Rider Transaction Ledger',
+                      style: GoogleFonts.outfit(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF23312B),
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     if (earningsState.transactions.isEmpty)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(40),
-                          child: Text('No transactions yet', style: TextStyle(color: Colors.grey)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              const Icon(Icons.receipt_long_outlined, size: 48, color: Color(0xFF647C72)),
+                              const SizedBox(height: 12),
+                              Text(
+                                'No payment records found yet.',
+                                style: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72), fontSize: 11),
+                              ),
+                            ],
+                          ),
                         ),
                       )
-                    else
+                    else ...[
                       ...earningsState.transactions.map((t) => _buildTransactionTile(t)),
-                    if (earningsState.hasMore && earningsState.transactions.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Center(
-                          child: earningsState.isLoadingMore
-                              ? const CircularProgressIndicator()
-                              : TextButton(
-                                  onPressed: () => ref.read(deliveryEarningsProvider.notifier).loadMoreTransactions(),
-                                  child: const Text('Load More'),
-                                ),
+                      if (earningsState.hasMore && earningsState.transactions.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Center(
+                            child: earningsState.isLoadingMore
+                                ? const CircularProgressIndicator(color: Color(0xFF2E7D32))
+                                : TextButton(
+                                    onPressed: () => ref.read(deliveryEarningsProvider.notifier).loadMoreTransactions(),
+                                    child: Text(
+                                      'Load More Transactions',
+                                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, color: const Color(0xFF2E7D32)),
+                                    ),
+                                  ),
+                          ),
                         ),
-                      ),
+                    ],
                   ],
                 ),
               ),
@@ -69,43 +157,41 @@ class _DeliveryEarningsScreenState extends ConsumerState<DeliveryEarningsScreen>
     );
   }
 
-  Widget _buildEarningsCards(DeliveryEarningsState state) {
-    final earnings = state.earnings;
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: _buildEarningCard('Today', '₹${earnings.dailyEarnings.toStringAsFixed(0)}', Colors.green)),
-            const SizedBox(width: 12),
-            Expanded(child: _buildEarningCard('This Week', '₹${earnings.weeklyEarnings.toStringAsFixed(0)}', Colors.blue)),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _buildEarningCard('This Month', '₹${earnings.monthlyEarnings.toStringAsFixed(0)}', Colors.purple)),
-            const SizedBox(width: 12),
-            Expanded(child: _buildEarningCard('Total', '₹${earnings.totalEarnings.toStringAsFixed(0)}', Colors.teal)),
-          ],
-        ),
-      ],
-    );
-  }
-
   Widget _buildEarningCard(String title, String value, Color color) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
-            const SizedBox(height: 4),
-            Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A2E5C45),
+            offset: Offset(0, 4),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF647C72),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -119,25 +205,48 @@ class _DeliveryEarningsScreenState extends ConsumerState<DeliveryEarningsScreen>
     }
 
     final isCredit = transaction.type == 'CREDIT' || transaction.type == 'earning';
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+    final accentColor = isCredit ? const Color(0xFF2E7D32) : const Color(0xFFFF4D6D);
+    final iconBg = isCredit ? const Color(0xFFE8F5E9) : const Color(0xFFFFF0F3);
+    final icon = isCredit ? Icons.arrow_downward : Icons.arrow_upward;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A2E5C45),
+            offset: Offset(0, 4),
+            blurRadius: 10,
+          ),
+        ],
+      ),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
         leading: CircleAvatar(
-          backgroundColor: isCredit ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+          backgroundColor: iconBg,
+          radius: 18,
           child: Icon(
-            isCredit ? Icons.arrow_downward : Icons.arrow_upward,
-            color: isCredit ? Colors.green : Colors.red,
-            size: 20,
+            icon,
+            color: accentColor,
+            size: 16,
           ),
         ),
-        title: Text(transaction.description.toString(),
-            style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(dateStr, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+        title: Text(
+          transaction.description.toString(),
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 12, color: const Color(0xFF23312B)),
+        ),
+        subtitle: Text(
+          dateStr,
+          style: GoogleFonts.plusJakartaSans(fontSize: 10, color: const Color(0xFF647C72), fontWeight: FontWeight.w500),
+        ),
         trailing: Text(
-          '${isCredit ? '+' : '-'}₹${transaction.amount.toStringAsFixed(0)}',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: isCredit ? Colors.green : Colors.red,
+          '${isCredit ? '+' : '-'}₹${transaction.amount.toStringAsFixed(2)}',
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.w800,
+            fontSize: 13,
+            color: accentColor,
           ),
         ),
       ),
