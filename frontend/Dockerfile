@@ -4,7 +4,7 @@ FROM instrumentisto/flutter:3.19.0 AS builder
 WORKDIR /app
 
 # Copy configuration and dependencies
-COPY pubspec.yaml pubspec.lock ./
+COPY pubspec.yaml ./
 RUN flutter pub get
 
 # Copy all source code
