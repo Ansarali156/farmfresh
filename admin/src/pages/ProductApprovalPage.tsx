@@ -5,7 +5,7 @@ import type { Product } from '../types';
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, Stack, Snackbar, Alert,
-  Card, CardContent, Chip, Divider,
+  Card, CardContent, Chip, Divider, TextField,
 } from '@mui/material';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -275,13 +275,13 @@ export default function ProductApprovalPage() {
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                     Farmer
                   </Typography>
-                  <Typography variant="body1">{detailProduct.farmer}</Typography>
+                  <Typography variant="body1">{detailProduct.farmerName ?? detailProduct.farmerId}</Typography>
                 </Box>
                 <Box flex={1}>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                     Submitted Date
                   </Typography>
-                  <Typography variant="body1">{detailProduct.submittedDate}</Typography>
+                  <Typography variant="body1">{new Date(detailProduct.createdAt).toLocaleDateString()}</Typography>
                 </Box>
               </Stack>
 
