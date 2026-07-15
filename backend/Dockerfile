@@ -3,6 +3,9 @@ FROM node:20-slim AS builder
 
 WORKDIR /usr/src/app
 
+# Install openssl for Prisma engine detection during build
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 COPY package*.json ./
 COPY prisma ./prisma/
 
@@ -17,6 +20,9 @@ RUN npx prisma generate
 FROM node:20-slim
 
 WORKDIR /usr/src/app
+
+# Install openssl for Prisma runtime
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
 RUN npm ci --only=production
