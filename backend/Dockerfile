@@ -1,5 +1,5 @@
 # Production Node.js Docker Image Build File
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 
 WORKDIR /usr/src/app
 
@@ -14,7 +14,7 @@ RUN npm run build
 RUN npx prisma generate
 
 # Final runner container stage
-FROM node:20-alpine
+FROM node:20-slim
 
 WORKDIR /usr/src/app
 
@@ -24,8 +24,6 @@ RUN npm ci --only=production
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /usr/src/app/node_modules/@prisma/client ./node_modules/@prisma/client
-
-RUN apk add --no-cache openssl1.1-compat
 
 EXPOSE 3000
 
