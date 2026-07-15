@@ -347,7 +347,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       filled: false,
                                       contentPadding: const EdgeInsets.symmetric(vertical: 14),
                                       isDense: true,
-                                      filled: false,
                                     ),
                                     style: GoogleFonts.plusJakartaSans(
                                       color: const Color(0xFF1B2E25),
