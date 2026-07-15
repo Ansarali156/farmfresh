@@ -33,4 +33,4 @@ COPY --from=builder /usr/src/app/node_modules/@prisma/client ./node_modules/@pri
 
 EXPOSE 3000
 
-CMD ["node", "dist/src/main"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main"]
