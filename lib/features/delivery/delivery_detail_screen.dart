@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/delivery_provider.dart';
 import '../../models/delivery_model.dart';
+import '../../core/utils/app_snackbar.dart';
 
 class DeliveryDetailScreen extends ConsumerStatefulWidget {
   final String deliveryId;
@@ -392,8 +393,10 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
   void _acceptJob(String id) async {
     final ok = await ref.read(deliveryOrdersProvider.notifier).acceptDelivery(id);
     if (mounted && ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Job accepted! Routing to farm...'), backgroundColor: Colors.green),
+      showAppSnackBar(
+        context,
+        'Job accepted! Routing to farm...',
+        type: SnackBarType.success,
       );
     }
   }
@@ -401,8 +404,10 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
   void _markPickedUp(String id) async {
     final ok = await ref.read(deliveryOrdersProvider.notifier).markPickedUp(id);
     if (mounted && ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Route to farm started!'), backgroundColor: Colors.green),
+      showAppSnackBar(
+        context,
+        'Route to farm started!',
+        type: SnackBarType.success,
       );
     }
   }
@@ -410,8 +415,10 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
   void _confirmPickup(String id) async {
     final ok = await ref.read(deliveryOrdersProvider.notifier).confirmPickup(id);
     if (mounted && ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Packages picked up. Ready for transit!'), backgroundColor: Colors.teal),
+      showAppSnackBar(
+        context,
+        'Packages picked up. Ready for transit!',
+        type: SnackBarType.info,
       );
     }
   }
@@ -419,8 +426,10 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
   void _startTransit(String id) async {
     final ok = await ref.read(deliveryOrdersProvider.notifier).startDelivery(id);
     if (mounted && ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Transit started. Heading to customer drop-off.'), backgroundColor: Colors.blue),
+      showAppSnackBar(
+        context,
+        'Transit started. Heading to customer drop-off.',
+        type: SnackBarType.info,
       );
     }
   }
@@ -459,8 +468,10 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
             onPressed: () async {
               final otp = _otpController.text.trim();
               if (otp.length != 6) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter a valid 6-digit OTP code.'), backgroundColor: Colors.red),
+                showAppSnackBar(
+                  context,
+                  'Please enter a valid 6-digit OTP code.',
+                  type: SnackBarType.error,
                 );
                 return;
               }
@@ -468,13 +479,17 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
               final ok = await ref.read(deliveryOrdersProvider.notifier).verifyOtp(id, otp);
               if (mounted) {
                 if (ok) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Order verified and delivered!'), backgroundColor: Colors.green),
+                  showAppSnackBar(
+                    context,
+                    'Order verified and delivered!',
+                    type: SnackBarType.success,
                   );
                   context.pop();
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Invalid OTP code. Please retry.'), backgroundColor: Colors.red),
+                  showAppSnackBar(
+                    context,
+                    'Invalid OTP code. Please retry.',
+                    type: SnackBarType.error,
                   );
                 }
               }

@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../providers/order_provider.dart';
 import '../../models/order_model.dart';
 import '../../core/constants/app_enums.dart';
+import '../../core/utils/app_snackbar.dart';
 
 class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({super.key});
@@ -95,20 +96,18 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
 
     ref.listen<OrderState>(orderProvider, (prev, next) {
       if (next.actionMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.actionMessage!, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
-            backgroundColor: const Color(0xFF2E7D32),
-          ),
+        showAppSnackBar(
+          context,
+          next.actionMessage!,
+          type: SnackBarType.success,
         );
         ref.read(orderProvider.notifier).clearMessages();
       }
       if (next.errorMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.errorMessage!, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
-            backgroundColor: const Color(0xFFFF4D6D),
-          ),
+        showAppSnackBar(
+          context,
+          next.errorMessage!,
+          type: SnackBarType.error,
         );
         ref.read(orderProvider.notifier).clearMessages();
       }

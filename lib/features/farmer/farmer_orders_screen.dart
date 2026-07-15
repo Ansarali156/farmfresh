@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../providers/farmer_provider.dart';
 import '../../models/order_model.dart';
 import '../../core/constants/app_enums.dart';
+import '../../core/utils/app_snackbar.dart';
 
 class FarmerOrdersScreen extends ConsumerStatefulWidget {
   const FarmerOrdersScreen({super.key});
@@ -58,18 +59,16 @@ class _FarmerOrdersScreenState extends ConsumerState<FarmerOrdersScreen>
         await ref.read(farmerOrderProvider.notifier).updateOrderStatus(orderId, status);
     if (!mounted) return;
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Order updated to $status'),
-          backgroundColor: const Color(0xFF2E7D32),
-        ),
+      showAppSnackBar(
+        context,
+        'Order updated to $status',
+        type: SnackBarType.success,
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to update order status'),
-          backgroundColor: Color(0xFFFF4D6D),
-        ),
+      showAppSnackBar(
+        context,
+        'Failed to update order status',
+        type: SnackBarType.error,
       );
     }
   }

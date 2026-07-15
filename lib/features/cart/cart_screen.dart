@@ -8,6 +8,7 @@ import '../../providers/order_provider.dart';
 import '../../providers/address_provider.dart';
 import '../../models/cart_item_model.dart';
 import '../../models/address_model.dart';
+import '../../core/utils/app_snackbar.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -39,15 +40,16 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     if (code.isEmpty) return;
     final success = ref.read(cartProvider.notifier).applyCoupon(code);
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Coupon "$code" applied successfully!'),
-          backgroundColor: const Color(0xFF2E7D32),
-        ),
+      showAppSnackBar(
+        context,
+        'Coupon "$code" applied successfully!',
+        type: SnackBarType.success,
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid coupon code'), backgroundColor: Color(0xFFE63946)),
+      showAppSnackBar(
+        context,
+        'Invalid coupon code',
+        type: SnackBarType.error,
       );
     }
   }
@@ -57,11 +59,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     if (cartState.items.isEmpty) return;
 
     if (_selectedAddress == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select or add a delivery address first!'),
-          backgroundColor: Color(0xFFE63946),
-        ),
+      showAppSnackBar(
+        context,
+        'Please select or add a delivery address first!',
+        type: SnackBarType.error,
       );
       return;
     }
@@ -78,20 +79,18 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     if (!mounted) return;
 
     if (createdOrder != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Order #${createdOrder.orderNumber.isNotEmpty ? createdOrder.orderNumber : createdOrder.id} placed successfully!',
-          ),
-          backgroundColor: const Color(0xFF2E7D32),
-          duration: const Duration(seconds: 3),
-        ),
+      showAppSnackBar(
+        context,
+        'Order #${createdOrder.orderNumber.isNotEmpty ? createdOrder.orderNumber : createdOrder.id} placed successfully!',
+        type: SnackBarType.success,
       );
       ref.read(cartProvider.notifier).clearCart();
       context.go('/customer-main');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to place order'), backgroundColor: Color(0xFFE63946)),
+      showAppSnackBar(
+        context,
+        'Failed to place order',
+        type: SnackBarType.error,
       );
     }
   }
@@ -321,67 +320,127 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       top: BorderSide(color: const Color(0xFF2E7D32).withOpacity(0.05)),
                     ),
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE5EDE7).withOpacity(0.5),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE5EDE7)),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          height: 40,
-                          child: Center(
-                            child: TextField(
-                              controller: _couponController,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 13,
-                                color: const Color(0xFF23312B),
-                              ),
-                              decoration: InputDecoration(
-                                hintText: cartState.couponCode != null
-                                    ? 'Promo Applied: ${cartState.couponCode}'
-                                    : 'Enter Promo Code (e.g. SAVE50)',
-                                hintStyle: GoogleFonts.plusJakartaSans(
-                                  color: const Color(0xFF647C72),
-                                  fontSize: 12,
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.zero,
-                                isDense: true,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      GestureDetector(
-                        onTap: cartState.couponCode != null
-                            ? () {
-                                ref.read(cartProvider.notifier).removeCoupon();
-                                _couponController.clear();
-                              }
-                            : _applyCoupon,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: cartState.couponCode != null
-                                ? const Color(0xFFFFF0F3)
-                                : const Color(0xFFE8F5E9),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
-                          child: Text(
-                            cartState.couponCode != null ? 'Remove' : 'Apply',
+                      Row(
+                        children: [
+                          const Icon(Icons.local_offer_outlined, color: Color(0xFFE28C43), size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Promo / Coupon Code',
                             style: GoogleFonts.plusJakartaSans(
-                              color: cartState.couponCode != null
-                                  ? const Color(0xFFFF4D6D)
-                                  : const Color(0xFF2E7D32),
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
+                              color: const Color(0xFF23312B),
                             ),
                           ),
-                        ),
+                          if (cartState.couponCode != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE8F5E9),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: const Color(0xFF2E7D32).withOpacity(0.2)),
+                              ),
+                              child: Text(
+                                '${cartState.couponCode} Applied!',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: const Color(0xFF2E7D32),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF7FAF8),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: cartState.couponCode != null
+                                      ? const Color(0xFF2E7D32).withOpacity(0.3)
+                                      : const Color(0xFFECECEC),
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Center(
+                                child: TextField(
+                                  controller: _couponController,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 13,
+                                    color: const Color(0xFF23312B),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: cartState.couponCode != null
+                                        ? 'Active Code: ${cartState.couponCode}'
+                                        : 'Enter code (e.g. SAVE50)',
+                                    hintStyle: GoogleFonts.plusJakartaSans(
+                                      color: const Color(0xFF8D99AE),
+                                      fontSize: 12,
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.zero,
+                                    isDense: true,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: cartState.couponCode != null
+                                ? () {
+                                    ref.read(cartProvider.notifier).removeCoupon();
+                                    _couponController.clear();
+                                  }
+                                : _applyCoupon,
+                            child: Container(
+                              height: 44,
+                              decoration: BoxDecoration(
+                                gradient: cartState.couponCode != null
+                                    ? null
+                                    : const LinearGradient(
+                                        colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
+                                      ),
+                                color: cartState.couponCode != null
+                                    ? const Color(0xFFFFF0F3)
+                                    : null,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: cartState.couponCode != null
+                                    ? null
+                                    : [
+                                        BoxShadow(
+                                          color: const Color(0xFFE28C43).withOpacity(0.2),
+                                          offset: const Offset(0, 4),
+                                          blurRadius: 8,
+                                        ),
+                                      ],
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              alignment: Alignment.center,
+                              child: Text(
+                                cartState.couponCode != null ? 'Remove' : 'Apply',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: cartState.couponCode != null
+                                      ? const Color(0xFFFF4D6D)
+                                      : Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

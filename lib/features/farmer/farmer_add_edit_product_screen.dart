@@ -6,6 +6,7 @@ import '../../models/product_model.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../models/category_model.dart';
+import '../../core/utils/app_snackbar.dart';
 
 class FarmerAddEditProductScreen extends ConsumerStatefulWidget {
   final ProductModel? product;
@@ -104,16 +105,17 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
     setState(() => _isSaving = false);
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_isEditMode ? 'Product updated successfully' : 'Product added successfully'),
-          backgroundColor: const Color(0xFF2E7D32),
-        ),
+      showAppSnackBar(
+        context,
+        _isEditMode ? 'Product updated successfully' : 'Product added successfully',
+        type: SnackBarType.success,
       );
       context.pop();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to save product'), backgroundColor: Color(0xFFFF4D6D)),
+      showAppSnackBar(
+        context,
+        'Failed to save product',
+        type: SnackBarType.error,
       );
     }
   }
@@ -193,6 +195,15 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                     decoration: _inputDecoration('Description', Icons.description_outlined).copyWith(
                       alignLabelWithHint: true,
                     ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter crop description';
+                      }
+                      if (value.trim().length < 10) {
+                        return 'Description must be at least 10 characters';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   Row(

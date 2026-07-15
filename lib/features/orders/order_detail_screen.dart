@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/order_provider.dart';
 import '../../models/order_model.dart';
 import '../../core/constants/app_enums.dart';
+import '../../core/utils/app_snackbar.dart';
 
 class OrderDetailScreen extends ConsumerStatefulWidget {
   final String orderId;
@@ -18,6 +19,8 @@ class OrderDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
+  bool _isReordering = false;
+
   @override
   void initState() {
     super.initState();
@@ -627,19 +630,34 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
         if (!isActive)
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => _handleReorder(order),
-              icon: const Icon(Icons.replay, size: 18),
-              label: Text(
-                'Reorder Items',
-                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
-              ),
+            child: OutlinedButton(
+              onPressed: _isReordering ? null : () => _handleReorder(order),
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF2E7D32),
                 side: const BorderSide(color: Color(0xFF2E7D32)),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
+              child: _isReordering
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFF2E7D32),
+                      ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.replay, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Reorder Items',
+                          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                      ],
+                    ),
             ),
           ),
       ],
@@ -684,13 +702,18 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                   .cancelOrder(order.id, reason: reasonController.text);
               if (!mounted) return;
               if (success) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Order cancelled successfully', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
-                    backgroundColor: const Color(0xFF2E7D32),
-                  ),
+                showAppSnackBar(
+                  context,
+                  'Order cancelled successfully',
+                  type: SnackBarType.success,
                 );
                 if (context.mounted) context.pop();
+              } else {
+                showAppSnackBar(
+                  context,
+                  'Failed to cancel order',
+                  type: SnackBarType.error,
+                );
               }
             },
             child: Text('Cancel Order', style: GoogleFonts.plusJakartaSans(color: const Color(0xFFFF4D6D), fontWeight: FontWeight.bold)),
@@ -701,22 +724,30 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
   }
 
   void _handleReorder(OrderModel order) async {
+    setState(() {
+      _isReordering = true;
+    });
     final success =
         await ref.read(orderProvider.notifier).reorder(order.id);
     if (!mounted) return;
+    setState(() {
+      _isReordering = false;
+    });
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Items added to cart', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
-          backgroundColor: const Color(0xFF2E7D32),
-          action: SnackBarAction(
-            label: 'View Cart',
-            textColor: Colors.white,
-            onPressed: () {
-              context.push('/cart');
-            },
-          ),
-        ),
+      showAppSnackBar(
+        context,
+        'Items added to cart',
+        type: SnackBarType.success,
+        actionLabel: 'View Cart',
+        onAction: () {
+          context.push('/cart');
+        },
+      );
+    } else {
+      showAppSnackBar(
+        context,
+        'Failed to reorder items. Please try again.',
+        type: SnackBarType.error,
       );
     }
   }
