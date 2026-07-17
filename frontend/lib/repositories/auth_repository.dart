@@ -28,7 +28,9 @@ abstract class AuthRepository {
 
 class PostgresAuthRepository implements AuthRepository {
   final ApiClient _apiClient;
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
 
   PostgresAuthRepository(this._apiClient);
 

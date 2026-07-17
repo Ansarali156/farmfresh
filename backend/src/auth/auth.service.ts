@@ -342,12 +342,10 @@ export class AuthService {
     phone?: string,
     farmName?: string,
     farmAddress?: string,
-    avatar?: string,
   ) {
     const data: any = {};
     if (name !== undefined) data.name = name;
     if (phone !== undefined) data.phone = phone;
-    if (avatar !== undefined) data.avatar = avatar;
 
     // Support updating the nested FarmerProfile record
     if (farmName !== undefined || farmAddress !== undefined) {
@@ -366,7 +364,6 @@ export class AuthService {
         email: true,
         role: true,
         phone: true,
-        avatar: true,
         createdAt: true,
         updatedAt: true,
       },

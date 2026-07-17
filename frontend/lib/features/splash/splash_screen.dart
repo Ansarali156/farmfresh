@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:ui';
-import '../../providers/auth_provider.dart';
 
-class SplashScreen extends ConsumerStatefulWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late AnimationController _transitionController;
   late AnimationController _buttonScaleController;
   late Animation<double> _buttonScale;
@@ -57,17 +54,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
-
-    if (authState.isLoading || authState.user != null) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(
-            color: Color(0xFF2E7D32),
-          ),
-        ),
-      );
-    }
     final slideAnimation = Tween<Offset>(
       begin: const Offset(-0.08, 0.0), // slides slightly left as it exits
       end: Offset.zero,
@@ -102,7 +88,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
             child: SafeArea(
               child: Stack(
                 children: [
-                   // Floating decorative leaf top-left
+                  // Floating decorative leaf top-left
                   Positioned(
                     top: -10,
                     left: -30,
@@ -157,29 +143,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24.0),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(28),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.4),
-                                  borderRadius: BorderRadius.circular(28),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.6),
-                                    width: 1.5,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 15,
-                                      offset: const Offset(0, 10),
-                                    ),
-                                  ],
-                                ),
-                                padding: const EdgeInsets.all(24.0),
-                                child: Image.network(
-                                  '/grocery_bag.png',
-                                  fit: BoxFit.contain,
+                            borderRadius: BorderRadius.circular(32),
+                            child: Container(
+                              color: Colors.white,
+                              child: const Center(
+                                child: Icon(
+                                  Icons.eco,
+                                  size: 100,
+                                  color: Color(0xFF2E7D32),
                                 ),
                               ),
                             ),

@@ -249,6 +249,8 @@ final appRouter = Provider<GoRouter>((ref) {
       final isLoggedIn = authState.user != null;
       final location = state.matchedLocation;
 
+      print('[ROUTER] Redirect check: isLoggedIn=$isLoggedIn, isLoading=$isLoading, location=$location, role=${authState.user?.role}');
+
       // Handle loading states
       if (isLoading) {
         if (location == '/splash') return null;
