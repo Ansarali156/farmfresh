@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import configuration from './config/configuration';
 import { configValidationSchema } from './config/validation.schema';
 import { DatabaseModule } from './database/database.module';
@@ -20,6 +22,11 @@ import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
+    // Static file serving for uploads
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '..', 'public'),
+      serveRoot: '/public',
+    }),
     // Global environment variables profile config loading
     ConfigModule.forRoot({
       isGlobal: true,
