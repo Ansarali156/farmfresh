@@ -26,11 +26,11 @@ class AppTheme {
       centerTitle: true,
       titleTextStyle: AppTextStyles.titleLarge.copyWith(color: AppColors.textPrimaryLight),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.surfaceLight,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(18),
         side: const BorderSide(color: AppColors.borderLight, width: 0.5),
       ),
     ),
@@ -43,19 +43,19 @@ class AppTheme {
       filled: true,
       fillColor: AppColors.surfaceContainerHighestLight,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(color: AppColors.borderLight, width: 1),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(color: AppColors.borderLight, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(color: AppColors.primaryGreen, width: 2),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(color: AppColors.error, width: 1),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -74,7 +74,7 @@ class AppTheme {
         backgroundColor: AppColors.primaryGreen,
         foregroundColor: Colors.white,
         textStyle: AppTextStyles.labelLarge,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       ),
@@ -83,7 +83,7 @@ class AppTheme {
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.primaryGreen,
         side: const BorderSide(color: AppColors.primaryGreen, width: 1.5),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       ),
     ),
@@ -125,11 +125,11 @@ class AppTheme {
       centerTitle: true,
       titleTextStyle: AppTextStyles.titleLarge.copyWith(color: AppColors.textPrimaryDark),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.surfaceDark,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(18),
         side: const BorderSide(color: AppColors.borderDark, width: 0.5),
       ),
     ),
@@ -142,19 +142,19 @@ class AppTheme {
       filled: true,
       fillColor: AppColors.surfaceDark,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(color: AppColors.borderDark, width: 1),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(color: AppColors.borderDark, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(color: AppColors.primaryGreen, width: 2),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(color: AppColors.error, width: 1),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -173,7 +173,7 @@ class AppTheme {
         backgroundColor: AppColors.primaryGreen,
         foregroundColor: Colors.black,
         textStyle: AppTextStyles.labelLarge,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       ),
@@ -182,7 +182,7 @@ class AppTheme {
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.primaryGreen,
         side: const BorderSide(color: AppColors.primaryGreen, width: 1.5),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       ),
     ),

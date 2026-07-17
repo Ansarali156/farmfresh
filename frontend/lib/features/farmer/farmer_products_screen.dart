@@ -294,8 +294,18 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFFE4EAE0)),
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.6),
+                                  width: 1.5,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x0A2E5C45),
+                                    offset: Offset(0, 8),
+                                    blurRadius: 20,
+                                  ),
+                                ],
                               ),
                               padding: const EdgeInsets.all(12),
                               child: Row(
@@ -432,6 +442,45 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                       ),
           ),
         ],
+      ),
+      bottomNavigationBar: Container(
+        color: Colors.white,
+        padding: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 20.0),
+        child: Container(
+          height: 50,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF2E7D32), Color(0xFF1B4332)],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2E7D32).withOpacity(0.2),
+                offset: const Offset(0, 8),
+                blurRadius: 16,
+              ),
+            ],
+          ),
+          child: ElevatedButton.icon(
+            onPressed: () {
+              context.push('/farmer-add-product');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            icon: const Icon(Icons.add_circle_outline, size: 20),
+            label: Text(
+              'Add New Crop / Product',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

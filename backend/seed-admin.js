@@ -1,8 +1,33 @@
+const fs = require('fs');
+const path = require('path');
+try {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    const envFile = fs.readFileSync(envPath, 'utf8');
+    envFile.split('\n').forEach(line => {
+      const match = line.match(/^\s*([^#=]+)\s*=\s*(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        let val = match[2].trim().replace(/\r$/, '');
+        if (val.startsWith('"') && val.endsWith('"')) {
+          val = val.substring(1, val.length - 1);
+        } else if (val.startsWith("'") && val.endsWith("'")) {
+          val = val.substring(1, val.length - 1);
+        }
+        process.env[key] = val;
+      }
+    });
+  }
+  console.log('Loaded DATABASE_URL:', JSON.stringify(process.env.DATABASE_URL));
+} catch (e) {
+  console.error('Failed to load .env file:', e);
+}
+
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
 async function main() {
-  const prisma = new PrismaClient();
+  const prisma = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } });
   
   const email = 'admin@farmfresh.com';
   const password = 'Admin@123';
@@ -20,6 +45,7 @@ async function main() {
   
   const admin = await prisma.user.create({
     data: {
+      id: 'a1a868c2-3cf9-42b7-86c0-6bf7a84e20df',
       name: 'Super Admin',
       email,
       passwordHash,

@@ -201,7 +201,7 @@ export default function Topbar() {
       </AppBar>
 
       {/* Profile Avatar Selection Dialog */}
-      <Dialog open={profileOpen} onClose={() => setProfileOpen(false)} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: '16px', p: 1 } } }}>
+      <Dialog open={profileOpen} onClose={() => setProfileOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: '16px', p: 1 } }}>
         <DialogTitle fontWeight={600} textAlign="center">Update Profile Picture</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2.5, my: 1 }}>

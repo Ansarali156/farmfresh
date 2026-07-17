@@ -546,18 +546,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            width: 48,
-            height: 48,
-            transform: Matrix4.identity()..scale(isActive ? 1.05 : 1.0),
+            width: 54,
+            height: 54,
+            transform: Matrix4.identity()..scale(isActive ? 1.08 : 1.0),
             transformAlignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isActive ? activeColor.withOpacity(0.15) : const Color(0xFFF1F8F4),
+              color: isActive ? activeColor.withOpacity(0.18) : Colors.white.withOpacity(0.8),
+              border: Border.all(
+                color: isActive ? activeColor.withOpacity(0.4) : Colors.white.withOpacity(0.6),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: (isActive ? activeColor : const Color(0xFF2E7D32)).withOpacity(isActive ? 0.2 : 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Center(
               child: Text(
                 emoji,
-                style: const TextStyle(fontSize: 20),
+                style: const TextStyle(fontSize: 22),
               ),
             ),
           ),

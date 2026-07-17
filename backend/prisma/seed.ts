@@ -30,6 +30,7 @@ async function main() {
   // 1. Create Users
   const customer = await prisma.user.create({
     data: {
+      id: 'e1f868c2-3cf9-42b7-86c0-6bf7a84e20df',
       name: 'Jane Customer',
       email: 'customer@farmfresh.com',
       passwordHash,
@@ -39,6 +40,7 @@ async function main() {
 
   const farmerUser = await prisma.user.create({
     data: {
+      id: 'f1a868c2-3cf9-42b7-86c0-6bf7a84e20df',
       name: 'John Farmer',
       email: 'farmer@farmfresh.com',
       passwordHash,
@@ -48,6 +50,7 @@ async function main() {
 
   const deliveryUser = await prisma.user.create({
     data: {
+      id: 'd1a868c2-3cf9-42b7-86c0-6bf7a84e20df',
       name: 'Amit Rider',
       email: 'delivery@farmfresh.com',
       passwordHash,
@@ -79,8 +82,8 @@ async function main() {
   // 3. Create Categories
   const fruits = await prisma.category.create({
     data: {
-      name: 'Fresh Fruits',
-      slug: 'fresh-fruits',
+      name: 'Fruits',
+      slug: 'fruits',
       description: 'Orchard fresh harvest crops and seasonal fruits.',
       displayOrder: 1,
       status: 'ACTIVE',
@@ -89,8 +92,8 @@ async function main() {
 
   const vegetables = await prisma.category.create({
     data: {
-      name: 'Fresh Vegetables',
-      slug: 'fresh-vegetables',
+      name: 'Vegetables',
+      slug: 'vegetables',
       description: 'Green organic leaves and root vegetables.',
       displayOrder: 2,
       status: 'ACTIVE',
@@ -107,7 +110,27 @@ async function main() {
     },
   });
 
-  console.log('✅ Created categories: Fruits, Vegetables, Grains & Millets');
+  const meat = await prisma.category.create({
+    data: {
+      name: 'Meat',
+      slug: 'meat',
+      description: 'Fresh organic meat and poultry.',
+      displayOrder: 4,
+      status: 'ACTIVE',
+    },
+  });
+
+  const dairy = await prisma.category.create({
+    data: {
+      name: 'Dairy',
+      slug: 'dairy',
+      description: 'Orchard fresh dairy products, milk, cheese, and butter.',
+      displayOrder: 5,
+      status: 'ACTIVE',
+    },
+  });
+
+  console.log('✅ Created categories: Fruits, Vegetables, Grains & Millets, Meat, Dairy');
 
   // 4. Create Indian Products & Inventories
   const tomato = await prisma.product.create({
@@ -215,6 +238,39 @@ async function main() {
   });
 
   console.log('✅ Created catalog products: Tomato, Onion, Mango, Basmati Rice');
+
+  // Create Product Images for default products
+  await prisma.productImage.create({
+    data: {
+      productId: tomato.id,
+      imageUrl: 'https://images.unsplash.com/photo-1595855759920-86582396756a?w=500',
+      isPrimary: true,
+    },
+  });
+
+  await prisma.productImage.create({
+    data: {
+      productId: onion.id,
+      imageUrl: 'https://images.unsplash.com/photo-1618228476711-23094cfb8356?w=500',
+      isPrimary: true,
+    },
+  });
+
+  await prisma.productImage.create({
+    data: {
+      productId: mango.id,
+      imageUrl: 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=500',
+      isPrimary: true,
+    },
+  });
+
+  await prisma.productImage.create({
+    data: {
+      productId: rice.id,
+      imageUrl: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500',
+      isPrimary: true,
+    },
+  });
 
   // 5. Create Mock Orders
   const order1 = await prisma.order.create({

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:ui';
+import '../../core/widgets/custom_button.dart';
 import '../../models/product_model.dart';
 import '../../models/cart_item_model.dart';
 import '../../providers/product_provider.dart';
@@ -162,22 +164,33 @@ class ProductDetailsScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
 
                 // Content sheet matching .details-content-sheet
-                Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0x0A2E5C45),
-                        offset: Offset(0, -15),
-                        blurRadius: 30,
-                      ),
-                    ],
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
                   ),
-                  padding: const EdgeInsets.all(24.0),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30),
+                        ),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.5),
+                          width: 1.5,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0A2E5C45),
+                            offset: Offset(0, -15),
+                            blurRadius: 30,
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(24.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -472,50 +485,21 @@ class ProductDetailsScreen extends ConsumerWidget {
                             const SizedBox(width: 16),
                           ],
                           Expanded(
-                            child: Container(
+                            child: CustomButton(
+                              text: product!.stock <= 0
+                                  ? 'Out of Stock'
+                                  : (cartItem.quantity > 0 ? 'Add More' : 'Add to Basket'),
+                              onPressed: product!.stock <= 0
+                                  ? null
+                                  : () {
+                                      ref.read(cartProvider.notifier).addItem(product!);
+                                      showAppSnackBar(
+                                        context,
+                                        'Added ${product!.name} to Cart!',
+                                        type: SnackBarType.success,
+                                      );
+                                    },
                               height: 48,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
-                                ),
-                                borderRadius: BorderRadius.circular(14),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0x1FE28C43),
-                                    offset: Offset(0, 8),
-                                    blurRadius: 16,
-                                  ),
-                                ],
-                              ),
-                              child: ElevatedButton(
-                                onPressed: product!.stock <= 0
-                                    ? null
-                                    : () {
-                                        ref.read(cartProvider.notifier).addItem(product!);
-                                        showAppSnackBar(
-                                          context,
-                                          'Added ${product!.name} to Cart!',
-                                          type: SnackBarType.success,
-                                        );
-                                      },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.transparent,
-                                  foregroundColor: Colors.white,
-                                  shadowColor: Colors.transparent,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                child: Text(
-                                  product!.stock <= 0
-                                      ? 'Out of Stock'
-                                      : (cartItem.quantity > 0 ? 'Add More' : 'Add to Basket'),
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
                             ),
                           ),
                         ],
@@ -523,6 +507,8 @@ class ProductDetailsScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+              ),
+            ),
               ],
             ),
           ),

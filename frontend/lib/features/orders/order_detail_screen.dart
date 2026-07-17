@@ -8,6 +8,7 @@ import '../../providers/order_provider.dart';
 import '../../models/order_model.dart';
 import '../../core/constants/app_enums.dart';
 import '../../core/utils/app_snackbar.dart';
+import '../../core/widgets/custom_button.dart';
 
 class OrderDetailScreen extends ConsumerStatefulWidget {
   final String orderId;
@@ -609,56 +610,22 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
           ),
         if (isActive) const SizedBox(height: 12),
         if (canCancel)
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => _showCancelDialog(order),
-              icon: const Icon(Icons.cancel_outlined, size: 18),
-              label: Text(
-                'Cancel Order',
-                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFFF4D6D),
-                side: const BorderSide(color: Color(0xFFFF4D6D)),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
+          CustomButton(
+            text: 'Cancel Order',
+            icon: Icons.cancel_outlined,
+            isOutlined: true,
+            backgroundColor: const Color(0xFFFF4D6D),
+            onPressed: () => _showCancelDialog(order),
+            height: 44,
           ),
         if (canCancel) const SizedBox(height: 12),
         if (!isActive)
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: _isReordering ? null : () => _handleReorder(order),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF2E7D32),
-                side: const BorderSide(color: Color(0xFF2E7D32)),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: _isReordering
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Color(0xFF2E7D32),
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.replay, size: 18),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Reorder Items',
-                          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
-                        ),
-                      ],
-                    ),
-            ),
+          CustomButton(
+            text: 'Reorder Items',
+            icon: Icons.replay,
+            isLoading: _isReordering,
+            onPressed: () => _handleReorder(order),
+            height: 44,
           ),
       ],
     );
@@ -763,16 +730,14 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center, style: GoogleFonts.plusJakartaSans(color: const Color(0xFFFF4D6D))),
             const SizedBox(height: 20),
-            ElevatedButton.icon(
+            CustomButton(
+              text: 'Retry',
+              icon: Icons.refresh,
               onPressed: () => ref
                   .read(orderProvider.notifier)
                   .loadOrderById(widget.orderId),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
-                foregroundColor: Colors.white,
-              ),
+              width: 140,
+              height: 44,
             ),
           ],
         ),

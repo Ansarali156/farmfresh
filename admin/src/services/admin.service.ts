@@ -40,6 +40,8 @@ export const adminService = {
     api.patch(`/products/${id}`, data).then(r => extract<Product>(r)),
   updateProductStatus: (id: string, status: string) =>
     api.patch(`/products/${id}/status`, { status }).then(r => extract<Product>(r)),
+  uploadProductImages: (id: string, imageUrls: string[]) =>
+    api.post(`/products/${id}/images`, { imageUrls }).then(r => extract<any>(r)),
   deleteProduct: (id: string) => api.delete(`/products/${id}`),
 
   getCategories: (params?: Record<string, any>) =>

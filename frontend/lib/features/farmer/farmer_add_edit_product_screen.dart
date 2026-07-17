@@ -200,7 +200,11 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
             margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.6),
+                width: 1.5,
+              ),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x0A2E5C45),
@@ -210,7 +214,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(24),
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
@@ -421,7 +425,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                       gradient: const LinearGradient(
                         colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
                       ),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
                       boxShadow: const [
                         BoxShadow(
                           color: Color(0x1FE28C43),
@@ -436,7 +440,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                         backgroundColor: Colors.transparent,
                         foregroundColor: Colors.white,
                         shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
                       child: _isSaving
                           ? const SizedBox(

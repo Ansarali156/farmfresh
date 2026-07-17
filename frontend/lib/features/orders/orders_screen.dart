@@ -7,6 +7,7 @@ import '../../providers/order_provider.dart';
 import '../../models/order_model.dart';
 import '../../core/constants/app_enums.dart';
 import '../../core/utils/app_snackbar.dart';
+import '../../core/widgets/custom_button.dart';
 
 class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({super.key});
@@ -255,19 +256,23 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.6),
+          width: 1.5,
+        ),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0A2E5C45),
-            offset: Offset(0, 4),
-            blurRadius: 10,
+            offset: Offset(0, 8),
+            blurRadius: 20,
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(18),
           onTap: () => context.push('/order-detail', extra: order.id),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -371,14 +376,12 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center, style: GoogleFonts.plusJakartaSans(color: const Color(0xFFFF4D6D))),
             const SizedBox(height: 20),
-            ElevatedButton.icon(
+            CustomButton(
+              text: 'Retry',
+              icon: Icons.refresh,
               onPressed: () => ref.read(orderProvider.notifier).loadOrders(),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
-                foregroundColor: Colors.white,
-              ),
+              width: 140,
+              height: 44,
             ),
           ],
         ),

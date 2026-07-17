@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/address_provider.dart';
+import '../../core/widgets/custom_button.dart';
 
 class AddressesScreen extends ConsumerStatefulWidget {
   const AddressesScreen({super.key});
@@ -103,27 +104,12 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
               style: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72), fontSize: 11),
             ),
             const SizedBox(height: 24),
-            Container(
-              height: 40,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFFE28C43), Color(0xFFF3A05B)]),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ElevatedButton.icon(
-                onPressed: () => context.push('/add-address'),
-                icon: const Icon(Icons.add, size: 16),
-                label: Text(
-                  'Add New Address',
-                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 12),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  foregroundColor: Colors.white,
-                  shadowColor: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
+            CustomButton(
+              text: 'Add New Address',
+              icon: Icons.add,
+              onPressed: () => context.push('/add-address'),
+              width: 200,
+              height: 44,
             ),
           ],
         ),

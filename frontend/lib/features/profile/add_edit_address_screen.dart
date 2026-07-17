@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/address_provider.dart';
 import '../../models/address_model.dart';
+import '../../core/widgets/custom_button.dart';
 
 class AddEditAddressScreen extends ConsumerStatefulWidget {
   final AddressModel? address;
@@ -314,41 +315,11 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
                     ),
                     const SizedBox(height: 24),
                     
-                    // Save Button
-                    Container(
+                    CustomButton(
+                      text: 'Save Address',
+                      onPressed: _saveAddress,
+                      isLoading: _isSaving,
                       height: 48,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF2E7D32), Color(0xFF1B4332)],
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF2E7D32).withOpacity(0.2),
-                            offset: const Offset(0, 8),
-                            blurRadius: 16,
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton(
-                        onPressed: _isSaving ? null : _saveAddress,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: Colors.white,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        ),
-                        child: _isSaving
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                              )
-                            : Text(
-                                'Save Address',
-                                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 14),
-                              ),
-                      ),
                     ),
                   ],
                 ),

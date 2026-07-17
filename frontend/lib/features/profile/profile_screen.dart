@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 import 'dart:html' as html;
+import 'dart:ui';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_image_provider.dart';
 import '../../core/widgets/profile_image_picker_dialog.dart';
+import '../../core/widgets/custom_button.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -102,20 +104,28 @@ class ProfileScreen extends ConsumerWidget {
   Widget _buildProfileHeader(BuildContext context, dynamic user, WidgetRef ref) {
     final profileImage = ref.watch(profileImageProvider(user.id));
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A2E5C45),
-            offset: Offset(0, 4),
-            blurRadius: 10,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.9),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.5),
+              width: 1.5,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A2E5C45),
+                offset: Offset(0, 8),
+                blurRadius: 20,
+              ),
+            ],
           ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
+          padding: const EdgeInsets.all(20),
+          child: Column(
         children: [
           GestureDetector(
             onTap: () {
@@ -232,23 +242,33 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ],
       ),
+    ),
+      ),
     );
   }
 
   Widget _buildProfileMenu(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A2E5C45),
-            offset: Offset(0, 4),
-            blurRadius: 10,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.9),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.5),
+              width: 1.5,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A2E5C45),
+                offset: Offset(0, 8),
+                blurRadius: 20,
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
+          child: Column(
         children: [
           _menuTile(
             context,
@@ -297,6 +317,8 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ],
       ),
+    ),
+      ),
     );
   }
 
@@ -333,45 +355,35 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: () async {
-          final confirmed = await showDialog<bool>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text('Log Out', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-              content: Text('Are you sure you want to log out?', style: GoogleFonts.plusJakartaSans()),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72))),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  style: TextButton.styleFrom(foregroundColor: const Color(0xFFFF4D6D)),
-                  child: Text('Log Out', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-          );
-          if (confirmed == true) {
-            await ref.read(authProvider.notifier).logout();
-            if (context.mounted) context.go('/login');
-          }
-        },
-        style: OutlinedButton.styleFrom(
-          foregroundColor: const Color(0xFFFF4D6D),
-          side: const BorderSide(color: Color(0xFFFF4D6D)),
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        ),
-        icon: const Icon(Icons.logout, size: 16),
-        label: Text(
-          'Log Out',
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
-        ),
-      ),
+    return CustomButton(
+      text: 'Log Out',
+      icon: Icons.logout,
+      isOutlined: true,
+      backgroundColor: const Color(0xFFFF4D6D),
+      onPressed: () async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Log Out', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            content: Text('Are you sure you want to log out?', style: GoogleFonts.plusJakartaSans()),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72))),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: TextButton.styleFrom(foregroundColor: const Color(0xFFFF4D6D)),
+                child: Text('Log Out', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+        if (confirmed == true) {
+          await ref.read(authProvider.notifier).logout();
+          if (context.mounted) context.go('/login');
+        }
+      },
     );
   }
 

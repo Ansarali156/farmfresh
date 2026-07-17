@@ -37,53 +37,88 @@ export default function LoginPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#0B0D0C',
+        backgroundImage: 'url("/login_bg.jpg")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
         position: 'relative',
         overflow: 'hidden',
+        '@keyframes fadeUp': {
+          '0%': { opacity: 0, transform: 'translateY(30px)' },
+          '100%': { opacity: 1, transform: 'translateY(0)' }
+        },
         '&::before': {
           content: '""',
           position: 'absolute',
-          width: 500,
-          height: 500,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(74,222,128,0.08) 0%, transparent 70%)',
-          top: -120,
-          right: -100,
-        },
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          width: 400,
-          height: 400,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(31,91,58,0.06) 0%, transparent 70%)',
-          bottom: -80,
-          left: -60,
-        },
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, rgba(11, 13, 12, 0.75) 0%, rgba(15, 23, 42, 0.85) 100%)',
+          zIndex: 0,
+        }
       }}
     >
       <Card
         elevation={0}
-        className="page-fade-in"
         sx={{
-          width: '100%',
+          width: '90%',
           maxWidth: 420,
-          border: '0.5px solid #232823',
-          bgcolor: '#131614',
+          borderRadius: '24px',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          background: 'rgba(19, 22, 20, 0.7)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.45)',
+          position: 'relative',
+          overflow: 'hidden',
           zIndex: 1,
+          animation: 'fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '4px',
+            background: 'linear-gradient(90deg, #10B981 0%, #3B82F6 100%)',
+          }
         }}
       >
         <CardContent sx={{ p: 5 }}>
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Typography variant="h4" fontWeight={700} color="#4ADE80" mb={0.5}>
+          <Box sx={{ textAlign: 'center', mb: 4.5 }}>
+            <Typography 
+              variant="h4" 
+              fontWeight={800} 
+              sx={{ 
+                fontFamily: "'Outfit', sans-serif", 
+                letterSpacing: '-0.5px', 
+                background: 'linear-gradient(90deg, #34D399 0%, #60A5FA 100%)', 
+                WebkitBackgroundClip: 'text', 
+                WebkitTextFillColor: 'transparent',
+                mb: 0.5
+              }}
+            >
               FarmFresh
             </Typography>
-            <Typography variant="body2" color="#7C877D">
+            <Typography variant="body2" sx={{ color: '#94A3B8', fontFamily: "'Outfit', sans-serif" }}>
               Sign in to your admin dashboard
             </Typography>
           </Box>
 
-          {error && <Alert severity="error" sx={{ mb: 2, bgcolor: 'rgba(239,107,107,0.1)', color: '#EF6B6B' }}>{error}</Alert>}
+          {error && (
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 3, 
+                borderRadius: '12px',
+                bgcolor: 'rgba(239, 107, 107, 0.08)', 
+                color: '#F87171', 
+                border: '1px solid rgba(239, 107, 107, 0.15)',
+                '& .MuiAlert-icon': { color: '#F87171' }
+              }}
+            >
+              {error}
+            </Alert>
+          )}
 
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
@@ -96,17 +131,20 @@ export default function LoginPage() {
               autoFocus
               sx={{
                 '& .MuiOutlinedInput-root': {
-                  borderRadius: 10,
-                  backgroundColor: '#131614',
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#4ADE80' },
+                  borderRadius: '14px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.3s ease',
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(74, 222, 128, 0.4)' },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#4ADE80', borderWidth: 2 },
                 },
                 '& .MuiInputLabel-root': {
-                  color: '#7C877D',
+                  color: '#94A3B8',
+                  fontFamily: "'Outfit', sans-serif",
                   '&.Mui-focused': { color: '#4ADE80' },
                 },
-                '& input': { color: '#FFFFFF' },
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#232823', borderWidth: 1 },
+                '& input': { color: '#FFFFFF', fontFamily: "'Outfit', sans-serif" },
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.08)', borderWidth: 1 },
               }}
             />
             <TextField
@@ -118,17 +156,20 @@ export default function LoginPage() {
               margin="normal"
               sx={{
                 '& .MuiOutlinedInput-root': {
-                  borderRadius: 10,
-                  backgroundColor: '#131614',
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#4ADE80' },
+                  borderRadius: '14px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.3s ease',
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(74, 222, 128, 0.4)' },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#4ADE80', borderWidth: 2 },
                 },
                 '& .MuiInputLabel-root': {
-                  color: '#7C877D',
+                  color: '#94A3B8',
+                  fontFamily: "'Outfit', sans-serif",
                   '&.Mui-focused': { color: '#4ADE80' },
                 },
-                '& input': { color: '#FFFFFF' },
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#232823', borderWidth: 1 },
+                '& input': { color: '#FFFFFF', fontFamily: "'Outfit', sans-serif" },
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.08)', borderWidth: 1 },
               }}
             />
             <Button
@@ -138,20 +179,26 @@ export default function LoginPage() {
               size="large"
               disabled={loading}
               sx={{
-                py: 1.5,
+                py: 1.8,
                 fontSize: 16,
-                mt: 3,
-                borderRadius: 10,
-                fontWeight: 500,
-                backgroundColor: '#4ADE80',
-                color: '#0B0D0C',
+                mt: 4,
+                borderRadius: '14px',
+                fontWeight: 700,
+                fontFamily: "'Outfit', sans-serif",
+                textTransform: 'none',
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                color: '#FFFFFF',
+                boxShadow: '0 4px 15px rgba(16, 185, 129, 0.35)',
+                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
                 '&:hover': {
-                  backgroundColor: '#6EE7B7',
-                  boxShadow: '0 4px 12px rgba(74,222,128,0.3)',
+                  background: 'linear-gradient(135deg, #34D399 0%, #059669 100%)',
+                  boxShadow: '0 6px 20px rgba(16, 185, 129, 0.55)',
+                  transform: 'translateY(-2px)',
                 },
                 '&:disabled': {
-                  backgroundColor: '#1F5B3A',
-                  color: '#7C877D',
+                  background: 'rgba(16, 185, 129, 0.2)',
+                  color: 'rgba(255, 255, 255, 0.35)',
+                  boxShadow: 'none'
                 },
               }}
             >

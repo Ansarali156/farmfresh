@@ -9,6 +9,7 @@ import '../../providers/order_provider.dart';
 import '../../models/order_model.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_enums.dart';
+import '../../core/widgets/custom_button.dart';
 
 class OrderTrackingScreen extends ConsumerStatefulWidget {
   final String orderId;
@@ -562,16 +563,14 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center, style: GoogleFonts.plusJakartaSans(color: const Color(0xFFFF4D6D))),
             const SizedBox(height: 20),
-            ElevatedButton.icon(
+            CustomButton(
+              text: 'Retry',
+              icon: Icons.refresh,
               onPressed: () => ref
                   .read(orderProvider.notifier)
                   .loadOrderById(widget.orderId),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
-                foregroundColor: Colors.white,
-              ),
+              width: 140,
+              height: 44,
             ),
           ],
         ),

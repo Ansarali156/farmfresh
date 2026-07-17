@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
+import '../../core/widgets/custom_button.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -201,41 +202,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     
                     const SizedBox(height: 24),
                     
-                    // Save Button
-                    Container(
+                    CustomButton(
+                      text: 'Save Profile Changes',
+                      onPressed: _saveProfile,
+                      isLoading: _isSaving,
                       height: 48,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x1FE28C43),
-                            offset: Offset(0, 8),
-                            blurRadius: 16,
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton(
-                        onPressed: _isSaving ? null : _saveProfile,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: Colors.white,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        ),
-                        child: _isSaving
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                              )
-                            : Text(
-                                'Save Profile Changes',
-                                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
-                              ),
-                      ),
                     ),
                   ],
                 ),

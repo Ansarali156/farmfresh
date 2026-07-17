@@ -8,6 +8,7 @@ import '../../providers/product_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../core/widgets/product_card.dart';
 import '../../core/utils/app_snackbar.dart';
+import '../../core/widgets/custom_button.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {
   final String? initialCategory;
@@ -256,20 +257,13 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                     },
                   ),
                   const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _fetchInitialData();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: const Text('Apply Filters'),
-                    ),
+                  CustomButton(
+                    text: 'Apply Filters',
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _fetchInitialData();
+                    },
+                    height: 48,
                   ),
                 ],
               ),
@@ -421,9 +415,11 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                         const SizedBox(height: 12),
                         Text(productState.errorMessage!),
                         const SizedBox(height: 16),
-                        ElevatedButton(
+                        CustomButton(
+                          text: 'Retry',
                           onPressed: _fetchInitialData,
-                          child: const Text('Retry'),
+                          width: 140,
+                          height: 44,
                         ),
                       ],
                     ),

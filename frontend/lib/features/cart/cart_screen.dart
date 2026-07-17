@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:ui';
+import '../../core/widgets/custom_button.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/order_provider.dart';
 import '../../providers/address_provider.dart';
@@ -214,14 +216,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   const SizedBox(height: 12),
                                   Text(cartState.errorMessage!, textAlign: TextAlign.center),
                                   const SizedBox(height: 20),
-                                  ElevatedButton.icon(
+                                  CustomButton(
+                                    text: 'Retry',
+                                    icon: Icons.refresh,
                                     onPressed: () => ref.read(cartProvider.notifier).reload(),
-                                    icon: const Icon(Icons.refresh),
-                                    label: const Text('Retry'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF2E7D32),
-                                      foregroundColor: Colors.white,
-                                    ),
+                                    width: 140,
+                                    height: 44,
                                   ),
                                 ],
                               ),
@@ -267,32 +267,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                         ),
                                       ),
                                       const SizedBox(height: 24),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          gradient: const LinearGradient(
-                                            colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
-                                          ),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: ElevatedButton(
-                                          onPressed: () => context.pop(),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.transparent,
-                                            foregroundColor: Colors.white,
-                                            shadowColor: Colors.transparent,
-                                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                          ),
-                                          child: Text(
-                                            'Browse Produce',
-                                            style: GoogleFonts.plusJakartaSans(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
+                                      CustomButton(
+                                        text: 'Browse Produce',
+                                        onPressed: () => context.pop(),
+                                        width: 180,
+                                        height: 46,
                                       ),
                                     ],
                                   ),
@@ -656,25 +635,36 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   Widget _buildPriceSummary(CartState cartState, AddressState addressState) {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x0A000000),
-            offset: Offset(0, -5),
-            blurRadius: 15,
-          ),
-        ],
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(24),
+        topRight: Radius.circular(24),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.9),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.5),
+              width: 1.5,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A000000),
+                offset: Offset(0, -5),
+                blurRadius: 15,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
           _priceRow('Subtotal', '₹${cartState.subtotal.toStringAsFixed(2)}'),
           if (cartState.discountAmount > 0) ...[
             const SizedBox(height: 6),
@@ -749,16 +739,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                context.push('/add-address');
-                              },
-                              icon: const Icon(Icons.add, color: Color(0xFF2E7D32)),
-                              label: const Text('Add New Address', style: TextStyle(color: Color(0xFF2E7D32))),
-                            ),
+                          CustomButton(
+                            text: 'Add New Address',
+                            icon: Icons.add,
+                            isOutlined: true,
+                            onPressed: () {
+                              Navigator.pop(context);
+                              context.push('/add-address');
+                            },
+                            height: 46,
                           ),
                         ],
                       ),
@@ -817,42 +806,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
+          CustomButton(
+            text: 'Checkout Order',
+            onPressed: _checkout,
             height: 48,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
-              ),
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x1FE28C43),
-                  offset: Offset(0, 8),
-                  blurRadius: 16,
-                ),
-              ],
-            ),
-            child: ElevatedButton(
-              onPressed: _checkout,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                foregroundColor: Colors.white,
-                shadowColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              child: Text(
-                'Checkout Order',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
           ),
         ],
+      ),
+    ),
       ),
     );
   }

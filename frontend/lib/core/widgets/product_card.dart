@@ -24,6 +24,7 @@ class ProductCard extends ConsumerStatefulWidget {
 class _ProductCardState extends ConsumerState<ProductCard> with SingleTickerProviderStateMixin {
   bool _showHeartPopup = false;
   late AnimationController _scaleController;
+  double _cardScale = 1.0;
 
   @override
   void initState() {
@@ -49,20 +50,26 @@ class _ProductCardState extends ConsumerState<ProductCard> with SingleTickerProv
     final isOutOfStock = widget.product.stock <= 0;
 
     return GestureDetector(
+      onTapDown: (_) => setState(() => _cardScale = 0.96),
+      onTapUp: (_) => setState(() => _cardScale = 1.0),
+      onTapCancel: () => setState(() => _cardScale = 1.0),
       onTap: widget.onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x0F2E5C45),
-              offset: Offset(0, 10),
-              blurRadius: 30,
-            ),
-          ],
-        ),
-        child: Column(
+      child: AnimatedScale(
+        scale: _cardScale,
+        duration: const Duration(milliseconds: 150),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A2E5C45),
+                offset: Offset(0, 10),
+                blurRadius: 30,
+              ),
+            ],
+          ),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Crop Image & Badges
@@ -298,18 +305,26 @@ class _ProductCardState extends ConsumerState<ProductCard> with SingleTickerProv
                       GestureDetector(
                         onTap: isOutOfStock ? null : widget.onAddToCart,
                         child: Container(
-                          width: 24,
-                          height: 24,
+                          width: 28,
+                          height: 28,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white,
-                            border: Border.all(color: const Color(0xFFECECEC)),
+                            color: isOutOfStock ? const Color(0xFFECECEC) : const Color(0xFF2E7D32),
+                            boxShadow: isOutOfStock
+                                ? null
+                                : [
+                                    BoxShadow(
+                                      color: const Color(0xFF2E7D32).withOpacity(0.3),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Icon(
                               Icons.add,
-                              size: 12,
-                              color: Color(0xFF23312B),
+                              size: 14,
+                              color: isOutOfStock ? const Color(0xFF647C72) : Colors.white,
                             ),
                           ),
                         ),
@@ -322,6 +337,7 @@ class _ProductCardState extends ConsumerState<ProductCard> with SingleTickerProv
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
