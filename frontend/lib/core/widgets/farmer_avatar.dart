@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../constants/app_constants.dart';
+import '../constants/app_constants.dart';
 
 class AvatarPreset {
   final String id;
@@ -70,10 +70,12 @@ class FarmerAvatar extends StatelessWidget {
 
     String fullUrl = url;
     if (url.startsWith('/public/')) {
-      final baseUrl = AppConstants.apiBaseUrl.replaceAll('/api', '');
+      final uri = Uri.parse(AppConstants.apiBaseUrl);
+      final baseUrl = '${uri.scheme}://${uri.host}:${uri.port}';
       fullUrl = '$baseUrl$url';
     } else if (!url.startsWith('http')) {
-      final baseUrl = AppConstants.apiBaseUrl.replaceAll('/api', '');
+      final uri = Uri.parse(AppConstants.apiBaseUrl);
+      final baseUrl = '${uri.scheme}://${uri.host}:${uri.port}';
       fullUrl = '$baseUrl/$url';
     }
 

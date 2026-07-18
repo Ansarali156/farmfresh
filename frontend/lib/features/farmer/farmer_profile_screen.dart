@@ -392,18 +392,21 @@ class _MenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon, color: const Color(0xFF2E7D32), size: 20),
-      title: Text(
-        title,
-        style: GoogleFonts.plusJakartaSans(
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-          color: const Color(0xFF23312B),
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        leading: Icon(icon, color: const Color(0xFF2E7D32), size: 20),
+        title: Text(
+          title,
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+            color: const Color(0xFF23312B),
+          ),
         ),
+        trailing: const Icon(Icons.chevron_right, size: 16, color: Color(0xFF647C72)),
+        onTap: onTap,
       ),
-      trailing: const Icon(Icons.chevron_right, size: 16, color: Color(0xFF647C72)),
-      onTap: onTap,
     );
   }
 }

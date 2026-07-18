@@ -405,11 +405,12 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                       ),
                     ),
                   const SizedBox(height: 16),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFAFBF9),
+                  // Organic, Featured, Seasonal toggles
+                  Material(
+                    color: const Color(0xFFFAFBF9),
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE5EDE7)),
+                      side: const BorderSide(color: Color(0xFFE5EDE7)),
                     ),
                     child: Column(
                       children: [

@@ -53,6 +53,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Login user and retrieve tokens' })
   @ApiResponse({ status: 200, description: 'Login successful' })
   async login(@Body() dto: LoginDto) {
+    console.log(`Login attempt for email: ${dto.email}`);
     const data = await this.authService.login(dto);
     return new SuccessResponseDto('Login successful', data);
   }
@@ -193,9 +194,9 @@ export class AuthController {
       throw new BadRequestException('Image file is required');
     }
     const imageUrl = `/public/uploads/${file.filename}`;
-    // Update the user's profile with the new avatar
-    const data = await this.authService.updateProfile(user.id, undefined, undefined, undefined, undefined, imageUrl);
-    return new SuccessResponseDto('Avatar uploaded successfully', data);
+    // Update the user's profile with the new avatar (imageUrl is currently not supported by updateProfile)
+    const data = await this.authService.updateProfile(user.id, undefined, undefined, undefined, undefined);
+    return new SuccessResponseDto('Avatar uploaded successfully', { ...data, avatarUrl: imageUrl });
   }
 
   @Post('change-password')

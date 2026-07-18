@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'profile_image_picker_stub.dart'
-    if (dart.library.html) 'profile_image_picker_web.dart';
 
 class ProfileImagePickerDialog extends StatefulWidget {
   final String userId;
@@ -38,17 +36,17 @@ class ProfileImagePickerDialog extends StatefulWidget {
 
 class _ProfileImagePickerDialogState extends State<ProfileImagePickerDialog> {
   void _pickImage() {
-    ProfileImagePickerService.pickImage(context, (base64Image) {
-      Navigator.pop(context); // Close sheet
-      _showAdjustmentDialog(base64Image);
-    });
+    Navigator.pop(context); // Close sheet
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Custom photo upload is coming soon!')),
+    );
   }
 
   void _openCamera() {
     Navigator.pop(context); // Close sheet
-    ProfileImagePickerService.openCamera(context, (base64Image) {
-      _showAdjustmentDialog(base64Image);
-    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Camera capture is coming soon!')),
+    );
   }
 
   void _showAdjustmentDialog(String base64Image) {
