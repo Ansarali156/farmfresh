@@ -76,126 +76,63 @@ class _FarmerDashboardScreenState extends ConsumerState<FarmerDashboardScreen> {
         child: Column(
           children: [
 
-            // Profile Header
+            // Profile Header (formerly AppBar)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1A1F1B),
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.35),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        ref.read(farmerTabIndexProvider.notifier).state = 4;
-                      },
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [Color(0xFF4ADE80), Color(0xFF1F7A4C)],
-                              ),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              user?.name.isNotEmpty == true ? user!.name[0].toUpperCase() : 'F',
-                              style: const TextStyle(
-                                color: Color(0xFF0F1410),
-                                fontWeight: FontWeight.w600,
-                                fontSize: 18,
-                              ),
-                            ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      // Navigate to profile tab (index 4)
+                      ref.read(farmerTabIndexProvider.notifier).state = 4;
+                    },
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: AppColors.farmerPrimary, // Solid primary color
+                          backgroundImage: user?.avatar != null ? NetworkImage(user!.avatar!) : null,
+                          child: user?.avatar == null 
+                              ? Text(
+                                  user?.name.isNotEmpty == true ? user!.name[0].toUpperCase() : 'F',
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Hi ${user?.name ?? 'Farmer'}!',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Welcome back',
-                                style: TextStyle(
-                                  color: Color(0xFF8A9A8E),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                user?.name ?? 'Farmer',
-                                style: const TextStyle(
-                                  color: Color(0xFFF2F4F1),
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => context.push('/farmer-notifications'),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.farmerPrimary, // Solid green background
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.farmerPrimary.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () => context.push('/farmer-notifications'),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF4ADE80).withOpacity(0.12),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.notifications_outlined,
-                              color: Color(0xFF4ADE80),
-                              size: 20,
-                            ),
-                          ),
-                          if (ref.watch(farmerNotificationProvider).unreadCount > 0)
-                            Positioned(
-                              top: -4,
-                              right: -4,
-                              child: Container(
-                                constraints: const BoxConstraints(
-                                  minWidth: 17,
-                                  minHeight: 17,
-                                ),
-                                padding: const EdgeInsets.symmetric(horizontal: 4),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF2C078),
-                                  borderRadius: BorderRadius.circular(9),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  '${ref.watch(farmerNotificationProvider).unreadCount}',
-                                  style: const TextStyle(
-                                    color: Color(0xFF412402),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
+                      child: const Icon(
+                        Icons.notifications_none_outlined,
+                        color: Colors.white, // White icon for contrast
+                        size: 24,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             

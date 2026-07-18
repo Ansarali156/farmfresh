@@ -428,7 +428,34 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                         ),
                       ),
           ),
-
+          // Fixed Bottom Button
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => context.push('/farmer-add-product'),
+                icon: const Icon(Icons.add, size: 20, color: Colors.white),
+                label: Text(
+                  'Add Crop',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2E7D32),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: Container(

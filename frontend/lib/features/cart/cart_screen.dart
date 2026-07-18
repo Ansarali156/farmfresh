@@ -722,21 +722,18 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               itemCount: addressState.addresses.length,
                               itemBuilder: (context, index) {
                                 final addr = addressState.addresses[index];
-                                return Material(
-                                  color: Colors.transparent,
-                                  child: ListTile(
-                                    title: Text(addr.street),
-                                    subtitle: Text('${addr.city ?? ''}, ${addr.state ?? ''} - ${addr.zipCode ?? ''}'),
-                                    trailing: _selectedAddress?.id == addr.id
-                                        ? const Icon(Icons.check_circle, color: Color(0xFF2E7D32))
-                                        : null,
-                                    onTap: () {
-                                      setState(() {
-                                        _selectedAddress = addr;
-                                      });
-                                      Navigator.pop(context);
-                                    },
-                                  ),
+                                return ListTile(
+                                  title: Text(addr.street),
+                                  subtitle: Text('${addr.city ?? ''}, ${addr.state ?? ''} - ${addr.zipCode ?? ''}'),
+                                  trailing: _selectedAddress?.id == addr.id
+                                      ? const Icon(Icons.check_circle, color: Color(0xFF2E7D32))
+                                      : null,
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedAddress = addr;
+                                    });
+                                    Navigator.pop(context);
+                                  },
                                 );
                               },
                             ),

@@ -186,21 +186,19 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
                   ),
                 ],
               ),
-              child: Material(
-                color: Colors.transparent,
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(12),
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: isDefault ? const Color(0xFFE8F5E9) : const Color(0xFFFAFBF9),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      _getAddressIcon(address.label),
-                      color: isDefault ? const Color(0xFF2E7D32) : const Color(0xFF647C72),
-                    ),
+              child: ListTile(
+                contentPadding: const EdgeInsets.all(12),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isDefault ? const Color(0xFFE8F5E9) : const Color(0xFFFAFBF9),
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                  child: Icon(
+                    _getAddressIcon(address.label),
+                    color: isDefault ? const Color(0xFF2E7D32) : const Color(0xFF647C72),
+                  ),
+                ),
                 title: Row(
                   children: [
                     Expanded(
@@ -276,7 +274,6 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
                       );
                     }
                   },
-                ),
                 ),
               ),
             ),

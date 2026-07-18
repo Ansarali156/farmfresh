@@ -297,30 +297,28 @@ class ProfileScreen extends ConsumerWidget {
     String? subtitle,
     required VoidCallback onTap,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF2E7D32)),
-        title: Text(
-          title,
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.w700,
-            fontSize: 13,
-            color: const Color(0xFF23312B),
-          ),
+    return ListTile(
+      leading: Icon(icon, color: const Color(0xFF2E7D32)),
+      title: Text(
+        title,
+        style: GoogleFonts.plusJakartaSans(
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+          color: const Color(0xFF23312B),
         ),
-        subtitle: subtitle != null
-            ? Text(
-                subtitle,
-                style: GoogleFonts.outfit(
-                  fontSize: 12,
-                  color: const Color(0xFF647C72),
-                ),
-              )
-            : null,
-        trailing: const Icon(Icons.chevron_right, color: Color(0xFFC0C0C0)),
-        onTap: onTap,
       ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: GoogleFonts.plusJakartaSans(
+                color: const Color(0xFF647C72),
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+              ),
+            )
+          : null,
+      trailing: const Icon(Icons.chevron_right, color: Color(0xFF647C72), size: 16),
+      onTap: onTap,
     );
   }
 
