@@ -1,14 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
-import { DeliveryModule } from './delivery/delivery.module';
-import { FarmerModule } from './farmer/farmer.module';
-import { AdminModule } from './admin/admin.module';
-import { OrdersModule } from './orders/orders.module';
-import { UploadModule } from './upload/upload.module';
+import { UploadController } from './upload.controller';
+import { CloudinaryService } from '../common/services/cloudinary.service';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [AuthModule, DeliveryModule, FarmerModule, AdminModule, OrdersModule, UploadModule],
-  controllers: [],
-  providers: [],
+  imports: [AuthModule],
+  controllers: [UploadController],
+  providers: [CloudinaryService],
 })
 export class UploadModule {}

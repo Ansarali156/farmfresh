@@ -11,7 +11,6 @@ export class FarmerService {
 
     const farmerId = farmer.id;
 
-    // Get basic product stats
     const products = await this.prisma.product.findMany({
       where: { farmerId, deletedAt: null },
       include: { inventory: true }
@@ -24,7 +23,6 @@ export class FarmerService {
       if (p.inventory && Number(p.inventory.currentStock) <= 0) outOfStockProducts++;
     }
 
-    // Get order items for this farmer
     const orderItems = await this.prisma.orderItem.findMany({
       where: { farmerId },
       include: { order: { select: { status: true, createdAt: true } } }
@@ -40,37 +38,19 @@ export class FarmerService {
     today.setHours(0, 0, 0, 0);
 
     for (const item of orderItems) {
-      // Order status
       const status = item.order.status;
       if (status === 'PENDING') pendingOrders++;
       else if (status === 'ACCEPTED' || status === 'PREPARING' || status === 'READY_FOR_PICKUP') acceptedOrders++;
       else if (status === 'DELIVERED') deliveredOrders++;
 
-      // Revenue (only from delivered/completed)
       if (status === 'DELIVERED' || status === 'COMPLETED') {
         const amt = Number(item.total);
         totalRevenue += amt;
         if (new Date(item.order.createdAt) >= today) {
           todaySales += amt;
-  async updateLocation(userId: string, latitude: number, longitude: number) {
-    const farmer = await this.prisma.farmerProfile.findUnique({ where: { userId } });
-    if (!farmer) throw new NotFoundException('Farmer profile not found');
-
-    return this.prisma.farmerProfile.update({
-      where: { userId },
-      data: {
-        farmLatitude: latitude,
-        farmLongitude: longitude,
-      },
-    });
-  }
-}
+        }
       }
     }
-
-    // Group weekly orders natively in JS for simplicity
-    const weeklyOrders = [];
-    // Just a placeholder structure if needed
 
     return {
       todaySales,
@@ -124,7 +104,6 @@ export class FarmerService {
       }
     }
 
-    // Pending/completed withdrawals
     const withdrawals = await this.prisma.withdrawal.findMany({
       where: { userId: farmer.userId }
     });
@@ -136,7 +115,6 @@ export class FarmerService {
       if (w.status === 'TRANSFERRED' || w.status === 'APPROVED') completedWithdrawals += Number(w.amount);
     }
 
-    // Get total unique orders
     const orderIds = new Set(orderItems.map(oi => oi.orderId));
     
     return {
@@ -196,5 +174,17 @@ export class FarmerService {
 
     return paginated;
   }
-}
 
+  async updateLocation(userId: string, latitude: number, longitude: number) {
+    const farmer = await this.prisma.farmerProfile.findUnique({ where: { userId } });
+    if (!farmer) throw new NotFoundException('Farmer profile not found');
+
+    return this.prisma.farmerProfile.update({
+      where: { userId },
+      data: {
+        farmLatitude: latitude,
+        farmLongitude: longitude,
+      },
+    });
+  }
+}

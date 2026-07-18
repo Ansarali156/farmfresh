@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
-import { UpdateProfileDto } from '../dto/update-profile.dto';
-import { RegisterCustomerDto, RegisterFarmerDto, RegisterDeliveryDto } from '../../auth/dto';
+import { UpdateProfileDto } from '../common/dto/update-profile.dto';
+import { RegisterCustomerDto } from '../auth/dto/register-customer.dto';
+import { RegisterFarmerDto } from '../auth/dto/register-farmer.dto';
+import { RegisterDeliveryDto } from '../auth/dto/register-delivery.dto';
 
 @Injectable()
 export class UserRepository {
@@ -61,7 +63,8 @@ export class UserRepository {
     return this.prisma.user.create({
       data: {
         name: dto.name,
-        email: dto.email.toLowerCase(),n        phone: dto.phone,
+        email: dto.email.toLowerCase(),
+        phone: dto.phone,
         passwordHash: 'temp-hash', // Should be hashed by caller
         role: 'FARMER' as any,
         farmerProfile: {

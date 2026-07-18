@@ -1,7 +1,9 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v2 as cloudinary } from 'cloudinary';
-import * as streamifier from 'streamifier';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const streamifier = require('streamifier');
 
 export interface CloudinaryUploadResult {
   public_id: string;
@@ -12,7 +14,7 @@ export interface CloudinaryUploadResult {
 
 @Injectable()
 export class CloudinaryService {
-  private cloudinaryProvider?: any;
+  private configured = false;
 
   constructor(private configService: ConfigService) {
     const cloudName = this.configService.get<string>('cloudinary.cloudName');
@@ -20,17 +22,18 @@ export class CloudinaryService {
     const apiSecret = this.configService.get<string>('cloudinary.apiSecret');
 
     if (cloudName && apiKey && apiSecret) {
-      this.cloudinaryProvider = cloudinary.config({
+      cloudinary.config({
         cloud_name: cloudName,
         api_key: apiKey,
         api_secret: apiSecret,
         secure: true,
       });
+      this.configured = true;
     }
   }
 
   isConfigured(): boolean {
-    return !!this.cloudinaryProvider;
+    return this.configured;
   }
 
   async uploadImage(
@@ -39,12 +42,12 @@ export class CloudinaryService {
     transformation?: any,
   ): Promise<CloudinaryUploadResult> {
     if (!this.isConfigured()) {
-      throw new BadRequestException('Cloudinary is not configured. Please check cloud_name, api_key, and api_secret in environment variables.');
+      throw new BadRequestException('Cloudinary is not configured.');
     }
 
     try {
       const uploadPromise = new Promise<CloudinaryUploadResult>((resolve, reject) => {
-        const uploadStream = cloudinary().uploader.upload_stream(
+        const uploadStream = cloudinary.uploader.upload_stream(
           {
             folder,
             resource_type: 'image',
@@ -55,20 +58,19 @@ export class CloudinaryService {
               { fetch_format: 'auto' },
             ],
           },
-          (error, result) => {
+          (error: any, result: any) => {
             if (error) {
               reject(error);
             } else {
               resolve(result as CloudinaryUploadResult);
             }
-          }
+          },
         );
 
         streamifier.createReadStream(fileBuffer).pipe(uploadStream);
       });
 
-      const result = await uploadPromise;
-      return result;
+      return await uploadPromise;
     } catch (error) {
       throw new BadRequestException(`Failed to upload image to Cloudinary: ${(error as Error).message}`);
     }
@@ -80,8 +82,7 @@ export class CloudinaryService {
     }
 
     try {
-      const result = await cloudinary().uploader.destroy(publicId);
-      return result;
+      return await cloudinary.uploader.destroy(publicId);
     } catch (error) {
       throw new BadRequestException(`Failed to delete image from Cloudinary: ${(error as Error).message}`);
     }
