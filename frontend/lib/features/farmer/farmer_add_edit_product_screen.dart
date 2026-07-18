@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +9,7 @@ import '../../providers/product_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../models/category_model.dart';
 import '../../core/utils/app_snackbar.dart';
+import '../../core/widgets/product_image_widget.dart';
 
 class FarmerAddEditProductScreen extends ConsumerStatefulWidget {
   final ProductModel? product;
@@ -31,6 +34,8 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
   bool _isFeatured = false;
   bool _isSeasonal = false;
   bool _isSaving = false;
+
+  XFile? _pickedImage;
 
   bool get _isEditMode => widget.product != null;
 
@@ -63,12 +68,16 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
     super.dispose();
   }
 
-  void _pickProductImage() {
-    showAppSnackBar(
-      context,
-      'Paste an image URL in the field above',
-      type: SnackBarType.info,
-    );
+  Future<void> _pickProductImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (pickedFile != null) {
+      setState(() {
+        _pickedImage = pickedFile;
+        _imageController.text = pickedFile.path;
+      });
+    }
   }
 
   String _getDefaultCategoryImageUrl(String category) {
@@ -253,7 +262,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                             fontWeight: FontWeight.w600,
                           ),
                           decoration: _inputDecoration('Price', Icons.currency_rupee).copyWith(
-                            prefixText: '₹ ',
+                            prefixText: '\u20B9 ',
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
@@ -349,6 +358,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _imageController,
+                    readOnly: true,
                     style: GoogleFonts.plusJakartaSans(
                       color: const Color(0xFF23312B),
                       fontSize: 13,
@@ -360,13 +370,41 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                         tooltip: 'Upload Product Photo',
                         onPressed: _pickProductImage,
                       ),
-                      hintText: 'Paste URL or tap camera to upload',
+                      hintText: 'Tap camera to upload',
                       hintStyle: GoogleFonts.plusJakartaSans(color: const Color(0xFF8D99AE), fontSize: 12),
                     ),
                   ),
+                  if (_pickedImage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: ProductImageWidget(
+                              imageUrl: _pickedImage!.path,
+                              height: 100,
+                              width: 100,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          Positioned(
+                            top: -10,
+                            right: -10,
+                            child: IconButton(
+                              icon: const Icon(Icons.cancel, color: Colors.red),
+                              onPressed: () {
+                                setState(() {
+                                  _pickedImage = null;
+                                  _imageController.text = widget.product?.image ?? '';
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   const SizedBox(height: 16),
-                  
-                  // Organic, Featured, Seasonal toggles
                   Container(
                     decoration: BoxDecoration(
                       color: const Color(0xFFFAFBF9),
@@ -402,8 +440,6 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
-                  // Save Button
                   Container(
                     height: 48,
                     decoration: BoxDecoration(
