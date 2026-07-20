@@ -187,47 +187,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          width: 38,
-                                          height: 38,
-                                          decoration: const BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Color(0x0F2E5C45),
-                                                offset: Offset(0, 4),
-                                                blurRadius: 10,
+                                    GestureDetector(
+                                      onTap: () => context.push('/addresses'),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 38,
+                                            height: 38,
+                                            decoration: const BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Color(0x0F2E5C45),
+                                                  offset: Offset(0, 4),
+                                                  blurRadius: 10,
+                                                ),
+                                              ],
+                                            ),
+                                            child: const Icon(Icons.location_on, color: Color(0xFFE28C43), size: 18),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    'Location',
+                                                    style: GoogleFonts.plusJakartaSans(
+                                                      fontSize: 9,
+                                                      color: const Color(0xFF647C72),
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  const Icon(Icons.keyboard_arrow_down, size: 12, color: Color(0xFF647C72)),
+                                                ],
+                                              ),
+                                              Text(
+                                                locationLabel,
+                                                style: GoogleFonts.outfit(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: const Color(0xFF23312B),
+                                                ),
                                               ),
                                             ],
                                           ),
-                                          child: const Icon(Icons.location_on, color: Color(0xFFE28C43), size: 18),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Location',
-                                              style: GoogleFonts.plusJakartaSans(
-                                                fontSize: 9,
-                                                color: const Color(0xFF647C72),
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            Text(
-                                              locationLabel,
-                                              style: GoogleFonts.outfit(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w700,
-                                                color: const Color(0xFF23312B),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                     Row(
                                       children: [

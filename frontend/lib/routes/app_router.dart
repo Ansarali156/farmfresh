@@ -235,10 +235,15 @@ final appRouter = Provider<GoRouter>((ref) {
         builder: (context, state) => const DeliveryProfileScreen(),
       ),
       GoRoute(
+        path: '/add-address',
+        name: 'add-address',
+        builder: (context, state) => const AddEditAddressScreen(),
+      ),
+      GoRoute(
         path: '/add-edit-address',
         name: 'edit-address',
         builder: (context, state) {
-          final address = state.extra as AddressModel;
+          final address = state.extra as AddressModel?;
           return AddEditAddressScreen(address: address);
         },
       ),
