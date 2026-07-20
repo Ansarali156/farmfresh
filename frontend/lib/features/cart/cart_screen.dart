@@ -288,9 +288,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                       const SizedBox(height: 24),
                                       CustomButton(
                                         text: 'Browse Produce',
-                                        onPressed: () => context.pop(),
+                                        onPressed: () => context.push('/products'),
                                         width: 180,
                                         height: 46,
+                                        borderRadius: 24,
                                       ),
                                     ],
                                   ),

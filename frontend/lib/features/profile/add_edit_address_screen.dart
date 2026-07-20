@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong2.dart' as latLong;
+import 'package:latlong2/latlong.dart' as latLong;
 import '../../providers/address_provider.dart';
 import '../../models/address_model.dart';
 import '../../core/widgets/custom_button.dart';

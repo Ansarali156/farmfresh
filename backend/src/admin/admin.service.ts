@@ -285,6 +285,7 @@ export class AdminService {
 
       return {
         id: u.id,
+        farmerProfileId: fp?.id,
         name: u.name,
         email: u.email,
         phone: u.phone,

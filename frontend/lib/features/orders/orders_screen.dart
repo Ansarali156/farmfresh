@@ -273,7 +273,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          onTap: () => context.push('/order-detail', extra: order.id),
+          onTap: () => context.push('/order-detail/${order.id}'),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
