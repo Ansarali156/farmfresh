@@ -1,16 +1,17 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:crop_image/crop_image.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../providers/auth_provider.dart';
-import '../providers/profile_image_provider.dart';
-import '../core/widgets/profile_image_picker_dialog.dart';
-import '../core/widgets/custom_button.dart';
-import '../core/services/cloudinary_upload_service.dart';
+import 'package:dio/dio.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/app_providers.dart';
+import '../../providers/profile_image_provider.dart';
+import '../../core/widgets/profile_image_picker_dialog.dart';
+import '../../core/widgets/custom_button.dart';
+import '../../core/services/api_client.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -393,31 +394,50 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   static Future<void> _uploadProfilePicture(
-    BuildContext context, WidgetRef ref, String userId, String base64Image) async {
+      BuildContext context, WidgetRef ref, String userId, String base64Image) async {
     try {
-      final response = await ref.read(authRepositoryProvider).uploadProfilePicture(userId, base64Image);
+      final apiClient = ref.read(apiClientProvider);
+      
+      String pureBase64 = base64Image;
+      if (base64Image.contains(',')) {
+        pureBase64 = base64Image.split(',').last;
+      }
+      final bytes = base64Decode(pureBase64);
+      
+      final formData = FormData.fromMap({
+        'image': MultipartFile.fromBytes(bytes, filename: 'profile.jpg'),
+      });
 
-      if (response) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Profile picture updated successfully!', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
-            backgroundColor: const Color(0xFF2E7D32),
-          ),
-        );
+      final response = await apiClient.dio.post(
+        '/auth/upload-avatar',
+        data: formData,
+      );
+
+      if ((response.statusCode == 200 || response.statusCode == 201) && response.data['success'] == true) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Profile picture updated successfully!',
+                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+              backgroundColor: const Color(0xFF2E7D32),
+            ),
+          );
+        }
 
         ref.read(authProvider.notifier).clearMessages();
-        
-        if (context.mounted) {
-          ref.read(authProvider.notifier).loadCurrentUser();
-        }
+      } else {
+        throw Exception(response.data['message'] ?? 'Unknown error occurred');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to update profile picture: $e', style: GoogleFonts.plusJakartaSans()),
-          backgroundColor: const Color(0xFFFF4D6D),
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update profile picture: $e',
+                style: GoogleFonts.plusJakartaSans()),
+            backgroundColor: const Color(0xFFFF4D6D),
+          ),
+        );
+      }
     }
   }
 }

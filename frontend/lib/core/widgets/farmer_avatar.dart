@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../constants/app_constants.dart';
+import '../../core/constants/app_constants.dart';
 
 class AvatarPreset {
   final String id;

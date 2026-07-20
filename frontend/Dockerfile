@@ -11,7 +11,7 @@ RUN flutter pub get
 COPY . .
 
 # Build Flutter Web in release mode pointing to your live Railway API
-RUN flutter build web --release \
+RUN flutter build web --release --web-renderer html \
     --dart-define=API_BASE_URL=https://farmfresh-production-01f2.up.railway.app/api/v1 \
     --dart-define=SOCKET_BASE_URL=https://farmfresh-production-01f2.up.railway.app
 

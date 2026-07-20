@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { S3Service } from '../common/services/s3.service';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtRefreshStrategy],
+  providers: [AuthService, JwtStrategy, JwtRefreshStrategy, S3Service],
   exports: [PassportModule, JwtModule, JwtStrategy, JwtRefreshStrategy, AuthService],
 })
 export class AuthModule {}
