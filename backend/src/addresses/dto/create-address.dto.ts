@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsOptional, IsBoolean, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsBoolean, MaxLength, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAddressDto {
@@ -48,4 +48,14 @@ export class CreateAddressDto {
   @IsOptional()
   @IsBoolean()
   isDefault?: boolean;
+
+  @ApiProperty({ example: 17.3850, description: 'Latitude coordinate', required: false })
+  @IsOptional()
+  @IsNumber()
+  latitude?: number;
+
+  @ApiProperty({ example: 78.4867, description: 'Longitude coordinate', required: false })
+  @IsOptional()
+  @IsNumber()
+  longitude?: number;
 }

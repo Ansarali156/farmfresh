@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong2.dart' as latLong;
 import '../../providers/address_provider.dart';
 import '../../models/address_model.dart';
 import '../../core/widgets/custom_button.dart';
@@ -12,8 +14,9 @@ import '../../core/utils/app_snackbar.dart';
 
 class AddEditAddressScreen extends ConsumerStatefulWidget {
   final AddressModel? address;
+  final bool autoLocate;
 
-  const AddEditAddressScreen({super.key, this.address});
+  const AddEditAddressScreen({super.key, this.address, this.autoLocate = false});
 
   @override
   ConsumerState<AddEditAddressScreen> createState() =>
@@ -32,48 +35,15 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
   bool _isDefault = false;
   bool _isSaving = false;
   bool _isLocating = false;
+  double? _latitude;
+  double? _longitude;
 
   bool get _isEditing => widget.address != null;
 
-  Future<void> _useCurrentLocation() async {
-    setState(() => _isLocating = true);
+  Future<void> _fetchAddressFromCoords(double lat, double lon) async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        if (mounted) {
-          AppSnackBar.show(context, 'Location services are disabled on your device.', isError: true);
-        }
-        setState(() => _isLocating = false);
-        return;
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (mounted) {
-            AppSnackBar.show(context, 'Location permissions were denied.', isError: true);
-          }
-          setState(() => _isLocating = false);
-          return;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        if (mounted) {
-          AppSnackBar.show(context, 'Location permissions are permanently denied.', isError: true);
-        }
-        setState(() => _isLocating = false);
-        return;
-      }
-
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
-      );
-
       final url = Uri.parse(
-        'https://nominatim.openstreetmap.org/reverse?lat=${position.latitude}&lon=${position.longitude}&format=json&addressdetails=1',
+        'https://nominatim.openstreetmap.org/reverse?lat=$lat&lon=$lon&format=json&addressdetails=1',
       );
       final response = await http.get(url, headers: {'User-Agent': 'FarmFreshApp/1.0'});
 
@@ -100,18 +70,209 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
           if (postcode.toString().isNotEmpty) _zipController.text = postcode.toString();
           if (country.toString().isNotEmpty) _countryController.text = country.toString();
         });
+      }
+    } catch (e) {
+      debugPrint('Nominatim API Error: $e');
+    }
+  }
 
+  Future<latLong.LatLng?> _showMapSelectionDialog(latLong.LatLng initialPosition) async {
+    latLong.LatLng selectedPosition = initialPosition;
+    final MapController mapController = MapController();
+
+    return showDialog<latLong.LatLng>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              insetPadding: const EdgeInsets.all(16),
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.7,
+                width: double.infinity,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white,
+                ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'Confirm Location',
+                        style: GoogleFonts.outfit(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF23312B),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          FlutterMap(
+                            mapController: mapController,
+                            options: MapOptions(
+                              initialCenter: selectedPosition,
+                              initialZoom: 15.0,
+                              onTap: (tapPosition, point) {
+                                setDialogState(() {
+                                  selectedPosition = point;
+                                });
+                              },
+                            ),
+                            children: [
+                              TileLayer(
+                                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                userAgentPackageName: 'com.farmfresh.app',
+                              ),
+                              MarkerLayer(
+                                markers: [
+                                  Marker(
+                                    point: selectedPosition,
+                                    width: 40,
+                                    height: 40,
+                                    child: const Icon(
+                                      Icons.location_pin,
+                                      color: Colors.red,
+                                      size: 40,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Positioned(
+                            top: 8,
+                            left: 8,
+                            right: 8,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                'Tap on the map to adjust the pin location',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF23312B),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.of(dialogContext).pop(null),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF23312B),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                              child: Text('Cancel', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () => Navigator.of(dialogContext).pop(selectedPosition),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF2E7D32),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                elevation: 0,
+                              ),
+                              child: Text('Confirm', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _useCurrentLocation() async {
+    setState(() => _isLocating = true);
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
         if (mounted) {
-          AppSnackBar.show(context, 'Current location filled successfully!');
+          showAppSnackBar(context, 'Location services are disabled on your device.', type: SnackBarType.error);
+        }
+        setState(() => _isLocating = false);
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            showAppSnackBar(context, 'Location permissions were denied.', type: SnackBarType.error);
+          }
+          setState(() => _isLocating = false);
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          showAppSnackBar(context, 'Location permissions are permanently denied.', type: SnackBarType.error);
+        }
+        setState(() => _isLocating = false);
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+
+      final confirmedPosition = await _showMapSelectionDialog(latLong.LatLng(position.latitude, position.longitude));
+      
+      if (confirmedPosition != null) {
+        setState(() {
+          _latitude = confirmedPosition.latitude;
+          _longitude = confirmedPosition.longitude;
+        });
+        await _fetchAddressFromCoords(confirmedPosition.latitude, confirmedPosition.longitude);
+        if (mounted) {
+          showAppSnackBar(context, 'Location address updated. Please review the details.', type: SnackBarType.success);
         }
       } else {
         if (mounted) {
-          AppSnackBar.show(context, 'Location acquired (${position.latitude.toStringAsFixed(3)}, ${position.longitude.toStringAsFixed(3)}). Please enter street details.');
+          showAppSnackBar(context, 'Location selection cancelled.');
         }
       }
     } catch (e) {
       if (mounted) {
-        AppSnackBar.show(context, 'Could not fetch current location address. Please enter details manually.', isError: true);
+        showAppSnackBar(context, 'Could not fetch current location address. Please enter details manually.', type: SnackBarType.error);
       }
     } finally {
       if (mounted) {
@@ -185,6 +346,8 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
     _phoneController =
         TextEditingController(text: address?.contactPhone ?? '');
     _isDefault = address?.isDefault ?? false;
+    _latitude = address?.latitude;
+    _longitude = address?.longitude;
 
     _labelController.addListener(_updatePreview);
     _streetController.addListener(_updatePreview);
@@ -192,6 +355,12 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
     _stateController.addListener(_updatePreview);
     _zipController.addListener(_updatePreview);
     _countryController.addListener(_updatePreview);
+
+    if (widget.autoLocate && widget.address == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _useCurrentLocation();
+      });
+    }
   }
 
   void _updatePreview() {
@@ -534,6 +703,8 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
       contactPhone: _phoneController.text.trim().isNotEmpty
           ? _phoneController.text.trim()
           : null,
+      latitude: _latitude,
+      longitude: _longitude,
       isDefault: _isDefault,
     );
 

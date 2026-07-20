@@ -32,90 +32,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   bool _isLocatingAddress = false;
 
   Future<void> _useCurrentLocationForCart() async {
-    setState(() => _isLocatingAddress = true);
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        if (mounted) {
-          showAppSnackBar(context, 'Location services are disabled on your device.', type: SnackBarType.error);
-        }
-        setState(() => _isLocatingAddress = false);
-        return;
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (mounted) {
-            showAppSnackBar(context, 'Location permissions were denied.', type: SnackBarType.error);
-          }
-          setState(() => _isLocatingAddress = false);
-          return;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        if (mounted) {
-          showAppSnackBar(context, 'Location permissions are permanently denied.', type: SnackBarType.error);
-        }
-        setState(() => _isLocatingAddress = false);
-        return;
-      }
-
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
-      );
-
-      final url = Uri.parse(
-        'https://nominatim.openstreetmap.org/reverse?lat=${position.latitude}&lon=${position.longitude}&format=json&addressdetails=1',
-      );
-      final response = await http.get(url, headers: {'User-Agent': 'FarmFreshApp/1.0'});
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final address = data['address'] as Map<String, dynamic>? ?? {};
-
-        final road = address['road'] ?? address['pedestrian'] ?? address['suburb'] ?? address['neighbourhood'] ?? address['residential'] ?? '';
-        final houseNumber = address['house_number'] ?? address['building'] ?? '';
-        final streetParts = [houseNumber, road].where((s) => s.toString().trim().isNotEmpty).join(', ');
-
-        final city = address['city'] ?? address['town'] ?? address['village'] ?? address['county'] ?? address['state_district'] ?? '';
-        final state = address['state'] ?? '';
-        final postcode = address['postcode'] ?? '';
-        final country = address['country'] ?? 'India';
-
-        final newAddr = AddressModel(
-          id: 'loc_${DateTime.now().millisecondsSinceEpoch}',
-          label: 'Current Location',
-          street: streetParts.isNotEmpty ? streetParts : 'Current GPS Location',
-          city: city.toString().isNotEmpty ? city.toString() : 'Current Area',
-          state: state.toString().isNotEmpty ? state.toString() : '',
-          zipCode: postcode.toString(),
-          country: country.toString(),
-          isDefault: true,
-        );
-
-        await ref.read(addressProvider.notifier).addAddress(newAddr);
-
-        setState(() {
-          _selectedAddress = newAddr;
-        });
-
-        if (mounted) {
-          showAppSnackBar(context, 'Delivery address set to Current Location!', type: SnackBarType.success);
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        showAppSnackBar(context, 'Could not fetch location address. Please select address manually.', type: SnackBarType.error);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLocatingAddress = false);
-      }
-    }
+    context.push('/add-address?autoLocate=true');
   }
 
   @override
@@ -873,14 +790,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  if (_isLocatingAddress)
-                                    const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(color: Color(0xFF2E7D32), strokeWidth: 2),
-                                    )
-                                  else
-                                    const Icon(Icons.my_location, color: Color(0xFF2E7D32), size: 20),
+                                  const Icon(Icons.my_location, color: Color(0xFF2E7D32), size: 20),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
@@ -910,7 +820,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Expanded(
+                          if (addressState.isLoading)
+                            const Expanded(child: Center(child: CircularProgressIndicator(color: Color(0xFF2E7D32))))
+                          else
+                            Expanded(
                             child: ListView.builder(
                               itemCount: addressState.addresses.length,
                               itemBuilder: (context, index) {
