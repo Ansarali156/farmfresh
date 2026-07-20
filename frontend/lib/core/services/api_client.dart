@@ -6,7 +6,9 @@ import '../constants/app_constants.dart';
 /// Centralized Dio-based HTTP client with automatic JWT token refresh.
 class ApiClient {
   late final Dio _dio;
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
   bool _isRefreshing = false;
   final List<Function(String)> _pendingRequests = [];
   void Function()? onAuthFailure;
@@ -110,6 +112,7 @@ class _AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
+    print('[API] onError: statusCode=${err.response?.statusCode}, path=${err.requestOptions.path}, error=${err.message}');
     if (err.response?.statusCode == 401) {
       final newToken = await _client._refreshAccessToken();
 

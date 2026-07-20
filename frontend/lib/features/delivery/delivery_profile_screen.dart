@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
-import 'dart:html' as html;
 import '../../providers/delivery_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/delivery_profile_model.dart';

@@ -64,9 +64,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         children: [
           // Background Image
           Positioned.fill(
-            child: Image.network(
-              '/login_background.jpg',
-              fit: BoxFit.cover,
+            child: Container(
+              color: const Color(0xFFF2F8F4),
             ),
           ),
           // Dark Overlay for Contrast / Text Visibility
