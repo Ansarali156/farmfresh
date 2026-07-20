@@ -57,6 +57,8 @@ class ProductNotifier extends StateNotifier<ProductState> {
     state = state.copyWith(isLoading: true);
     try {
       final repo = _ref.read(productRepositoryProvider);
+      final cats = await repo.getCategories();
+      if (!_mounted) return;
       final list = await repo.getProducts(
         search: search,
         category: category,
@@ -66,8 +68,6 @@ class ProductNotifier extends StateNotifier<ProductState> {
       final featured = await repo.getFeaturedProducts();
       if (!_mounted) return;
       final popular = await repo.getPopularProducts();
-      if (!_mounted) return;
-      final cats = await repo.getCategories();
       if (!_mounted) return;
       state = ProductState(
         products: list,

@@ -115,9 +115,13 @@ export class ProductsService {
       deletedAt: null,
     };
 
-    // Access control check: Customers can ONLY read approved products
-    if (filters.role === 'CUSTOMER') {
-      where.status = 'APPROVED' as any;
+    // Access control check: Customers & unauthenticated requests read approved products
+    if (filters.role === 'CUSTOMER' || !filters.role) {
+      if (filters.status) {
+        where.status = filters.status as any;
+      } else {
+        where.status = 'APPROVED' as any;
+      }
     } else if (filters.status) {
       where.status = filters.status as any;
     }
@@ -140,8 +144,8 @@ export class ProductsService {
 
     if (filters.search) {
       where.OR = [
-        { name: { contains: filters.search } },
-        { description: { contains: filters.search } },
+        { name: { contains: filters.search, mode: 'insensitive' } },
+        { description: { contains: filters.search, mode: 'insensitive' } },
       ];
     }
 

@@ -10,6 +10,12 @@ import { FarmerModule } from './farmer/farmer.module';
 import { AdminModule } from './admin/admin.module';
 import { OrdersModule } from './orders/orders.module';
 import { UploadModule } from './upload/upload.module';
+import { ProductsModule } from './products/products.module';
+import { CategoriesModule } from './categories/categories.module';
+import { CartModule } from './cart/cart.module';
+import { AddressesModule } from './addresses/addresses.module';
+import { InventoryModule } from './inventory/inventory.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -30,6 +36,12 @@ import { UploadModule } from './upload/upload.module';
     }),
     DatabaseModule,
     AuthModule,
+    ProductsModule,
+    CategoriesModule,
+    CartModule,
+    AddressesModule,
+    InventoryModule,
+    NotificationsModule,
     DeliveryModule,
     FarmerModule,
     AdminModule,

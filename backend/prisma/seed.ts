@@ -6,25 +6,6 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting Database Seeding (Indian Localization)...');
 
-  // Reset database rows in correct dependency order
-  await prisma.transaction.deleteMany();
-  await prisma.payment.deleteMany();
-  await prisma.deliveryAssignment.deleteMany();
-  await prisma.orderItem.deleteMany();
-  await prisma.order.deleteMany();
-  await prisma.cartItem.deleteMany();
-  await prisma.cart.deleteMany();
-  await prisma.userAddress.deleteMany();
-  await prisma.inventoryHistory.deleteMany();
-  await prisma.inventory.deleteMany();
-  await prisma.productImage.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.category.deleteMany();
-  await prisma.bankAccount.deleteMany();
-  await prisma.farmerProfile.deleteMany();
-  await prisma.refreshToken.deleteMany();
-  await prisma.user.deleteMany();
-
   const passwordHash = await bcrypt.hash('password123', 12);
 
   // 1. Create Users

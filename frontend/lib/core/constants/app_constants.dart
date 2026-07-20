@@ -4,12 +4,12 @@ class AppConstants {
   // Use --dart-define=API_BASE_URL=http://your-server:3000/api/v1
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://farmfresh-production-01f2.up.railway.app/api/v1',
+    defaultValue: 'http://localhost:3000/api/v1',
   );
 
   static const String socketBaseUrl = String.fromEnvironment(
     'SOCKET_BASE_URL',
-    defaultValue: 'https://farmfresh-production-01f2.up.railway.app',
+    defaultValue: 'http://localhost:3000',
   );
 
   // Map tile provider URL (OpenStreetMap by default, configurable via build args)
