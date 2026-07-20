@@ -40,7 +40,7 @@ export default function CategoriesPage() {
     queryFn: () => adminService.getCategories(),
   });
 
-  const categories = data?.items ?? [];
+  const categories = (Array.isArray(data) ? data : (data as any)?.items) ?? [];
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['categories'] });
 

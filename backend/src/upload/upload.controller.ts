@@ -3,7 +3,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiConsumes, ApiBody } from '@nes
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { CurrentUser, CurrentUserPayload } from '../common/decorators/current-user.decorator';
-import { CloudinaryService } from '../common/services/cloudinary.service';
+import { S3Service } from '../common/services/s3.service';
 import { AuthService } from '../auth/auth.service';
 
 @Controller('upload')
@@ -11,7 +11,7 @@ import { AuthService } from '../auth/auth.service';
 @UseGuards(RolesGuard)
 export class UploadController {
   constructor(
-    private readonly cloudinaryService: CloudinaryService,
+    private readonly s3Service: S3Service,
     private readonly authService: AuthService,
   ) {}
 
@@ -32,24 +32,21 @@ export class UploadController {
     )
     file: Express.Multer.File,
   ) {
-    if (!this.cloudinaryService.isConfigured()) {
-      return { success: false, message: 'Cloudinary is not configured. Profile picture upload is currently unavailable.' };
+    if (!this.s3Service.isConfigured()) {
+      return { success: false, message: 'S3 storage is not configured. Profile picture upload is currently unavailable.' };
     }
 
-    const uploadResult = await this.cloudinaryService.uploadImage(file.buffer, 'farmfresh-profile-pictures', [
-      { width: 512, height: 512, crop: 'fill', gravity: 'face' },
-      { quality: 'auto' },
-    ]);
+    const uploadResult = await this.s3Service.uploadImage(file.buffer, 'farmfresh-profile-pictures', file.mimetype);
 
     const userProfile = await this.authService.getProfile(user.id);
     const oldAvatar = userProfile.avatar;
 
     await this.authService.updateProfile(user.id, undefined, undefined, undefined, undefined, uploadResult.secure_url);
 
-    if (oldAvatar && oldAvatar.includes('res.cloudinary.com') && oldAvatar.includes('/farmfresh-profile-pictures/')) {
-      const oldPublicId = oldAvatar.split('/upload/')[1]?.split('.')[0];
+    if (oldAvatar && oldAvatar.includes('farmfresh-profile-pictures/')) {
+      const oldPublicId = 'farmfresh-profile-pictures/' + oldAvatar.split('/farmfresh-profile-pictures/')[1];
       if (oldPublicId) {
-        await this.cloudinaryService.deleteImage(oldPublicId);
+        await this.s3Service.deleteImage(oldPublicId);
       }
     }
 
@@ -59,7 +56,6 @@ export class UploadController {
       data: {
         imageUrl: uploadResult.secure_url,
         publicId: uploadResult.public_id,
-        format: uploadResult.format,
       },
     };
   }
@@ -71,26 +67,23 @@ export class UploadController {
   async removeProfilePicture(
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    if (!this.cloudinaryService.isConfigured()) {
-      return { success: false, message: 'Cloudinary is not configured. Profile picture removal is currently unavailable.' };
+    if (!this.s3Service.isConfigured()) {
+      return { success: false, message: 'S3 storage is not configured. Profile picture removal is currently unavailable.' };
     }
 
     const userProfile = await this.authService.getProfile(user.id);
     const currentAvatar = userProfile.avatar;
 
-    if (!currentAvatar || !currentAvatar.includes('res.cloudinary.com')) {
+    if (!currentAvatar || !currentAvatar.includes('farmfresh-profile-pictures/')) {
       return { success: false, message: 'No profile picture found to remove' };
     }
 
-    const urlPattern = /res\.cloudinary\.com\/([^\/]+)\/image\/upload\/v\d+\/([^\/\.]+)\.(jpg|jpeg|png|webp)/;
-    const match = currentAvatar.match(urlPattern);
-    
-    if (match) {
-      const publicId = match[2];
-      await this.cloudinaryService.deleteImage(publicId);
+    const oldPublicId = 'farmfresh-profile-pictures/' + currentAvatar.split('/farmfresh-profile-pictures/')[1];
+    if (oldPublicId) {
+      await this.s3Service.deleteImage(oldPublicId);
     }
 
-    await this.authService.updateProfile(user.id, undefined, undefined, undefined, undefined, undefined);
+    await this.authService.updateProfile(user.id, undefined, undefined, undefined, undefined, '');
 
     return {
       success: true,

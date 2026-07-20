@@ -581,7 +581,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
       children: [
         if (isActive)
           GestureDetector(
-            onTap: () => context.push('/order-tracking', extra: order.id),
+            onTap: () => context.push('/order-tracking/${order.id}'),
             child: Container(
               height: 44,
               decoration: BoxDecoration(

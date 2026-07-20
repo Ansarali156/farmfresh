@@ -124,14 +124,14 @@ export default function ProductsPage() {
     queryFn: () => adminService.getCategories({ limit: 100 }),
   });
 
-  const categories = categoriesData?.items ?? [];
+  const categories = (Array.isArray(categoriesData) ? categoriesData : (categoriesData as any)?.items) ?? [];
 
   const { data: farmersData } = useQuery({
     queryKey: ['farmers-list'],
     queryFn: () => adminService.getFarmers({ limit: 100 }),
   });
 
-  const farmers = farmersData?.items ?? [];
+  const farmers = (Array.isArray(farmersData) ? farmersData : (farmersData as any)?.items) ?? [];
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['products'] });
 
@@ -272,15 +272,15 @@ export default function ProductsPage() {
     if (!editId) {
       const enteredName = (editForm.farmerName || '').trim().toLowerCase();
       const foundFarmer = farmers.find((f: any) => 
-        (f.user?.name || '').toLowerCase() === enteredName || 
-        (f.farmName || '').toLowerCase() === enteredName
+        (f.name || '').toLowerCase() === enteredName || 
+        (f.farmerProfile?.farmName || '').toLowerCase() === enteredName
       );
       if (!foundFarmer) {
         setErrors(prev => ({ ...prev, farmerName: 'Farmer not found. Please enter a registered farmer name (e.g. John Farmer)' }));
         setSnack({ open: true, message: 'Farmer not found. Please check spelling.', severity: 'error' });
         return;
       }
-      dbFarmerId = foundFarmer.id;
+      dbFarmerId = foundFarmer.farmerProfileId || foundFarmer.id;
     }
 
     const saveProduct = (resolvedCategoryId: string) => {
@@ -317,9 +317,17 @@ export default function ProductsPage() {
                   adminService.uploadProductImages(editId, [editForm.imageUrl]).then(() => {
                     invalidate();
                   });
+                } else {
+                  invalidate();
                 }
               }
             });
+            setEditOpen(false);
+            setEditId(null);
+            setSnack({ open: true, message: 'Product updated successfully', severity: 'success' });
+          },
+          onError: (error: any) => {
+            setSnack({ open: true, message: error?.response?.data?.message || 'Failed to update product', severity: 'error' });
           }
         });
         setEditOpen(false);
@@ -337,7 +345,15 @@ export default function ProductsPage() {
               adminService.uploadProductImages(data.id, [editForm.imageUrl]).then(() => {
                 invalidate();
               });
+            } else {
+              invalidate();
             }
+            setEditOpen(false);
+            setEditId(null);
+            setSnack({ open: true, message: 'Product created successfully', severity: 'success' });
+          },
+          onError: (error: any) => {
+            setSnack({ open: true, message: error?.response?.data?.message || 'Failed to save product', severity: 'error' });
           }
         });
       }
@@ -358,8 +374,9 @@ export default function ProductsPage() {
         });
         queryClient.invalidateQueries({ queryKey: ['categories-list'] });
         saveProduct(newCat.id);
-      } catch (err) {
-        setSnack({ open: true, message: 'Failed to create new category', severity: 'error' });
+      } catch (err: any) {
+        const errMsg = err?.response?.data?.message || err.message || 'Unknown error';
+        setSnack({ open: true, message: `Failed to create new category: ${errMsg}`, severity: 'error' });
       }
     }
   };
@@ -573,15 +590,26 @@ export default function ProductsPage() {
             {!editId && (
               <>
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Farmer Name"
-                    fullWidth
+                  <Autocomplete
+                    freeSolo
                     size="small"
-                    placeholder="e.g. John Farmer"
+                    options={farmers.map((f: any) => f.name).filter(Boolean)}
                     value={editForm.farmerName || ''}
-                    error={!!errors.farmerName}
-                    helperText={errors.farmerName || 'Enter registered farmer name'}
-                    onChange={(e) => setEditForm({ ...editForm, farmerName: e.target.value })}
+                    onChange={(event, newValue) => {
+                      setEditForm({ ...editForm, farmerName: newValue || '' });
+                    }}
+                    onInputChange={(event, newInputValue) => {
+                      setEditForm({ ...editForm, farmerName: newInputValue || '' });
+                    }}
+                    renderInput={(params) => (
+                      <TextField 
+                        {...params} 
+                        label="Farmer Name" 
+                        placeholder="e.g. John Farmer"
+                        error={!!errors.farmerName}
+                        helperText={errors.farmerName || 'Select a farmer'}
+                      />
+                    )}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>

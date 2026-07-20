@@ -16,6 +16,8 @@ export class AddressesService {
       state: address.state,
       zipCode: address.postalCode,
       country: address.country,
+      latitude: address.latitude ? Number(address.latitude) : undefined,
+      longitude: address.longitude ? Number(address.longitude) : undefined,
       isDefault: address.isDefault,
       createdAt: address.createdAt,
       updatedAt: address.updatedAt,
@@ -48,6 +50,8 @@ export class AddressesService {
         state: dto.state,
         postalCode: dto.zipCode,
         country: dto.country || 'India',
+        latitude: dto.latitude,
+        longitude: dto.longitude,
         isDefault: dto.isDefault ?? false,
       },
     });
@@ -79,6 +83,8 @@ export class AddressesService {
     if (dto.state !== undefined) data.state = dto.state;
     if (dto.zipCode !== undefined) data.postalCode = dto.zipCode;
     if (dto.country !== undefined) data.country = dto.country;
+    if (dto.latitude !== undefined) data.latitude = dto.latitude;
+    if (dto.longitude !== undefined) data.longitude = dto.longitude;
     if (dto.isDefault !== undefined) data.isDefault = dto.isDefault;
 
     const address = await this.prisma.userAddress.update({

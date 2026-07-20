@@ -1,8 +1,7 @@
 import { Controller, Post, Get, Patch, Body, UseGuards, Req, Query, HttpCode, HttpStatus, BadRequestException, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { S3Service } from '../common/services/s3.service';
 import { AuthService } from './auth.service';
 import { RegisterCustomerDto } from './dto/register-customer.dto';
 import { RegisterFarmerDto } from './dto/register-farmer.dto';
@@ -18,7 +17,10 @@ import { AuthGuard } from '@nestjs/passport';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly s3Service: S3Service,
+  ) {}
 
   @Public()
   @Post('register/customer')
@@ -167,14 +169,6 @@ export class AuthController {
   @ApiBearerAuth('JWT-auth')
   @UseInterceptors(
     FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './public/uploads',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-          const ext = extname(file.originalname);
-          cb(null, `avatar-${uniqueSuffix}${ext}`);
-        },
-      }),
       limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
       fileFilter: (req, file, cb) => {
         if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
@@ -192,9 +186,25 @@ export class AuthController {
     if (!file) {
       throw new BadRequestException('Image file is required');
     }
-    const imageUrl = `/public/uploads/${file.filename}`;
+    
+    if (!this.s3Service.isConfigured()) {
+      throw new BadRequestException('S3 storage is not configured.');
+    }
+    
+    const uploadResult = await this.s3Service.uploadImage(file.buffer, 'farmfresh-profile-pictures', file.mimetype);
+    
+    // Check if the user already has an avatar on S3 to delete
+    const userProfile = await this.authService.getProfile(user.id);
+    const oldAvatar = userProfile.avatar;
+    if (oldAvatar && oldAvatar.includes('farmfresh-profile-pictures/')) {
+      const oldPublicId = 'farmfresh-profile-pictures/' + oldAvatar.split('/farmfresh-profile-pictures/')[1];
+      if (oldPublicId) {
+        await this.s3Service.deleteImage(oldPublicId);
+      }
+    }
+
     // Update the user's profile with the new avatar
-    const data = await this.authService.updateProfile(user.id, undefined, undefined, undefined, undefined, imageUrl);
+    const data = await this.authService.updateProfile(user.id, undefined, undefined, undefined, undefined, uploadResult.secure_url);
     return new SuccessResponseDto('Avatar uploaded successfully', data);
   }
 
