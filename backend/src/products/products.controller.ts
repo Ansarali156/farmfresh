@@ -4,6 +4,7 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
+import { S3Service } from '../common/services/s3.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { SuccessResponseDto } from '../common/dto/api-response.dto';
@@ -16,7 +17,10 @@ import { CurrentUser, CurrentUserPayload } from '../common/decorators/current-us
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly s3Service: S3Service
+  ) {}
 
   @Post()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -152,14 +156,6 @@ export class ProductsController {
   @ApiBearerAuth('JWT-auth')
   @UseInterceptors(
     FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './public/uploads',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-          const ext = extname(file.originalname);
-          cb(null, `product-${uniqueSuffix}${ext}`);
-        },
-      }),
       limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
       fileFilter: (req, file, cb) => {
         if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
@@ -177,8 +173,13 @@ export class ProductsController {
     if (!file) {
       throw new BadRequestException('Image file is required');
     }
-    const imageUrl = `/public/uploads/${file.filename}`;
-    const data = await this.productsService.uploadImage(id, imageUrl);
+    
+    if (!this.s3Service.isConfigured()) {
+      throw new BadRequestException('S3 storage is not configured. Upload unavailable.');
+    }
+    
+    const uploadResult = await this.s3Service.uploadImage(file.buffer, 'farmfresh-products', file.mimetype);
+    const data = await this.productsService.uploadImage(id, uploadResult.secure_url);
     return new SuccessResponseDto('Product image uploaded successfully', data);
   }
 
