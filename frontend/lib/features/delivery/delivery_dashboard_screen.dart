@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 import '../../providers/delivery_provider.dart';
 import '../../models/delivery_model.dart';
+import '../../core/theme/delivery_theme.dart';
 
 class DeliveryDashboardScreen extends ConsumerStatefulWidget {
   const DeliveryDashboardScreen({super.key});
@@ -31,9 +32,7 @@ class _DeliveryDashboardScreenState extends ConsumerState<DeliveryDashboardScree
     final profileState = ref.watch(deliveryProfileProvider);
 
     final allActive = [...ordersState.pendingDeliveries, ...ordersState.activeDeliveries];
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Find the first active/progressing delivery for map route visualization
     final DeliveryOrder? activeRouteJob = allActive.isNotEmpty
         ? allActive.firstWhere(
             (o) => o.status != DeliveryOrderStatus.pending && o.status != DeliveryOrderStatus.delivered && o.status != DeliveryOrderStatus.cancelled && o.status != DeliveryOrderStatus.rejected,
@@ -42,17 +41,44 @@ class _DeliveryDashboardScreenState extends ConsumerState<DeliveryDashboardScree
         : null;
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: DeliveryTheme.bgCanvas,
       appBar: AppBar(
-        title: Text(
-          'Logistics & Delivery',
-          style: GoogleFonts.outfit(
-            fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : const Color(0xFF23312B),
-          ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: DeliveryTheme.orangeGradient,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.local_shipping, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Logistics Hub',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  'Express Fleet Delivery',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 10,
+                    color: const Color(0xFF94A3B8),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: DeliveryTheme.navyDark,
+        elevation: 4,
+        shadowColor: const Color(0x3D0F172A),
         centerTitle: false,
         actions: [
           Row(
@@ -62,28 +88,52 @@ class _DeliveryDashboardScreenState extends ConsumerState<DeliveryDashboardScree
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: profileState.profile.isAvailable
-                      ? const Color(0xFF2E7D32).withOpacity(0.15)
-                      : Colors.grey.withOpacity(0.15),
+                      ? const Color(0xFF10B981).withOpacity(0.2)
+                      : const Color(0xFF64748B).withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  profileState.profile.isAvailable ? 'Online' : 'Offline',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: profileState.profile.isAvailable
-                        ? const Color(0xFF2E7D32)
-                        : Colors.grey,
+                  border: Border.all(
+                    color: profileState.profile.isAvailable ? const Color(0xFF10B981) : const Color(0xFF64748B),
+                    width: 1,
                   ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: profileState.profile.isAvailable ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
+                        boxShadow: profileState.profile.isAvailable
+                            ? const [
+                                BoxShadow(
+                                  color: Color(0xFF10B981),
+                                  blurRadius: 6,
+                                  spreadRadius: 1,
+                                ),
+                              ]
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      profileState.profile.isAvailable ? 'ONLINE' : 'OFFLINE',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: profileState.profile.isAvailable ? const Color(0xFF34D399) : const Color(0xFF94A3B8),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(width: 4),
               Switch(
                 value: profileState.profile.isAvailable,
-                activeColor: const Color(0xFF2E7D32),
-                activeTrackColor: const Color(0xFFC8E6C9),
-                inactiveThumbColor: Colors.grey[400],
-                inactiveTrackColor: Colors.grey[300],
+                activeColor: DeliveryTheme.orangePrimary,
+                activeTrackColor: const Color(0xFFFED7AA),
+                inactiveThumbColor: const Color(0xFF94A3B8),
+                inactiveTrackColor: const Color(0xFF334155),
                 onChanged: (val) async {
                   await ref.read(deliveryProfileProvider.notifier).toggleAvailability();
                 },
@@ -91,10 +141,7 @@ class _DeliveryDashboardScreenState extends ConsumerState<DeliveryDashboardScree
             ],
           ),
           IconButton(
-            icon: Icon(
-              Icons.notifications_outlined,
-              color: isDark ? Colors.white : const Color(0xFF23312B),
-            ),
+            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
             onPressed: () => context.push('/delivery-notifications'),
           ),
           const SizedBox(width: 8),
@@ -134,7 +181,7 @@ class _DeliveryDashboardScreenState extends ConsumerState<DeliveryDashboardScree
                               style: GoogleFonts.outfit(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : const Color(0xFF23312B),
+                                color: DeliveryTheme.navyDark,
                               ),
                             ),
                             const SizedBox(height: 12),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../providers/delivery_provider.dart';
+import '../../core/theme/delivery_theme.dart';
 
 class DeliveryEarningsScreen extends ConsumerStatefulWidget {
   const DeliveryEarningsScreen({super.key});
@@ -22,15 +24,15 @@ class _DeliveryEarningsScreenState extends ConsumerState<DeliveryEarningsScreen>
     final state = ref.watch(deliveryEarningsProvider);
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: DeliveryTheme.bgCanvas,
       appBar: AppBar(
-        title: const Text('Earnings & Wallet', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        elevation: 0,
+        title: Text('Fleet Wallet & Earnings', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white)),
+        backgroundColor: DeliveryTheme.navyDark,
+        elevation: 4,
+        shadowColor: const Color(0x3D0F172A),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
+            icon: const Icon(Icons.history, color: Colors.white),
             onPressed: () => context.push('/delivery-history'),
           ),
         ],

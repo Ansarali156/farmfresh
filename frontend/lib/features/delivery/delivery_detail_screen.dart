@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import '../../providers/delivery_provider.dart';
 import '../../models/delivery_model.dart';
 import '../../core/utils/app_snackbar.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/services/delivery_tracking_service.dart';
+import '../../core/theme/delivery_theme.dart';
 
 class DeliveryDetailScreen extends ConsumerStatefulWidget {
   final String deliveryId;
@@ -56,22 +58,46 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
 
     if (state.isLoading || delivery == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Loading Details...')),
-        body: const Center(child: CircularProgressIndicator()),
+        backgroundColor: DeliveryTheme.bgCanvas,
+        appBar: AppBar(
+          title: Text('Loading Route...', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white)),
+          backgroundColor: DeliveryTheme.navyDark,
+          elevation: 0,
+        ),
+        body: const Center(child: CircularProgressIndicator(color: DeliveryTheme.orangePrimary)),
       );
     }
 
     return Scaffold(
+      backgroundColor: DeliveryTheme.bgCanvas,
       appBar: AppBar(
-        title: Text('Order #${delivery.orderNumber ?? delivery.orderId.substring(0, 8)}'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        elevation: 0,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Order #${delivery.orderNumber ?? delivery.orderId.substring(0, 8)}',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+            ),
+            Text(
+              'Logistics Dispatch Details',
+              style: GoogleFonts.plusJakartaSans(fontSize: 10, color: const Color(0xFF94A3B8)),
+            ),
+          ],
+        ),
+        backgroundColor: DeliveryTheme.navyDark,
+        elevation: 4,
+        shadowColor: const Color(0x3D0F172A),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: DeliveryTheme.statusBadge(delivery.status.name),
+          ),
+        ],
       ),
       body: Stack(
         children: [
           SingleChildScrollView(
-            padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 100),
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 110),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -91,9 +117,16 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
             bottom: 0,
             child: Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border(top: BorderSide(color: Colors.grey.shade200)),
+              decoration: const BoxDecoration(
+                color: DeliveryTheme.navyDark,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x3D0F172A),
+                    offset: Offset(0, -6),
+                    blurRadius: 20,
+                  ),
+                ],
               ),
               child: _buildActionButton(delivery, state),
             ),

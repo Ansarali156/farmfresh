@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'delivery_dashboard_screen.dart';
 import 'delivery_orders_screen.dart';
 import 'delivery_earnings_screen.dart';
 import 'delivery_profile_screen.dart';
-import '../../core/theme/app_theme.dart';
+import '../../core/theme/delivery_theme.dart';
 
 class DeliveryMainScreen extends ConsumerStatefulWidget {
   const DeliveryMainScreen({super.key});
@@ -26,50 +27,89 @@ class _DeliveryMainScreenState extends ConsumerState<DeliveryMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: AppTheme.getBackgroundGradient(context),
-      ),
+      color: DeliveryTheme.bgCanvas,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
           child: _screens[_currentIndex],
         ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-        unselectedLabelStyle: const TextStyle(fontSize: 11),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+        bottomNavigationBar: Container(
+          decoration: const BoxDecoration(
+            color: DeliveryTheme.navyDark,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x1F0F172A),
+                offset: Offset(0, -6),
+                blurRadius: 20,
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_shipping_outlined),
-            activeIcon: Icon(Icons.local_shipping),
-            label: 'Jobs',
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: SafeArea(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(0, Icons.dashboard_outlined, Icons.dashboard_rounded, 'Dashboard'),
+                _buildNavItem(1, Icons.alt_route_outlined, Icons.alt_route_rounded, 'Routes'),
+                _buildNavItem(2, Icons.account_balance_wallet_outlined, Icons.account_balance_wallet_rounded, 'Earnings'),
+                _buildNavItem(3, Icons.badge_outlined, Icons.badge_rounded, 'Profile'),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            activeIcon: Icon(Icons.account_balance_wallet),
-            label: 'Earnings',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
+        ),
       ),
-    ),);
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData icon, IconData activeIcon, String label) {
+    final isSelected = _currentIndex == index;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: EdgeInsets.symmetric(horizontal: isSelected ? 16 : 12, vertical: 8),
+        decoration: BoxDecoration(
+          gradient: isSelected ? DeliveryTheme.orangeGradient : null,
+          color: isSelected ? null : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: isSelected
+              ? const [
+                  BoxShadow(
+                    color: Color(0x3DF97316),
+                    offset: Offset(0, 4),
+                    blurRadius: 10,
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isSelected ? activeIcon : icon,
+              size: 20,
+              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+            ),
+            if (isSelected) ...[
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 import '../../providers/delivery_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/delivery_profile_model.dart';
 import '../../providers/profile_image_provider.dart';
 import '../../core/widgets/profile_image_picker_dialog.dart';
+import '../../core/theme/delivery_theme.dart';
 
 class DeliveryProfileScreen extends ConsumerStatefulWidget {
   const DeliveryProfileScreen({super.key});
@@ -69,7 +71,7 @@ class _DeliveryProfileScreenState extends ConsumerState<DeliveryProfileScreen> {
     ref.listen<DeliveryProfileState>(deliveryProfileProvider, (previous, next) {
       if (next.actionMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.actionMessage!), backgroundColor: Colors.green),
+          SnackBar(content: Text(next.actionMessage!), backgroundColor: const Color(0xFF10B981)),
         );
         ref.read(deliveryProfileProvider.notifier).clearMessages();
       }
@@ -82,15 +84,15 @@ class _DeliveryProfileScreenState extends ConsumerState<DeliveryProfileScreen> {
     });
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: DeliveryTheme.bgCanvas,
       appBar: AppBar(
-        title: const Text('My Driver Profile', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        elevation: 0,
+        title: Text('Driver Fleet Account', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white)),
+        backgroundColor: DeliveryTheme.navyDark,
+        elevation: 4,
+        shadowColor: const Color(0x3D0F172A),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: () => ref.read(authProvider.notifier).logout(),
           ),
         ],
