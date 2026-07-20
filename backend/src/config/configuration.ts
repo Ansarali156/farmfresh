@@ -31,7 +31,14 @@ export default () => {
       limit: parseInt(process.env.THROTTLE_LIMIT || '100', 10),
     },
     cors: {
-      origins: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8080'],
+      origins: [
+        ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : []),
+        process.env.ADMIN_URL,
+        process.env.CLIENT_URL,
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://localhost:8080'
+      ].filter(Boolean).map(url => url!.replace(/\/$/, '')),
     },
     nodeEnv: process.env.NODE_ENV || 'development',
     orders: {

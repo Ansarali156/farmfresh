@@ -43,19 +43,16 @@ async function bootstrap() {
   const corsOrigins = config.get<string[]>('cors.origins') || ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8080'];
   app.enableCors({
     origin: (origin, callback) => {
-      // Allow non-browser / server-to-server calls (origin is undefined)
       if (!origin) return callback(null, true);
-      // Allow explicitly configured origins
-      if (corsOrigins.includes(origin)) return callback(null, true);
-      // Allow any localhost / 127.0.0.1 origin on any port (covers Flutter web dev server, admin, api)
-      if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      const cleanOrigin = origin.replace(/\/$/, '');
+      if (corsOrigins.includes(cleanOrigin)) return callback(null, true);
+      if (cleanOrigin.startsWith('http://localhost:') || cleanOrigin.startsWith('http://127.0.0.1:')) {
         return callback(null, true);
       }
       callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
   });
   
   // Security headers
