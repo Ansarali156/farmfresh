@@ -61,7 +61,7 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
             ],
           ),
           child: FloatingActionButton(
-            onPressed: () => context.push('/add-address'),
+            onPressed: () => context.push('/add-edit-address'),
             backgroundColor: Colors.transparent,
             elevation: 0,
             highlightElevation: 0,
@@ -107,7 +107,7 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
             CustomButton(
               text: 'Add New Address',
               icon: Icons.add,
-              onPressed: () => context.push('/add-address'),
+              onPressed: () => context.push('/add-edit-address'),
               width: 200,
               height: 44,
             ),
@@ -261,7 +261,7 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
                   ],
                   onSelected: (value) {
                     if (value == 'edit') {
-                      context.push('/edit-address', extra: address);
+                      context.push('/add-edit-address', extra: address);
                     } else if (value == 'default') {
                       ref
                           .read(addressProvider.notifier)

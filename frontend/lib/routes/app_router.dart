@@ -107,16 +107,16 @@ final appRouter = Provider<GoRouter>((ref) {
         path: '/delivery-navigation',
         name: 'delivery-navigation',
         builder: (context, state) {
-          final deliveryId = state.extra as String;
-          return DeliveryNavigationScreen(deliveryId: deliveryId);
+          final delivery = state.extra as DeliveryOrder;
+          return DeliveryNavigationScreen(delivery: delivery);
         },
       ),
       GoRoute(
         path: '/product-details/:id',
         name: 'product-details',
         builder: (context, state) {
-          final id = state.pathParameters['id']!;
-          return ProductDetailsScreen(productId: id);
+          final product = state.extra as ProductModel?;
+          return ProductDetailsScreen(product: product);
         },
       ),
       GoRoute(
@@ -124,7 +124,7 @@ final appRouter = Provider<GoRouter>((ref) {
         name: 'products',
         builder: (context, state) {
           final category = state.uri.queryParameters['category'];
-          return ProductsScreen(category: category);
+          return ProductsScreen(initialCategory: category);
         },
       ),
       GoRoute(
@@ -238,7 +238,7 @@ final appRouter = Provider<GoRouter>((ref) {
         path: '/add-edit-address',
         name: 'edit-address',
         builder: (context, state) {
-          final address = state.extra as AddressModel;
+          final address = state.extra as AddressModel?;
           return AddEditAddressScreen(address: address);
         },
       ),

@@ -37,7 +37,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   AuthNotifier(this._ref) : super(AuthState()) {
     _ref.read(apiClientProvider).onAuthFailure = forceLogout;
-    _loadCurrentUser();
+    loadCurrentUser();
   }
 
   @override
@@ -53,7 +53,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> _loadCurrentUser() async {
+  Future<void> loadCurrentUser() async {
     if (!_mounted) return;
     state = state.copyWith(isLoading: true);
     try {

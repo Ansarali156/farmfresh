@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:ui';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:crop_image/crop_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../providers/auth_provider.dart';
-import '../providers/profile_image_provider.dart';
-import '../core/widgets/profile_image_picker_dialog.dart';
-import '../core/widgets/custom_button.dart';
-import '../core/services/cloudinary_upload_service.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/app_providers.dart';
+import '../../providers/profile_image_provider.dart';
+import '../../core/widgets/profile_image_picker_dialog.dart';
+import '../../core/widgets/custom_button.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});

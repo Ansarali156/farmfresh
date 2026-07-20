@@ -28,6 +28,7 @@ dependencies:
   fl_chart: ^1.2.0
   shared_preferences: ^2.5.5
   image_picker: ^1.2.3
+  crop_image: ^1.0.17
 
 dependency_overrides:
   geolocator_android: 4.2.2

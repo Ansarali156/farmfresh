@@ -379,41 +379,64 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
 
     setState(() => _isSaving = true);
 
-    final addressData = AddressModel(
-      id: widget.address?.id ?? '',
-      label: _labelController.text.trim(),
-      street: _streetController.text.trim(),
-      city: _cityController.text.trim(),
-      state: _stateController.text.trim(),
-      zipCode: _zipController.text.trim(),
-      country: _countryController.text.trim(),
-      contactPhone: _phoneController.text.trim().isNotEmpty
-          ? _phoneController.text.trim()
-          : null,
-      isDefault: _isDefault,
-    );
-
-    bool success;
-    if (_isEditing) {
-      success = await ref
-          .read(addressProvider.notifier)
-          .updateAddress(widget.address!.id, addressData);
-    } else {
-      success = await ref
-          .read(addressProvider.notifier)
-          .addAddress(addressData);
-    }
-
-    setState(() => _isSaving = false);
-
-    if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_isEditing ? 'Address updated successfully!' : 'Address added successfully!', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
-          backgroundColor: const Color(0xFF2E7D32),
-        ),
+    try {
+      final addressData = AddressModel(
+        id: widget.address?.id ?? '',
+        label: _labelController.text.trim(),
+        street: _streetController.text.trim(),
+        city: _cityController.text.trim(),
+        state: _stateController.text.trim(),
+        zipCode: _zipController.text.trim(),
+        country: _countryController.text.trim(),
+        contactPhone: _phoneController.text.trim().isNotEmpty
+            ? _phoneController.text.trim()
+            : null,
+        isDefault: _isDefault,
       );
-      context.pop();
+
+      bool success;
+      if (_isEditing) {
+        success = await ref
+            .read(addressProvider.notifier)
+            .updateAddress(widget.address!.id, addressData);
+      } else {
+        success = await ref
+            .read(addressProvider.notifier)
+            .addAddress(addressData);
+      }
+
+      if (mounted) {
+        setState(() => _isSaving = false);
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(_isEditing ? 'Address updated successfully!' : 'Address saved successfully.', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+              backgroundColor: const Color(0xFF2E7D32),
+            ),
+          );
+          // Refresh addresses list
+          ref.read(addressProvider.notifier).loadAddresses();
+          context.pop();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to save address. Please try again.', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+              backgroundColor: const Color(0xFFFF4D6D),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error saving address: $e');
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('An error occurred while saving the address.', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold)),
+            backgroundColor: const Color(0xFFFF4D6D),
+          ),
+        );
+      }
     }
   }
 }

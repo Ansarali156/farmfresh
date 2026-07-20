@@ -13,7 +13,7 @@ import '../../core/widgets/custom_button.dart';
 class ProductsScreen extends ConsumerStatefulWidget {
   final String? initialCategory;
 
-  const ProductsScreen({super.key, this.initialCategory});
+  const ProductsScreen({Key? key, this.initialCategory}) : super(key: key);
 
   @override
   ConsumerState<ProductsScreen> createState() => _ProductsScreenState();

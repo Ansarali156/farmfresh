@@ -21,6 +21,7 @@ abstract class AuthRepository {
     String? vehicleNumber,
   });
   Future<UserModel> updateProfile({String? name, String? phone, String? avatar});
+  Future<bool> uploadProfilePicture(String userId, String base64Image);
   Future<void> changePassword({required String currentPassword, required String newPassword});
   Future<void> logout();
   Future<void> refreshToken();
@@ -178,6 +179,18 @@ class PostgresAuthRepository implements AuthRepository {
     } catch (e) {
       if (e is Exception) rethrow;
       throw Exception('Connection failed');
+    }
+  }
+
+  @override
+  Future<bool> uploadProfilePicture(String userId, String base64Image) async {
+    try {
+      final res = await _apiClient.dio.post('/auth/upload-avatar', data: {
+        'image': base64Image,
+      });
+      return res.statusCode == 200;
+    } catch (e) {
+      return false;
     }
   }
 
