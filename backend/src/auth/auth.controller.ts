@@ -64,8 +64,8 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Log out active session and revoke refresh tokens' })
-  async logout(@Body('refreshToken') token: string) {
-    const data = await this.authService.logout(token);
+  async logout(@CurrentUser() user: CurrentUserPayload, @Body('refreshToken') token: string) {
+    const data = await this.authService.logout(user.id, token || '');
     return new SuccessResponseDto('Logout successful', data);
   }
 
@@ -158,8 +158,9 @@ export class AuthController {
     @Body('phone') phone?: string,
     @Body('farmName') farmName?: string,
     @Body('farmAddress') farmAddress?: string,
+    @Body('avatar') avatar?: string,
   ) {
-    const data = await this.authService.updateProfile(user.id, name, phone, farmName, farmAddress);
+    const data = await this.authService.updateProfile(user.id, name, phone, farmName, farmAddress, avatar);
     return new SuccessResponseDto('Profile updated successfully', data);
   }
 

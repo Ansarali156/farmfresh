@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../providers/delivery_provider.dart';
+import '../../core/theme/delivery_theme.dart';
 
 class DeliveryHistoryScreen extends ConsumerStatefulWidget {
   const DeliveryHistoryScreen({super.key});
@@ -21,21 +23,31 @@ class _DeliveryHistoryScreenState extends ConsumerState<DeliveryHistoryScreen> {
     final state = ref.watch(deliveryHistoryProvider);
 
     return Scaffold(
+      backgroundColor: DeliveryTheme.bgCanvas,
       appBar: AppBar(
-        title: const Text('Delivery History'),
-        backgroundColor: Colors.green,
+        title: Text(
+          'Completed Deliveries History',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 17),
+        ),
+        backgroundColor: DeliveryTheme.navyDark,
         foregroundColor: Colors.white,
+        elevation: 4,
+        shadowColor: const Color(0x3D0F172A),
       ),
       body: state.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: DeliveryTheme.orangePrimary))
           : RefreshIndicator(
+              color: DeliveryTheme.orangePrimary,
               onRefresh: () => ref.read(deliveryHistoryProvider.notifier).loadHistory(),
               child: state.orders.isEmpty
                   ? ListView(
                       children: [
                         SizedBox(height: MediaQuery.of(context).size.height * 0.35),
-                        const Center(
-                          child: Text('No completed deliveries yet.', style: TextStyle(color: Colors.grey)),
+                        Center(
+                          child: Text(
+                            'No completed deliveries yet.',
+                            style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64748B), fontWeight: FontWeight.w600),
+                          ),
                         ),
                       ],
                     )
@@ -44,10 +56,9 @@ class _DeliveryHistoryScreenState extends ConsumerState<DeliveryHistoryScreen> {
                       itemCount: state.orders.length,
                       itemBuilder: (context, index) {
                         final delivery = state.orders[index];
-                        return Card(
+                        return Container(
                           margin: const EdgeInsets.only(bottom: 12),
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          decoration: DeliveryTheme.cardDecoration(),
                           child: Padding(
                             padding: const EdgeInsets.all(16),
                             child: Column(
@@ -58,63 +69,29 @@ class _DeliveryHistoryScreenState extends ConsumerState<DeliveryHistoryScreen> {
                                   children: [
                                     Text(
                                       'Order #${delivery.orderNumber ?? delivery.orderId.substring(0, 8)}',
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: DeliveryTheme.navyDark),
                                     ),
-                                    const Text(
-                                      'COMPLETED',
-                                      style: TextStyle(
-                                        color: Colors.green,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: DeliveryTheme.statusDelivered.withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const Divider(height: 20),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.location_on, color: Colors.green, size: 16),
-                                    const SizedBox(width: 6),
-                                    Expanded(
                                       child: Text(
-                                        delivery.deliveryAddress?.street ?? 'Drop-off address detail',
-                                        style: TextStyle(color: Colors.grey[850], fontSize: 13),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                        'DELIVERED',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: DeliveryTheme.statusDelivered,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.store, color: Colors.blue, size: 16),
-                                    const SizedBox(width: 6),
-                                    Expanded(
-                                      child: Text(
-                                        delivery.farmer?.farmName ?? 'Swarna Bharat Farms',
-                                        style: TextStyle(color: Colors.grey[650], fontSize: 13),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Divider(height: 20),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      delivery.deliveredAt != null
-                                          ? 'Delivered on: ${delivery.deliveredAt!.substring(0, 10)}'
-                                          : 'Delivered date N/A',
-                                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                    ),
-                                    Text(
-                                      'Earned: ₹${(delivery.deliveryFee ?? 50.0).toStringAsFixed(0)}',
-                                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 14),
-                                    ),
-                                  ],
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Completed at ${delivery.deliveredAt ?? 'Recently'}',
+                                  style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64748B), fontSize: 12),
                                 ),
                               ],
                             ),

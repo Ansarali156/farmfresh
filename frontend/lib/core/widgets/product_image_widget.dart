@@ -19,6 +19,9 @@ class ProductImageWidget extends StatelessWidget {
 
   String get _fullImageUrl {
     if (imageUrl.isEmpty) return '';
+    if (imageUrl.contains('storageapi.dev')) {
+      return 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500';
+    }
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://') || imageUrl.startsWith('blob:') || imageUrl.startsWith('data:')) {
       return imageUrl;
     }

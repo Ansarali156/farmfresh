@@ -53,7 +53,7 @@ class WishlistScreen extends ConsumerWidget {
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+                        child: const Icon(Icons.arrow_back, color: Color(0xFF23312B)),
                       ),
                     ),
                     Text(

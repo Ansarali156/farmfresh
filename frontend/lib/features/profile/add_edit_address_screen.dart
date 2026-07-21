@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latLong;
+import '../../core/widgets/map_zoom_controls.dart';
 import '../../providers/address_provider.dart';
 import '../../models/address_model.dart';
 import '../../core/widgets/custom_button.dart';
@@ -144,6 +145,11 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
                                 ],
                               ),
                             ],
+                          ),
+                          Positioned(
+                            bottom: 16,
+                            right: 16,
+                            child: MapZoomControls(mapController: mapController),
                           ),
                           Positioned(
                             top: 8,
@@ -402,7 +408,7 @@ class _AddEditAddressScreenState extends ConsumerState<AddEditAddressScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF23312B)),
             onPressed: () => context.pop(),
           ),
           actions: [

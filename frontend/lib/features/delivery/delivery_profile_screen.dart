@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
+import 'package:go_router/go_router.dart';
 import '../../providers/delivery_provider.dart';
+
 import '../../providers/auth_provider.dart';
 import '../../models/delivery_profile_model.dart';
 import '../../providers/profile_image_provider.dart';
@@ -187,22 +189,8 @@ class _DeliveryProfileScreenState extends ConsumerState<DeliveryProfileScreen> {
       child: Column(
         children: [
           GestureDetector(
-            onTap: userId == null
-                ? null
-                : () {
-                    ProfileImagePickerDialog.show(
-                      context,
-                      userId: userId,
-                      onImageSelected: (base64Image, scale, dx, dy) {
-                        ref.read(profileImageProvider(userId).notifier).updateProfileImage(
-                              base64Image,
-                              scale: scale,
-                              dx: dx,
-                              dy: dy,
-                            );
-                      },
-                    );
-                  },
+            onTap: () => context.push('/edit-profile'),
+
             child: Stack(
               children: [
                 Container(

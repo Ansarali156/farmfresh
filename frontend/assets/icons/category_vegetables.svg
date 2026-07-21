@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Lettuce/leafy green background -->
+  <path d="M16 38C12 28 18 16 30 14C42 12 48 22 46 34C44 46 30 50 16 38Z" fill="#81C784"/>
+  <path d="M26 14C20 20 22 30 16 38" stroke="#4CAF50" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M32 14C32 24 26 34 22 44" stroke="#4CAF50" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M38 15C38 25 34 35 30 45" stroke="#4CAF50" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Carrot slanted -->
+  <path d="M48 18L24 48C23 49 21 49 20 48C19 47 19 45 20 44L44 14C46 12 49 14 48 18Z" fill="#FF7043"/>
+  <!-- Carrot leaves -->
+  <path d="M48 14C50 10 54 8 54 8C54 8 51 12 48 14Z" fill="#388E3C"/>
+  <path d="M46 16C48 12 52 11 52 11C52 11 49 14 46 16Z" fill="#4CAF50"/>
+
+  <!-- Tomato front-left -->
+  <circle cx="28" cy="42" r="13" fill="#E53935"/>
+  <!-- Tomato leaf/stem -->
+  <path d="M28 29L25 25M28 29L31 25M28 29C26 28 25 29 23 30M28 29C30 28 31 29 33 30" stroke="#388E3C" stroke-width="2" stroke-linecap="round"/>
+  <!-- Tomato highlight -->
+  <ellipse cx="23" cy="38" rx="2" ry="4" fill="#FFCDD2" opacity="0.6" transform="rotate(-30 23 38)"/>
+</svg>

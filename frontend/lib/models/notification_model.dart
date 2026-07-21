@@ -23,7 +23,7 @@ class AppNotificationModel {
     return AppNotificationModel(
       id: json['id'] as String,
       title: json['title'] as String? ?? '',
-      body: json['body'] as String? ?? json['message'] as String? ?? '',
+      body: json['body'] as String? ?? (json is Map ? json['message'] : null) as String? ?? '',
       type: json['type'] as String? ?? 'GENERAL',
       isRead: json['isRead'] as bool? ?? false,
       createdAt: Helpers.toIst(DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now()),

@@ -72,17 +72,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<bool> login(String email, String password, String role) async {
     if (!_mounted) return false;
-    print('[AUTH] login start for $email, role=$role');
     state = state.copyWith(isLoading: true);
     try {
       final user = await _ref.read(authRepositoryProvider).login(email, password, role);
-      print('[AUTH] login success user=${user?.email}, role=${user?.role}');
       if (_mounted) {
         state = AuthState(user: user);
       }
       return true;
     } catch (e) {
-      print('[AUTH] login failed error=$e');
       if (_mounted) {
         state = AuthState(errorMessage: e.toString());
       }
@@ -126,11 +123,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
       return true;
     } catch (e) {
+      String cleanErr = e.toString();
+      if (cleanErr.startsWith('Exception: ')) cleanErr = cleanErr.replaceFirst('Exception: ', '');
+      if (cleanErr.startsWith('Exception: ')) cleanErr = cleanErr.replaceFirst('Exception: ', '');
       if (_mounted) {
-        state = AuthState(errorMessage: e.toString());
+        state = AuthState(errorMessage: cleanErr.trim());
       }
       return false;
     }
+
   }
 
   Future<void> switchRole(String newRole) async {

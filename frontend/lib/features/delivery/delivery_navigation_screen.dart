@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/widgets/map_zoom_controls.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../models/delivery_model.dart';
@@ -40,25 +41,24 @@ class _DeliveryNavigationScreenState
       widget.delivery.status == DeliveryOrderStatus.accepted ||
       widget.delivery.status == DeliveryOrderStatus.headingToPickup;
 
-  LatLng? get _destination {
+  LatLng get _destination {
     if (_isHeadingToFarmer) {
-      if (widget.delivery.farmerLatitude != null &&
-          widget.delivery.farmerLongitude != null) {
-        return LatLng(
-          widget.delivery.farmerLatitude!,
-          widget.delivery.farmerLongitude!,
-        );
+      if (widget.delivery.farmerLatitude != null && widget.delivery.farmerLongitude != null) {
+        return LatLng(widget.delivery.farmerLatitude!, widget.delivery.farmerLongitude!);
       }
+      if (widget.delivery.pickupAddress?.latitude != null && widget.delivery.pickupAddress?.longitude != null) {
+        return LatLng(widget.delivery.pickupAddress!.latitude!, widget.delivery.pickupAddress!.longitude!);
+      }
+      return const LatLng(16.5162, 80.6380);
     } else {
-      if (widget.delivery.customerLatitude != null &&
-          widget.delivery.customerLongitude != null) {
-        return LatLng(
-          widget.delivery.customerLatitude!,
-          widget.delivery.customerLongitude!,
-        );
+      if (widget.delivery.customerLatitude != null && widget.delivery.customerLongitude != null) {
+        return LatLng(widget.delivery.customerLatitude!, widget.delivery.customerLongitude!);
       }
+      if (widget.delivery.deliveryAddress?.latitude != null && widget.delivery.deliveryAddress?.longitude != null) {
+        return LatLng(widget.delivery.deliveryAddress!.latitude!, widget.delivery.deliveryAddress!.longitude!);
+      }
+      return const LatLng(16.5062, 80.6480);
     }
-    return null;
   }
 
   String get _destinationName {
@@ -319,7 +319,12 @@ class _DeliveryNavigationScreenState
             MarkerLayer(markers: _buildMarkers()),
           ],
         ),
-        // Distance/ETA overlay
+        Positioned(
+          bottom: 180,
+          right: 16,
+          child: MapZoomControls(mapController: _mapController),
+        ),
+        // Instructions overlay
         if (_currentRoute != null)
           Positioned(
             top: 12,

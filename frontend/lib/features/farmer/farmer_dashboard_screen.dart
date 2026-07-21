@@ -11,6 +11,7 @@ import '../../models/product_model.dart';
 import '../../core/widgets/product_card.dart';
 import '../../core/widgets/product_image_widget.dart';
 import '../../core/theme/colors.dart';
+import '../../core/widgets/user_avatar_widget.dart';
 
 class FarmerDashboardScreen extends ConsumerStatefulWidget {
   const FarmerDashboardScreen({super.key});
@@ -89,16 +90,12 @@ class _FarmerDashboardScreenState extends ConsumerState<FarmerDashboardScreen> {
                     },
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          radius: 20,
-                          backgroundColor: AppColors.farmerPrimary, // Solid primary color
-                          backgroundImage: user?.avatar != null ? NetworkImage(user!.avatar!) : null,
-                          child: user?.avatar == null 
-                              ? Text(
-                                  user?.name.isNotEmpty == true ? user!.name[0].toUpperCase() : 'F',
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                )
-                              : null,
+                        UserAvatarWidget(
+                          user: user,
+                          size: 40,
+                          onTap: () {
+                            ref.read(farmerTabIndexProvider.notifier).state = 4;
+                          },
                         ),
                         const SizedBox(width: 12),
                         Text(

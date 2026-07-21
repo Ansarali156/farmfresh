@@ -43,7 +43,7 @@ class PostgresAddressRepository implements AddressRepository {
       }
       throw Exception('Failed to add address');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ??
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ??
           e.message ??
           'Failed to add address');
     }
@@ -61,7 +61,7 @@ class PostgresAddressRepository implements AddressRepository {
       }
       throw Exception('Failed to update address');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ??
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ??
           e.message ??
           'Failed to update address');
     }
@@ -73,10 +73,10 @@ class PostgresAddressRepository implements AddressRepository {
       final res = await _apiClient.dio.delete('/addresses/$addressId');
 
       if (res.statusCode != 200 && res.statusCode != 204) {
-        throw Exception(res.data['message'] ?? 'Failed to delete address');
+        throw Exception((res.data is Map ? res.data['message'] : null) ?? 'Failed to delete address');
       }
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ??
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ??
           e.message ??
           'Failed to delete address');
     }

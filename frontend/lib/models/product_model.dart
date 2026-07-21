@@ -133,19 +133,33 @@ class ProductModel {
     final inventoryData = json['inventory'] as Map<String, dynamic>?;
     final farmerData = json['farmer'] as Map<String, dynamic>?;
 
-    final rawImage = imagesList != null && imagesList.isNotEmpty
-        ? imagesList[0]['imageUrl'] as String? ?? ''
-        : '';
+    String rawImage = '';
+    if (imagesList != null && imagesList.isNotEmpty) {
+      final firstImg = imagesList[0];
+      if (firstImg is Map) {
+        rawImage = firstImg['imageUrl']?.toString() ?? '';
+      } else if (firstImg is String) {
+        rawImage = firstImg;
+      }
+    }
+
+    final categoryName = categoryData != null
+        ? (categoryData['name']?.toString() ?? 'Other')
+        : 'Other';
+
+    final farmNameStr = farmerData != null
+        ? (farmerData['farmName']?.toString() ?? 'Farm')
+        : 'Farm';
 
     return ProductModel(
       id: json['id'] as String,
-      name: json['name'] as String,
+      name: json['name'] as String? ?? 'Fresh Item',
       slug: json['slug'] as String? ?? '',
       price: discountPrice ?? price,
       originalPrice: price,
       discount: discountPct,
       origin: json['organic'] == true ? 'Organic' : 'Local',
-      category: categoryData != null ? categoryData['name'] as String : 'Other',
+      category: categoryName,
       categoryId: json['categoryId'] as String?,
       image: _sanitizeImageUrl(rawImage),
       description: json['description'] as String? ?? '',
@@ -153,7 +167,7 @@ class ProductModel {
       stock: inventoryData != null
           ? _toNum(inventoryData['currentStock'])
           : 50.0,
-      farmName: farmerData != null ? farmerData['farmName'] as String : 'Farm',
+      farmName: farmNameStr,
       farmerId: json['farmerId'] as String?,
       organic: json['organic'] as bool? ?? false,
       featured: json['featured'] as bool? ?? false,

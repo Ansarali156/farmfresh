@@ -44,7 +44,7 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF23312B)),
             onPressed: () => context.pop(),
           ),
         ),
@@ -261,7 +261,7 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
                   ],
                   onSelected: (value) {
                     if (value == 'edit') {
-                      context.push('/edit-address', extra: address);
+                      context.push('/add-edit-address', extra: address);
                     } else if (value == 'default') {
                       ref
                           .read(addressProvider.notifier)

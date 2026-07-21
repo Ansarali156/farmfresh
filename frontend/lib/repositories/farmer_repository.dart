@@ -82,7 +82,7 @@ class PostgresFarmerRepository implements FarmerRepository {
       }
       throw Exception('Failed to update stock');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to update stock');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to update stock');
     }
   }
 
@@ -95,7 +95,7 @@ class PostgresFarmerRepository implements FarmerRepository {
       }
       throw Exception('Failed to add stock');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to add stock');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to add stock');
     }
   }
 
@@ -108,7 +108,7 @@ class PostgresFarmerRepository implements FarmerRepository {
       }
       throw Exception('Failed to remove stock');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to remove stock');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to remove stock');
     }
   }
 
@@ -161,7 +161,7 @@ class PostgresFarmerRepository implements FarmerRepository {
       }
       throw Exception('Failed to request withdrawal');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to request withdrawal');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to request withdrawal');
     }
   }
 
@@ -174,7 +174,7 @@ class PostgresFarmerRepository implements FarmerRepository {
       }
       throw Exception('Failed to update bank account');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to update bank account');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to update bank account');
     }
   }
 
@@ -213,7 +213,7 @@ class PostgresFarmerRepository implements FarmerRepository {
       }
       throw Exception('Failed to load profile');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to load profile');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to load profile');
     }
   }
 
@@ -233,7 +233,7 @@ class PostgresFarmerRepository implements FarmerRepository {
       }
       throw Exception('Failed to update profile');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to update profile');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to update profile');
     }
   }
   @override
@@ -259,7 +259,7 @@ class PostgresFarmerRepository implements FarmerRepository {
       }
       throw Exception('Failed to upload avatar');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to upload avatar');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to upload avatar');
     }
   }
 }

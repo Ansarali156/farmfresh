@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 import '../../providers/auth_provider.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/widgets/custom_button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -38,14 +37,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
 
     if (success) {
-      if (!mounted) return;
-      if (_selectedRole == 'Farmer') {
-        context.go('/farmer-main');
-      } else if (_selectedRole == 'Delivery Partner') {
-        context.go('/delivery-main');
-      } else {
-        context.go('/customer-main');
-      }
+      // GoRouter redirect handles navigation on auth state change
     } else {
       if (!mounted) return;
       final error = ref.read(authProvider).errorMessage ?? 'Login failed';

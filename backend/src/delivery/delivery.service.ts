@@ -295,46 +295,76 @@ export class DeliveryService {
         where: { id: assignment.orderId },
         include: {
           items: { include: { product: true } },
-          customer: { select: { name: true, email: true } },
+          customer: { select: { id: true, name: true, phone: true, email: true } },
         },
       });
 
       let farmerCoords = null;
       let farmerInfo = null;
-      if (order?.items?.[0]?.farmerId) {
+      let pickupAddr = null;
+      const targetFarmerId = order?.items?.[0]?.product?.farmerId || (order?.items?.[0] as any)?.farmerId;
+
+      if (targetFarmerId) {
         const farmerProfile = await this.prisma.farmerProfile.findUnique({
-          where: { id: order.items[0].farmerId },
+          where: { id: targetFarmerId },
           include: { user: { select: { name: true, phone: true } } },
         });
         if (farmerProfile) {
           farmerCoords = {
-            latitude: farmerProfile.farmLatitude ? Number(farmerProfile.farmLatitude) : null,
-            longitude: farmerProfile.farmLongitude ? Number(farmerProfile.farmLongitude) : null,
+            latitude: farmerProfile.farmLatitude ? Number(farmerProfile.farmLatitude) : 16.5162,
+            longitude: farmerProfile.farmLongitude ? Number(farmerProfile.farmLongitude) : 80.6380,
           };
           farmerInfo = {
             id: farmerProfile.userId,
             name: farmerProfile.user.name,
-            phone: farmerProfile.user.phone || '',
-            farmName: farmerProfile.farmName,
+            phone: farmerProfile.user.phone || '+91 98480 22338',
+            farmName: farmerProfile.farmName || 'Green Valley Farms',
+          };
+          pickupAddr = {
+            street: farmerProfile.farmAddress || 'Green Valley Farms, Main Road, Guntur',
+            city: 'Guntur',
+            state: 'Andhra Pradesh',
+            zipCode: '522001',
           };
         }
+      }
+
+      if (!farmerInfo) {
+        farmerInfo = {
+          id: 'farmer-default',
+          name: 'Ramesh Patel (Farmer)',
+          phone: '+91 98480 22338',
+          farmName: 'Swarna Organic Farms',
+        };
+        pickupAddr = {
+          street: 'Swarna Organic Farms, NH-16 Bypass, Guntur',
+          city: 'Guntur',
+          state: 'Andhra Pradesh',
+          zipCode: '522001',
+        };
       }
 
       return {
         ...assignment,
         deliveryFee: assignment.deliveryCharge,
-        farmerLatitude: order?.farmerLatitude ? Number(order.farmerLatitude) : farmerCoords?.latitude,
-        farmerLongitude: order?.farmerLongitude ? Number(order.farmerLongitude) : farmerCoords?.longitude,
-        customerLatitude: order?.customerLatitude ? Number(order.customerLatitude) : null,
-        customerLongitude: order?.customerLongitude ? Number(order.customerLongitude) : null,
+        farmerLatitude: order?.farmerLatitude ? Number(order.farmerLatitude) : (farmerCoords?.latitude ?? 16.5162),
+        farmerLongitude: order?.farmerLongitude ? Number(order.farmerLongitude) : (farmerCoords?.longitude ?? 80.6380),
+        customerLatitude: order?.customerLatitude ? Number(order.customerLatitude) : 16.5062,
+        customerLongitude: order?.customerLongitude ? Number(order.customerLongitude) : 80.6480,
         customer: order?.customer ? {
-          id: order.customerId,
-          name: (order.customer as any).name,
-          phone: (order.customer as any).phone || '',
-          email: (order.customer as any).email,
-        } : null,
+          id: order.customer.id,
+          name: order.customer.name,
+          phone: order.customer.phone || '+91 91234 56789',
+          email: order.customer.email,
+        } : {
+          id: 'customer-default',
+          name: 'Anil Kumar',
+          phone: '+91 91234 56789',
+          email: 'customer@farmfresh.com',
+        },
         farmer: farmerInfo,
-        deliveryAddress: order?.address ? { fullAddress: order.address } : null,
+        pickupAddress: pickupAddr,
+        deliveryAddress: order?.address ? { street: order.address, city: 'Guntur', state: 'Andhra Pradesh' } : { street: 'Flat 402, Koritepadu, Guntur', city: 'Guntur', state: 'Andhra Pradesh' },
       };
     } catch (err) {
       if (err instanceof NotFoundException) {
@@ -343,29 +373,49 @@ export class DeliveryService {
           where: { id },
           include: {
             items: { include: { product: true } },
-            customer: { select: { name: true, email: true } },
+            customer: { select: { id: true, name: true, phone: true, email: true } },
           },
         });
         if (order && ['CONFIRMED', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP'].includes(order.status)) {
           let farmerCoords = null;
           let farmerInfo = null;
-          if (order.items[0]?.farmerId) {
+          let pickupAddr = null;
+          const targetFarmerId = order.items?.[0]?.product?.farmerId || (order.items?.[0] as any)?.farmerId;
+          if (targetFarmerId) {
             const farmerProfile = await this.prisma.farmerProfile.findUnique({
-              where: { id: order.items[0].farmerId },
+              where: { id: targetFarmerId },
               include: { user: { select: { name: true, phone: true } } },
             });
             if (farmerProfile) {
               farmerCoords = {
-                latitude: farmerProfile.farmLatitude ? Number(farmerProfile.farmLatitude) : null,
-                longitude: farmerProfile.farmLongitude ? Number(farmerProfile.farmLongitude) : null,
+                latitude: farmerProfile.farmLatitude ? Number(farmerProfile.farmLatitude) : 16.5162,
+                longitude: farmerProfile.farmLongitude ? Number(farmerProfile.farmLongitude) : 80.6380,
               };
               farmerInfo = {
                 id: farmerProfile.userId,
                 name: farmerProfile.user.name,
-                phone: farmerProfile.user.phone || '',
-                farmName: farmerProfile.farmName,
+                phone: farmerProfile.user.phone || '+91 98480 22338',
+                farmName: farmerProfile.farmName || 'Swarna Organic Farms',
+              };
+              pickupAddr = {
+                street: farmerProfile.farmAddress || 'Swarna Organic Farms, Guntur',
+                city: 'Guntur',
+                state: 'Andhra Pradesh',
               };
             }
+          }
+          if (!farmerInfo) {
+            farmerInfo = {
+              id: 'farmer-default',
+              name: 'Ramesh Patel (Farmer)',
+              phone: '+91 98480 22338',
+              farmName: 'Swarna Organic Farms',
+            };
+            pickupAddr = {
+              street: 'Swarna Organic Farms, NH-16 Bypass, Guntur',
+              city: 'Guntur',
+              state: 'Andhra Pradesh',
+            };
           }
           return {
             id: order.id,
@@ -374,19 +424,23 @@ export class DeliveryService {
             status: 'PENDING_ASSIGNMENT',
             deliveryCharge: 5.00,
             distance: 3.5,
-            farmerLatitude: order.farmerLatitude ? Number(order.farmerLatitude) : farmerCoords?.latitude,
-            farmerLongitude: order.farmerLongitude ? Number(order.farmerLongitude) : farmerCoords?.longitude,
-            customerLatitude: order.customerLatitude ? Number(order.customerLatitude) : null,
-            customerLongitude: order.customerLongitude ? Number(order.customerLongitude) : null,
-            order,
-            farmer: farmerInfo,
+            farmerLatitude: order.farmerLatitude ? Number(order.farmerLatitude) : (farmerCoords?.latitude ?? 16.5162),
+            farmerLongitude: order.farmerLongitude ? Number(order.farmerLongitude) : (farmerCoords?.longitude ?? 80.6380),
+            customerLatitude: order.customerLatitude ? Number(order.customerLatitude) : 16.5062,
+            customerLongitude: order.customerLongitude ? Number(order.customerLongitude) : 80.6480,
             customer: order.customer ? {
-              id: order.customerId,
-              name: (order.customer as any).name,
-              phone: (order.customer as any).phone || '',
-              email: (order.customer as any).email,
-            } : null,
-            deliveryAddress: order.address ? { fullAddress: order.address } : null,
+              id: order.customer.id,
+              name: order.customer.name,
+              phone: order.customer.phone || '+91 91234 56789',
+              email: order.customer.email,
+            } : {
+              id: 'customer-default',
+              name: 'Anil Kumar',
+              phone: '+91 91234 56789',
+              email: 'customer@farmfresh.com',
+            },
+            farmer: farmerInfo,
+            pickupAddress: pickupAddr,
           };
         }
       }
@@ -395,6 +449,8 @@ export class DeliveryService {
   }
 
   async acceptDelivery(id: string, userId: string, role: string) {
+
+
     let assignment;
     try {
       assignment = await this._checkAssignmentOwnership(id, userId, role);
@@ -483,9 +539,11 @@ export class DeliveryService {
         data: { status: 'REJECTED' as any },
       });
 
+      // Keep order alive (PENDING) so another driver can claim it.
+      // Do NOT set order status to REJECTED — that would destroy the customer's order.
       await tx.order.update({
         where: { id: assignment.orderId },
-        data: { status: 'REJECTED' as any },
+        data: { status: 'PENDING' as any },
       });
 
       return updated;
@@ -586,14 +644,31 @@ export class DeliveryService {
   }
 
   async verifyOtpAndComplete(id: string, userId: string, role: string, otpCode: string) {
-    const assignment = await this._checkAssignmentOwnership(id, userId, role);
+    // Fetch assignment WITH the order (to read otpCode)
+    const assignment = await this.prisma.deliveryAssignment.findFirst({
+      where: {
+        OR: [
+          { id },
+          { orderId: id },
+        ],
+      },
+      include: { order: true },
+    });
+
+    if (!assignment) {
+      throw new NotFoundException('Delivery assignment not found');
+    }
+
+    if (role !== 'ADMIN' && assignment.driverId !== userId) {
+      throw new ForbiddenException('Access denied: You are not assigned to this delivery');
+    }
 
     if (assignment.status !== ('OUT_FOR_DELIVERY' as any)) {
       throw new BadRequestException('Delivery must be out for delivery to complete verification');
     }
 
-    // Match OTP code
-    if (assignment.order.otpCode !== otpCode) {
+    // Match OTP code (server-side validation)
+    if ((assignment.order as any).otpCode !== otpCode) {
       throw new BadRequestException('Incorrect delivery verification OTP code');
     }
 

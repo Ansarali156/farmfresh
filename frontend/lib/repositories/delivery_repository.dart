@@ -105,7 +105,7 @@ class PostgresDeliveryRepository implements DeliveryRepository {
       }
       throw Exception('Delivery details not found');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to load delivery details');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to load delivery details');
     }
   }
 
@@ -118,7 +118,7 @@ class PostgresDeliveryRepository implements DeliveryRepository {
       }
       throw Exception('Failed to accept delivery');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to accept delivery');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to accept delivery');
     }
   }
 
@@ -133,7 +133,7 @@ class PostgresDeliveryRepository implements DeliveryRepository {
       }
       throw Exception('Failed to reject delivery');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to reject delivery');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to reject delivery');
     }
   }
 
@@ -146,7 +146,7 @@ class PostgresDeliveryRepository implements DeliveryRepository {
       }
       throw Exception('Failed to mark delivery picked up');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to mark delivery picked up');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to mark delivery picked up');
     }
   }
 
@@ -159,7 +159,7 @@ class PostgresDeliveryRepository implements DeliveryRepository {
       }
       throw Exception('Failed to confirm pickup');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to confirm pickup');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to confirm pickup');
     }
   }
 
@@ -172,7 +172,7 @@ class PostgresDeliveryRepository implements DeliveryRepository {
       }
       throw Exception('Failed to start delivery');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to start delivery');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to start delivery');
     }
   }
 
@@ -185,7 +185,7 @@ class PostgresDeliveryRepository implements DeliveryRepository {
       }
       throw Exception('Verification failed');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Verification failed');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Verification failed');
     }
   }
 
@@ -198,7 +198,7 @@ class PostgresDeliveryRepository implements DeliveryRepository {
       }
       throw Exception('Failed to complete delivery');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to complete delivery');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to complete delivery');
     }
   }
 
@@ -281,7 +281,7 @@ class PostgresDeliveryRepository implements DeliveryRepository {
       }
       throw Exception('Failed to load profile');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to load profile');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to load profile');
     }
   }
 
@@ -309,7 +309,7 @@ class PostgresDeliveryRepository implements DeliveryRepository {
       }
       throw Exception('Failed to update profile');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to update profile');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to update profile');
     }
   }
 

@@ -8,7 +8,6 @@ import '../features/splash/splash_screen.dart';
 import '../features/authentication/login_screen.dart';
 import '../features/authentication/signup_screen.dart';
 import '../features/home/customer_main_screen.dart';
-import '../features/home/home_screen.dart';
 import '../features/products/product_details_screen.dart';
 import '../features/products/products_screen.dart';
 import '../features/cart/cart_screen.dart';
@@ -38,6 +37,7 @@ import '../features/delivery/delivery_notifications_screen.dart';
 import '../models/delivery_model.dart';
 import '../features/delivery/delivery_profile_screen.dart';
 import '../features/admin/admin_main_screen.dart';
+import '../features/support/customer_query_screen.dart';
 
 import 'package:flutter/foundation.dart';
 
@@ -112,11 +112,19 @@ final appRouter = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/product-details',
+        builder: (context, state) {
+          final product = state.extra as ProductModel?;
+          return ProductDetailsScreen(product: product);
+        },
+      ),
+      GoRoute(
         path: '/product-details/:id',
         name: 'product-details',
         builder: (context, state) {
           final product = state.extra as ProductModel?;
-          return ProductDetailsScreen(product: product);
+          final id = state.pathParameters['id'];
+          return ProductDetailsScreen(product: product, productId: id);
         },
       ),
       GoRoute(
@@ -124,7 +132,8 @@ final appRouter = Provider<GoRouter>((ref) {
         name: 'products',
         builder: (context, state) {
           final category = state.uri.queryParameters['category'];
-          return ProductsScreen(initialCategory: category);
+          final search = state.uri.queryParameters['search'];
+          return ProductsScreen(initialCategory: category, initialSearch: search);
         },
       ),
       GoRoute(
@@ -156,6 +165,14 @@ final appRouter = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final orderId = state.pathParameters['id']!;
           return OrderTrackingScreen(orderId: orderId);
+        },
+      ),
+      GoRoute(
+        path: '/support',
+        name: 'support',
+        builder: (context, state) {
+          final orderId = state.extra as String?;
+          return CustomerQueryScreen(initialOrderId: orderId);
         },
       ),
       GoRoute(
@@ -272,18 +289,35 @@ final appRouter = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // User is logged in, redirect away from login/signup/splash screens to dashboards
+      // User is logged in, handle initial login redirects and strict role guards
+      final role = authState.user!.role.toUpperCase();
+
       if (isLoggingIn) {
-        final role = authState.user!.role.toUpperCase();
-        if (role == 'FARMER') {
-          return '/farmer-main';
-        } else if (role == 'DELIVERY_PARTNER') {
-          return '/delivery-main';
-        } else if (role == 'ADMIN') {
-          return '/admin-main';
-        } else {
-          return '/customer-main';
-        }
+        if (role == 'FARMER') return '/farmer-main';
+        if (role == 'DELIVERY_PARTNER') return '/delivery-main';
+        if (role == 'ADMIN') return '/admin-main';
+        return '/customer-main';
+      }
+
+      // STRICT ROLE ISOLATION GUARDS
+      final isCustomerRoute = location.startsWith('/cart') || location.startsWith('/wishlist') || 
+                              location.startsWith('/orders') || location.startsWith('/order-detail') || 
+                              location.startsWith('/order-tracking') || location.startsWith('/products') || 
+                              location.startsWith('/product-details') || location.startsWith('/addresses') || 
+                              location.startsWith('/add-address') || location == '/customer-main';
+                              
+      final isFarmerRoute = location.startsWith('/farmer-');
+      final isDeliveryRoute = location.startsWith('/delivery-');
+      final isAdminRoute = location.startsWith('/admin-');
+
+      if (role == 'CUSTOMER') {
+        if (isFarmerRoute || isDeliveryRoute || isAdminRoute) return '/customer-main';
+      } else if (role == 'FARMER') {
+        if (isDeliveryRoute || isAdminRoute || isCustomerRoute) return '/farmer-main';
+      } else if (role == 'DELIVERY_PARTNER') {
+        if (isFarmerRoute || isAdminRoute || isCustomerRoute) return '/delivery-main';
+      } else if (role == 'ADMIN') {
+        if (isFarmerRoute || isDeliveryRoute || isCustomerRoute || location == '/profile' || location == '/change-password') return '/admin-main';
       }
 
       return null;

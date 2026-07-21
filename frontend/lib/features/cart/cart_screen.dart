@@ -1,11 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
 import 'dart:ui';
 import '../../core/widgets/custom_button.dart';
 import '../../providers/cart_provider.dart';
@@ -160,7 +157,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+                        child: const Icon(Icons.arrow_back, color: Color(0xFF23312B)),
                       ),
                     ),
                     Text(

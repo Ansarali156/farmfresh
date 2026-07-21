@@ -113,7 +113,7 @@ class PostgresProductRepository implements ProductRepository {
       }
       throw Exception('Failed to add product');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to add product');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to add product');
     }
   }
 
@@ -134,7 +134,7 @@ class PostgresProductRepository implements ProductRepository {
       }
       throw Exception('Failed to update product');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to update product');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to update product');
     }
   }
 
@@ -146,7 +146,7 @@ class PostgresProductRepository implements ProductRepository {
         throw Exception('Failed to delete product');
       }
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to delete product');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to delete product');
     }
   }
 
@@ -196,7 +196,7 @@ class PostgresProductRepository implements ProductRepository {
       }
       throw Exception('Failed to upload image');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? e.message ?? 'Failed to upload image');
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to upload image');
     }
   }
 }

@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength, Matches } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, Matches, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDeliveryDto {
@@ -28,18 +28,25 @@ export class RegisterDeliveryDto {
   @MinLength(8)
   password: string;
 
-  @ApiProperty({ example: 'DL-US-9988231', description: 'Rider Driving License ID' })
-  @IsNotEmpty()
+  @ApiProperty({ example: 'DL-US-9988231', description: 'Rider Driving License ID', required: false })
+  @IsOptional()
   @IsString()
-  drivingLicenseNumber: string;
+  drivingLicenseNumber?: string;
 
-  @ApiProperty({ example: 'Two-Wheeler', description: 'Type of transport vehicle' })
-  @IsNotEmpty()
+  @ApiProperty({ example: 'Two-Wheeler', description: 'Type of transport vehicle', required: false })
+  @IsOptional()
   @IsString()
-  vehicleType: string;
+  vehicleType?: string;
 
-  @ApiProperty({ example: 'NY-882-AB', description: 'License plate number of vehicle' })
-  @IsNotEmpty()
+  @ApiProperty({ example: 'NY-882-AB', description: 'License plate number of vehicle', required: false })
+  @IsOptional()
   @IsString()
-  vehicleNumber: string;
+  vehicleNumber?: string;
+
+  @ApiProperty({ description: 'Confirm password field', required: false })
+  @IsOptional()
+  @IsString()
+  confirmPassword?: string;
 }
+
+

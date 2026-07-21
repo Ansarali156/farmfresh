@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/custom_button.dart';
+import '../../core/utils/app_snackbar.dart';
+
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -19,6 +21,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _vehicleTypeController = TextEditingController(text: 'Two-Wheeler');
+  final _vehicleNumberController = TextEditingController();
+  final _licenseController = TextEditingController();
   String _selectedRole = 'Customer';
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
@@ -29,34 +35,41 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _vehicleTypeController.dispose();
+    _vehicleNumberController.dispose();
+    _licenseController.dispose();
     super.dispose();
   }
 
   void _handleSignup() async {
     if (!_formKey.currentState!.validate()) return;
 
+    String phone = _phoneController.text.trim();
+    if (phone.isNotEmpty && !phone.startsWith('+')) {
+      phone = '+91$phone';
+    }
+
     final success = await ref.read(authProvider.notifier).signup(
       _nameController.text.trim(),
       _emailController.text.trim(),
       _passwordController.text,
       _selectedRole,
-      _phoneController.text.trim(),
+      phone,
+      vehicleType: _vehicleTypeController.text.trim().isNotEmpty ? _vehicleTypeController.text.trim() : 'Two-Wheeler',
+      vehicleNumber: _vehicleNumberController.text.trim().isNotEmpty ? _vehicleNumberController.text.trim() : 'AP-07-FF-1001',
+      drivingLicenseNumber: _licenseController.text.trim().isNotEmpty ? _licenseController.text.trim() : 'DL-2026-FF889',
     );
 
+
     if (success) {
-      if (!mounted) return;
-      if (_selectedRole == 'Farmer') {
-        context.go('/farmer-main');
-      } else {
-        context.go('/customer-main');
-      }
+      // GoRouter redirect handles navigation on auth state change
     } else {
       if (!mounted) return;
-      final error = ref.read(authProvider).errorMessage ?? 'Signup failed';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error), backgroundColor: const Color(0xFFFF4D6D)),
-      );
+      final error = ref.read(authProvider).errorMessage ?? 'Registration failed. Please check your details.';
+      showAppSnackBar(context, error, type: SnackBarType.error);
     }
+
   }
 
   @override
@@ -73,7 +86,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF23312B)),
             onPressed: () => context.pop(),
           ),
           title: Text(
@@ -134,9 +147,35 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 24),
-                    
+                    if (authState.errorMessage != null && authState.errorMessage!.isNotEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFEBEE),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFFFCDD2)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline, color: Color(0xFFD32F2F), size: 20),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                authState.errorMessage!,
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: const Color(0xFFC62828),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     // Role Selector Dropdown
+
                     DropdownButtonFormField<String>(
                       value: _selectedRole,
                       dropdownColor: Colors.white,
@@ -171,7 +210,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       items: const [
                         DropdownMenuItem(value: 'Customer', child: Text('Customer Marketplace')),
                         DropdownMenuItem(value: 'Farmer', child: Text('Farmer Partner')),
+                        DropdownMenuItem(value: 'Delivery Partner', child: Text('Delivery Express Partner')),
                       ],
+
                       onChanged: (val) {
                         if (val != null) {
                           setState(() {
@@ -354,13 +395,121 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your password';
                         }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
+                        if (value.length < 8) {
+                          return 'Password must be at least 8 characters';
                         }
                         return null;
                       },
                     ),
+                    const SizedBox(height: 16),
+                    
+                    // Confirm Password Field
+                    TextFormField(
+                      controller: _confirmPasswordController,
+                      obscureText: _obscurePassword,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF23312B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        labelStyle: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF647C72),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE5EDE7)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+                        ),
+                        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF647C72)),
+                        fillColor: const Color(0xFFFAFBF9),
+                        filled: true,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please confirm your password';
+                        }
+                        if (value != _passwordController.text) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
+                    ),
+                    if (_selectedRole == 'Delivery Partner') ...[
+
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _vehicleTypeController,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF23312B),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Vehicle Type (e.g. Two-Wheeler / Bike)',
+                          labelStyle: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFF647C72),
+                            fontSize: 12,
+                          ),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          prefixIcon: const Icon(Icons.two_wheeler_outlined, color: Color(0xFF647C72)),
+                          fillColor: const Color(0xFFFAFBF9),
+                          filled: true,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _vehicleNumberController,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF23312B),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Vehicle Registration Number',
+                          labelStyle: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFF647C72),
+                            fontSize: 12,
+                          ),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          prefixIcon: const Icon(Icons.pin_outlined, color: Color(0xFF647C72)),
+                          fillColor: const Color(0xFFFAFBF9),
+                          filled: true,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _licenseController,
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF23312B),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Driving License Number',
+                          labelStyle: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFF647C72),
+                            fontSize: 12,
+                          ),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          prefixIcon: const Icon(Icons.card_membership_outlined, color: Color(0xFF647C72)),
+                          fillColor: const Color(0xFFFAFBF9),
+                          filled: true,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 24),
+
                     
                     CustomButton(
                       text: 'Register as $_selectedRole',

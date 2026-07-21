@@ -57,7 +57,7 @@ class PostgresAuthRepository implements AuthRepository {
 
       final data = res.data;
       if (res.statusCode != 200) {
-        throw Exception(data['message'] ?? 'Login failed');
+        throw Exception((data is Map ? data['message'] : null) ?? 'Login failed');
       }
 
       await _secureStorage.write(key: 'access_token', value: data['data']['accessToken']);
@@ -72,7 +72,7 @@ class PostgresAuthRepository implements AuthRepository {
         phone: profile['phone'] as String?,
       );
     } on DioException catch (e) {
-      final message = e.response?.data['message'] ?? e.message;
+      final message = (e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message;
       throw Exception(message ?? 'Connection failed');
     } catch (e) {
       if (e is Exception) rethrow;
@@ -145,12 +145,12 @@ class PostgresAuthRepository implements AuthRepository {
       final res = await _apiClient.dio.post(endpoint, data: body);
 
       if (res.statusCode != 201) {
-        throw Exception(res.data['message'] ?? 'Signup failed');
+        throw Exception((res.data is Map ? res.data['message'] : null) ?? 'Signup failed');
       }
 
       return login(email, password, role);
     } on DioException catch (e) {
-      final message = e.response?.data['message'] ?? e.message;
+      final message = (e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message;
       throw Exception(message ?? 'Connection failed');
     } catch (e) {
       if (e is Exception) rethrow;
@@ -173,7 +173,7 @@ class PostgresAuthRepository implements AuthRepository {
       }
       throw Exception('Failed to update profile');
     } on DioException catch (e) {
-      final message = e.response?.data['message'] ?? e.message;
+      final message = (e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message;
       throw Exception(message ?? 'Connection failed');
     } catch (e) {
       if (e is Exception) rethrow;
@@ -190,10 +190,10 @@ class PostgresAuthRepository implements AuthRepository {
       });
 
       if (res.statusCode != 200 || res.data['success'] != true) {
-        throw Exception(res.data['message'] ?? 'Failed to change password');
+        throw Exception((res.data is Map ? res.data['message'] : null) ?? 'Failed to change password');
       }
     } on DioException catch (e) {
-      final message = e.response?.data['message'] ?? e.message;
+      final message = (e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message;
       throw Exception(message ?? 'Connection failed');
     } catch (e) {
       if (e is Exception) rethrow;

@@ -14,33 +14,43 @@ import '../../core/utils/app_snackbar.dart';
 
 class ProductDetailsScreen extends ConsumerWidget {
   final ProductModel? product;
+  final String? productId;
 
-  const ProductDetailsScreen({super.key, this.product});
+  const ProductDetailsScreen({super.key, this.product, this.productId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (product == null) {
+    final cartState = ref.watch(cartProvider);
+    final productState = ref.watch(productProvider);
+
+    ProductModel? targetProduct = product;
+    if (targetProduct == null && productId != null) {
+      try {
+        targetProduct = productState.products.firstWhere((p) => p.id == productId);
+      } catch (_) {}
+    }
+
+    if (targetProduct == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Product Details')),
         body: const Center(child: Text('Product not found')),
       );
     }
 
-    final cartState = ref.watch(cartProvider);
-    final productState = ref.watch(productProvider);
+    final activeProduct = targetProduct;
 
     final cartItem = cartState.items.firstWhere(
-      (item) => item.product.id == product!.id,
-      orElse: () => CartItemModel(product: product!, quantity: 0),
+      (item) => item.product.id == activeProduct.id,
+      orElse: () => CartItemModel(product: activeProduct, quantity: 0),
     );
 
     // Get related products from the same category
     final relatedProducts = productState.products
-        .where((p) => p.category == product!.category && p.id != product!.id)
+        .where((p) => p.category == activeProduct.category && p.id != activeProduct.id)
         .toList();
 
-    final isOrganic = product!.organic;
-    final hasDiscount = product!.originalPrice > product!.price;
+    final isOrganic = activeProduct.organic;
+    final hasDiscount = activeProduct.originalPrice > activeProduct.price;
 
     return Container(
       decoration: const BoxDecoration(
@@ -84,7 +94,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          child: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+                          child: const Icon(Icons.arrow_back, color: Color(0xFF23312B)),
                         ),
                       ),
                       Text(
@@ -145,7 +155,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(24),
                           child: CachedNetworkImage(
-                            imageUrl: product!.image,
+                            imageUrl: activeProduct.image,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => const Center(
                               child: CircularProgressIndicator(color: Color(0xFF2E7D32)),
@@ -204,7 +214,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  product!.name,
+                                  activeProduct.name,
                                   style: GoogleFonts.outfit(
                                     fontSize: 24,
                                     fontWeight: FontWeight.w800,
@@ -219,7 +229,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    product!.category.toUpperCase(),
+                                    activeProduct.category.toUpperCase(),
                                     style: GoogleFonts.plusJakartaSans(
                                       color: const Color(0xFF2E7D32),
                                       fontWeight: FontWeight.w800,
@@ -234,7 +244,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                '₹${product!.price.toStringAsFixed(2)} / ${product!.weight}',
+                                '₹${activeProduct.price.toStringAsFixed(2)} / ${activeProduct.weight}',
                                 style: GoogleFonts.outfit(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
@@ -243,7 +253,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                               ),
                               if (hasDiscount)
                                 Text(
-                                  '₹${product!.originalPrice.toStringAsFixed(2)}',
+                                  '₹${activeProduct.originalPrice.toStringAsFixed(2)}',
                                   style: GoogleFonts.outfit(
                                     fontSize: 14,
                                     color: const Color(0xFF647C72),
@@ -262,7 +272,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                           const Icon(Icons.location_on_outlined, color: Color(0xFFE28C43), size: 18),
                           const SizedBox(width: 4),
                           Text(
-                            product!.origin,
+                            activeProduct.origin,
                             style: GoogleFonts.plusJakartaSans(
                               color: const Color(0xFF647C72),
                               fontWeight: FontWeight.w600,
@@ -294,8 +304,8 @@ class ProductDetailsScreen extends ConsumerWidget {
                           _buildDetailBadge('EXPIRES', 'in 7 Days'),
                           _buildDetailBadge(
                             'AVAILABILITY',
-                            product!.stock > 0 ? 'In Stock' : 'Out of Stock',
-                            color: product!.stock > 0 ? const Color(0xFF2E7D32) : const Color(0xFFE63946),
+                            activeProduct.stock > 0 ? 'In Stock' : 'Out of Stock',
+                            color: activeProduct.stock > 0 ? const Color(0xFF2E7D32) : const Color(0xFFE63946),
                           ),
                         ],
                       ),
@@ -335,7 +345,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    product!.farmName,
+                                    activeProduct.farmName,
                                     style: GoogleFonts.plusJakartaSans(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
@@ -383,7 +393,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        product!.description,
+                        activeProduct.description,
                         style: GoogleFonts.plusJakartaSans(
                           color: const Color(0xFF647C72),
                           height: 1.5,
@@ -416,7 +426,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                                 child: ProductCard(
                                   product: prod,
                                   onTap: () {
-                                    context.push('/product-details', extra: prod);
+                                    context.push('/product-details/${prod.id}', extra: prod);
                                   },
                                   onAddToCart: () {
                                     ref.read(cartProvider.notifier).addItem(prod);
@@ -440,7 +450,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                           if (cartItem.quantity > 0) ...[
                             GestureDetector(
                               onTap: () {
-                                ref.read(cartProvider.notifier).removeItem(product!.id);
+                                ref.read(cartProvider.notifier).removeItem(activeProduct.id);
                               },
                               child: Container(
                                 width: 36,
@@ -467,7 +477,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                             const SizedBox(width: 12),
                             GestureDetector(
                               onTap: () {
-                                ref.read(cartProvider.notifier).addItem(product!);
+                                ref.read(cartProvider.notifier).addItem(activeProduct);
                               },
                               child: Container(
                                 width: 36,
@@ -486,16 +496,16 @@ class ProductDetailsScreen extends ConsumerWidget {
                           ],
                           Expanded(
                             child: CustomButton(
-                              text: product!.stock <= 0
+                              text: activeProduct.stock <= 0
                                   ? 'Out of Stock'
                                   : (cartItem.quantity > 0 ? 'Add More' : 'Add to Basket'),
-                              onPressed: product!.stock <= 0
+                              onPressed: activeProduct.stock <= 0
                                   ? null
                                   : () {
-                                      ref.read(cartProvider.notifier).addItem(product!);
+                                      ref.read(cartProvider.notifier).addItem(activeProduct);
                                       showAppSnackBar(
                                         context,
-                                        'Added ${product!.name} to Cart!',
+                                        'Added ${activeProduct.name} to Cart!',
                                         type: SnackBarType.success,
                                       );
                                     },
