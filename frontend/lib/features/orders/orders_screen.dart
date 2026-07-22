@@ -8,6 +8,7 @@ import '../../models/order_model.dart';
 import '../../core/constants/app_enums.dart';
 import '../../core/utils/app_snackbar.dart';
 import '../../core/widgets/custom_button.dart';
+import '../../providers/tab_provider.dart';
 
 class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({super.key});
@@ -136,7 +137,13 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Color(0xFF23312B)),
-            onPressed: () => context.pop(),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                ref.read(customerTabIndexProvider.notifier).state = 0;
+              }
+            },
           ),
           bottom: TabBar(
             controller: _tabController,

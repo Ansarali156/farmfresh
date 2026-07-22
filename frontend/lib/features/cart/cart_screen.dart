@@ -9,6 +9,7 @@ import '../../providers/cart_provider.dart';
 import '../../providers/order_provider.dart';
 import '../../providers/address_provider.dart';
 import '../../providers/product_provider.dart';
+import '../../providers/tab_provider.dart';
 import '../../models/cart_item_model.dart';
 import '../../models/address_model.dart';
 import '../../core/utils/app_snackbar.dart';
@@ -141,11 +142,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        ref.read(mainTabProvider.notifier).state = 0;
                         if (context.canPop()) {
                           context.pop();
                         } else {
-                          context.go('/customer-main');
+                          ref.read(customerTabIndexProvider.notifier).state = 0;
+                        }
                         }
                       },
                       child: MouseRegion(

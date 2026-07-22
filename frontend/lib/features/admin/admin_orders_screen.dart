@@ -151,7 +151,7 @@ class _AdminOrdersScreenState extends ConsumerState<AdminOrdersScreen> {
                         const Text('Choose a delivery partner to assign to this order:'),
                         const SizedBox(height: 16),
                         DropdownButtonFormField<String>(
-                          value: selectedDriverId,
+                          value: drivers.any((d) => d.id == selectedDriverId) ? selectedDriverId : null,
                           items: drivers.map((d) {
                             return DropdownMenuItem<String>(
                               value: d.id,

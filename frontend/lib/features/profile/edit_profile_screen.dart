@@ -149,7 +149,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _nameController = TextEditingController(text: user?.name ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
     _phoneController = TextEditingController(text: user?.phone ?? '');
-    _selectedAvatar = (user?.avatar != null && user!.avatar!.isNotEmpty && !user.avatar!.contains('dicebear'))
+    _selectedAvatar = (user?.avatar != null && user!.avatar!.isNotEmpty)
         ? user.avatar
         : null;
     

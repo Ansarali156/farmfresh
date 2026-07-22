@@ -54,9 +54,12 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
   bool get _isEditMode => widget.product != null;
 
   static const List<String> AVAILABILITY_OPTIONS = [
+    'APPROVED',
     'ACTIVE',
     'IN_STOCK',
     'OUT_OF_STOCK',
+    'PENDING',
+    'REJECTED',
     'HIDDEN'
   ];
 
@@ -95,8 +98,10 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
     _weightController = TextEditingController(text: p?.weight ?? '1 kg');
     _originController = TextEditingController(text: p?.origin ?? 'Local Farm');
     _imageController = TextEditingController(text: p?.image ?? '');
-    _selectedCategory = p?.category ?? 'Vegetables';
-    _availabilityStatus = p?.status ?? 'ACTIVE';
+    final categories = ['Vegetables', 'Fruits', 'Grains & Millets', 'Dairy', 'Organic Goods'];
+    final rawCategory = p?.category ?? 'Vegetables';
+    _selectedCategory = categories.contains(rawCategory) ? rawCategory : 'Vegetables';
+    _availabilityStatus = p?.status ?? 'PENDING_APPROVAL';
     _isOrganic = p?.organic ?? true;
     _isFeatured = p?.featured ?? false;
     _isSeasonal = p?.seasonal ?? false;
@@ -534,7 +539,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
           Row(
             children: [
               Expanded(
-                flex: 6,
+                flex: 5,
                 child: TextFormField(
                   controller: _nameController,
                   style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF23312B)),
@@ -542,14 +547,24 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                   validator: (v) => (v == null || v.trim().isEmpty) ? 'Product name is required' : null,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
-                flex: 4,
+                flex: 5,
                 child: DropdownButtonFormField<String>(
-                  value: _selectedCategory,
+                  isExpanded: true,
+                  value: ['Vegetables', 'Fruits', 'Grains & Millets', 'Dairy', 'Organic Goods'].contains(_selectedCategory)
+                      ? _selectedCategory
+                      : 'Vegetables',
                   decoration: _adminInputDecoration('Category *', Icons.category_outlined),
                   items: ['Vegetables', 'Fruits', 'Grains & Millets', 'Dairy', 'Organic Goods']
-                      .map((cat) => DropdownMenuItem(value: cat, child: Text(cat, style: GoogleFonts.plusJakartaSans(fontSize: 13))))
+                      .map((cat) => DropdownMenuItem(
+                            value: cat,
+                            child: Text(
+                              cat,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.plusJakartaSans(fontSize: 12),
+                            ),
+                          ))
                       .toList(),
                   onChanged: (val) {
                     if (val != null) setState(() => _selectedCategory = val);
@@ -621,7 +636,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                   validator: (v) => (v == null || v.trim().isEmpty || double.tryParse(v) == null) ? 'Enter valid price' : null,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 6),
               Expanded(
                 flex: 4,
                 child: TextFormField(
@@ -632,7 +647,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                   validator: (v) => (v == null || v.trim().isEmpty || double.tryParse(v) == null) ? 'Enter stock' : null,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 6),
               Expanded(
                 flex: 4,
                 child: TextFormField(
@@ -646,30 +661,11 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
           ),
           const SizedBox(height: 16),
 
-          // 5. Origin & Availability Status
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _originController,
-                  style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF23312B)),
-                  decoration: _adminInputDecoration('Farm Origin', Icons.location_on_outlined),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  value: _availabilityStatus,
-                  decoration: _adminInputDecoration('Status', Icons.check_circle_outline),
-                  items: AVAILABILITY_OPTIONS
-                      .map((opt) => DropdownMenuItem(value: opt, child: Text(opt.replaceAll('_', ' '), style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.bold))))
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => _availabilityStatus = val);
-                  },
-                ),
-              ),
-            ],
+          // 5. Origin
+          TextFormField(
+            controller: _originController,
+            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF23312B)),
+            decoration: _adminInputDecoration('Farm Origin', Icons.location_on_outlined),
           ),
           const SizedBox(height: 20),
 
@@ -681,8 +677,10 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: const Color(0xFFE2EFE5)),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              alignment: WrapAlignment.spaceAround,
               children: [
                 _buildSwitchOption('Organic Certified', _isOrganic, (v) => setState(() => _isOrganic = v)),
                 _buildSwitchOption('Featured Item', _isFeatured, (v) => setState(() => _isFeatured = v)),
@@ -920,7 +918,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
       prefixIcon: Icon(icon, color: const Color(0xFF2E7D32), size: 18),
       filled: true,
       fillColor: const Color(0xFFF9FBF9),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2E7D32), width: 1.5)),

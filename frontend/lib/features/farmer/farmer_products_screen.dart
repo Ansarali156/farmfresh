@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../providers/product_provider.dart';
 import '../../models/product_model.dart';
 import '../../core/widgets/product_image_widget.dart';
+import '../../core/widgets/custom_button.dart';
 
 class FarmerProductsScreen extends ConsumerStatefulWidget {
   const FarmerProductsScreen({super.key});
@@ -429,6 +430,16 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                       ),
           ),
         ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: CustomButton(
+        text: 'Add Crop Harvest',
+        icon: Icons.add_circle_outline,
+        backgroundColor: const Color(0xFF2E7D32),
+        height: 50,
+        width: 270,
+        borderRadius: 25,
+        onPressed: () => context.push('/farmer-add-product'),
       ),
     );
   }

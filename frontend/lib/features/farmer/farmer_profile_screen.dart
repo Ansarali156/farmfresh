@@ -52,21 +52,44 @@ class FarmerProfileScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE8F5E9), width: 3),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x0F2E5C45),
-                          offset: Offset(0, 4),
-                          blurRadius: 10,
+                  GestureDetector(
+                    onTap: () => context.push('/farmer-edit-profile'),
+                    child: Stack(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFE8F5E9), width: 3),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x0F2E5C45),
+                                offset: Offset(0, 4),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: FarmerAvatar(
+                            avatarUrl: user.avatar,
+                            radius: 40,
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF2E7D32),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.edit,
+                              color: Colors.white,
+                              size: 14,
+                            ),
+                          ),
                         ),
                       ],
-                    ),
-                    child: FarmerAvatar(
-                      avatarUrl: user.avatar,
-                      radius: 40,
                     ),
                   ),
                   const SizedBox(height: 12),

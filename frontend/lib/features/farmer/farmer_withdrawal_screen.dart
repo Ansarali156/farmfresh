@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../providers/farmer_provider.dart';
 import '../../models/withdrawal_model.dart';
 import '../../models/bank_account_model.dart';
+import '../../core/widgets/custom_button.dart';
 
 class FarmerWithdrawalScreen extends ConsumerStatefulWidget {
   const FarmerWithdrawalScreen({super.key});
@@ -306,27 +307,13 @@ class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen>
                             ),
                           ),
                           const SizedBox(height: 16),
-                          Container(
-                            height: 44,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFE28C43), Color(0xFFF3A05B)],
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ElevatedButton(
-                              onPressed: _requestWithdrawal,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                foregroundColor: Colors.white,
-                                shadowColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                              child: Text(
-                                'Request Withdrawal',
-                                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
-                              ),
-                            ),
+                          CustomButton(
+                            text: 'Request Withdrawal',
+                            icon: Icons.account_balance_wallet_outlined,
+                            onPressed: _requestWithdrawal,
+                            backgroundColor: const Color(0xFFE28C43),
+                            height: 48,
+                            borderRadius: 14,
                           ),
                         ],
                       ),
@@ -453,20 +440,13 @@ class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen>
                             ),
                           ),
                           const SizedBox(height: 16),
-                          SizedBox(
-                            height: 44,
-                            child: OutlinedButton(
-                              onPressed: _saveBankDetails,
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Color(0xFF2E7D32)),
-                                foregroundColor: const Color(0xFF2E7D32),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                              child: Text(
-                                'Save Account Details',
-                                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
-                              ),
-                            ),
+                          CustomButton(
+                            text: 'Save Account Details',
+                            icon: Icons.save_outlined,
+                            isOutlined: true,
+                            onPressed: _saveBankDetails,
+                            height: 48,
+                            borderRadius: 14,
                           ),
                         ],
                       ),

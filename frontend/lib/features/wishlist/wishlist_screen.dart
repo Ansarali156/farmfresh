@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/wishlist_provider.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/tab_provider.dart';
 
 class WishlistScreen extends ConsumerWidget {
   const WishlistScreen({super.key});
@@ -40,7 +41,7 @@ class WishlistScreen extends ConsumerWidget {
                         if (context.canPop()) {
                           context.pop();
                         } else {
-                          context.go('/customer-main');
+                          ref.read(customerTabIndexProvider.notifier).state = 0;
                         }
                       },
                       child: MouseRegion(

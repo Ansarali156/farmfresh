@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/tab_provider.dart';
 import 'home_screen.dart';
 import '../cart/cart_screen.dart';
 import '../orders/orders_screen.dart';
@@ -29,7 +30,7 @@ class _CustomerMainScreenState extends ConsumerState<CustomerMainScreen> {
   @override
   Widget build(BuildContext context) {
     final cartItemCount = ref.watch(cartProvider).itemCount;
-    final selectedIndex = ref.watch(mainTabProvider);
+    final selectedIndex = ref.watch(customerTabIndexProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -51,7 +52,7 @@ class _CustomerMainScreenState extends ConsumerState<CustomerMainScreen> {
           child: BottomNavigationBar(
             currentIndex: selectedIndex,
             onTap: (index) {
-              ref.read(mainTabProvider.notifier).state = index;
+              ref.read(customerTabIndexProvider.notifier).state = index;
             },
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.transparent,

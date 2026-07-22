@@ -55,10 +55,10 @@ export class ProductsService {
       }
     }
 
-    const slug = dto.slug ? dto.slug.toLowerCase().trim() : this._generateSlug(dto.name);
+    let slug = dto.slug ? dto.slug.toLowerCase().trim() : this._generateSlug(dto.name);
     const duplicate = await this.prisma.product.findUnique({ where: { slug } });
     if (duplicate) {
-      throw new ConflictException('Product slug already exists');
+      slug = `${slug}-${Math.floor(1000 + Math.random() * 9000)}`;
     }
 
     // Prisma Transaction to create product and inventory together
