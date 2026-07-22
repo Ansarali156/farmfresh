@@ -89,6 +89,7 @@ class _ProductCardState extends ConsumerState<ProductCard> with SingleTickerProv
                               )
                             : ProductImageWidget(
                                 imageUrl: widget.product.image,
+                                productName: widget.product.name,
                                 fit: BoxFit.cover,
                               ),
                       ),

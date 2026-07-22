@@ -196,33 +196,6 @@ class _FarmerDashboardScreenState extends ConsumerState<FarmerDashboardScreen> {
                     _buildEarningsChart(context, weeklyEarnings),
                     const SizedBox(height: 24),
 
-                    // 4. Quick Actions
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () => context.push('/farmer-add-product'),
-                        icon: const Icon(Icons.add, size: 20, color: Colors.white),
-                        label: Text(
-                          'Add New Product',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2E7D32),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
                     // 5. Top Selling Products
                     Text(
                       'Top Selling Products',
@@ -487,6 +460,7 @@ class _FarmerDashboardScreenState extends ConsumerState<FarmerDashboardScreen> {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: ProductImageWidget(
               imageUrl: product.image,
+              productName: product.name,
               height: 70,
               width: double.infinity,
               fit: BoxFit.cover,

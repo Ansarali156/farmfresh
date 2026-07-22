@@ -222,6 +222,14 @@ class ProfileScreen extends ConsumerWidget {
                 subtitle: 'Submit support tickets & track resolution',
                 onTap: () => context.push('/support'),
               ),
+              const Divider(height: 1, color: Color(0xFFF3F3F3)),
+              _menuTile(
+                context,
+                icon: Icons.agriculture_outlined,
+                title: 'Farmer Portal (Manage Crops)',
+                subtitle: 'Add new products, track sales & earnings',
+                onTap: () => context.go('/farmer-main'),
+              ),
 
               const Divider(height: 1, color: Color(0xFFF3F3F3)),
               _menuTile(

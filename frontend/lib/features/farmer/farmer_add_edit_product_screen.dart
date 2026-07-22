@@ -440,118 +440,119 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
   Widget _buildFormCard(dynamic categoryState) {
     final hasPickedBytes = _pickedImageBytes != null && _pickedImageBytes!.isNotEmpty;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFECECEC)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A2E5C45),
-            offset: Offset(0, 8),
-            blurRadius: 24,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 600;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFECECEC)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A2E5C45),
+                offset: Offset(0, 8),
+                blurRadius: 24,
+              ),
+            ],
           ),
-        ],
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 1. Cover Image Upload Box (Admin Portal Style)
-          Text('Product Cover Image', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: const Color(0xFF23312B))),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF9FBF9),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFD8E8DC), style: BorderStyle.solid),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 90,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    color: Colors.white,
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: hasPickedBytes
-                        ? Image.memory(_pickedImageBytes!, fit: BoxFit.cover)
-                        : _imageController.text.isNotEmpty
-                            ? Image.network(
-                                _imageController.text,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(Icons.cloud_upload_outlined, color: Color(0xFF647C72), size: 36),
-                              )
-                            : const Icon(Icons.cloud_upload_outlined, color: Color(0xFF647C72), size: 36),
-                  ),
+          padding: EdgeInsets.all(isNarrow ? 16 : 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Cover Image Upload Box (Admin Portal Style)
+              Text('Product Cover Image', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: const Color(0xFF23312B))),
+              const SizedBox(height: 8),
+              Container(
+                padding: EdgeInsets.all(isNarrow ? 12 : 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9FBF9),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFD8E8DC), style: BorderStyle.solid),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Cover Image Preview', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13, color: const Color(0xFF23312B))),
-                      const SizedBox(height: 2),
-                      Text(
-                        hasPickedBytes ? 'Custom image selected' : 'Auto-suggested from produce name or upload custom image',
-                        style: GoogleFonts.plusJakartaSans(fontSize: 11, color: const Color(0xFF647C72)),
+                child: Wrap(
+                  spacing: 16,
+                  runSpacing: 12,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
-                      const SizedBox(height: 10),
-                      Row(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: hasPickedBytes
+                            ? Image.memory(_pickedImageBytes!, fit: BoxFit.cover)
+                            : _imageController.text.isNotEmpty
+                                ? Image.network(
+                                    _imageController.text,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Icon(Icons.cloud_upload_outlined, color: Color(0xFF647C72), size: 36),
+                                  )
+                                : const Icon(Icons.cloud_upload_outlined, color: Color(0xFF647C72), size: 36),
+                      ),
+                    ),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: isNarrow ? double.infinity : 320),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          OutlinedButton.icon(
-                            onPressed: _isUploadingImage ? null : _pickProductImage,
-                            icon: _isUploadingImage
-                                ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFF2E7D32)))
-                                : Icon(hasPickedBytes ? Icons.swap_horiz : Icons.photo_camera, size: 16, color: const Color(0xFF2E7D32)),
-                            label: Text(_isUploadingImage ? 'Selecting...' : (hasPickedBytes ? 'Replace Image' : 'Choose File'), style: GoogleFonts.plusJakartaSans(color: const Color(0xFF2E7D32), fontWeight: FontWeight.bold, fontSize: 12)),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFF2E7D32)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                            ),
+                          Text('Cover Image Preview', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13, color: const Color(0xFF23312B))),
+                          const SizedBox(height: 2),
+                          Text(
+                            hasPickedBytes ? 'Custom image selected' : 'Auto-suggested from produce name or upload custom image',
+                            style: GoogleFonts.plusJakartaSans(fontSize: 11, color: const Color(0xFF647C72)),
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              OutlinedButton.icon(
+                                onPressed: _isUploadingImage ? null : _pickProductImage,
+                                icon: _isUploadingImage
+                                    ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFF2E7D32)))
+                                    : Icon(hasPickedBytes ? Icons.swap_horiz : Icons.photo_camera, size: 16, color: const Color(0xFF2E7D32)),
+                                label: Text(_isUploadingImage ? 'Selecting...' : (hasPickedBytes ? 'Replace Image' : 'Choose File'), style: GoogleFonts.plusJakartaSans(color: const Color(0xFF2E7D32), fontWeight: FontWeight.bold, fontSize: 12)),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Color(0xFF2E7D32)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
+              ),
+              const SizedBox(height: 20),
 
-          // Custom Image URL field
-          TextFormField(
-            controller: _imageController,
-            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF23312B)),
-            decoration: _adminInputDecoration('Image URL', Icons.link),
-            onChanged: (_) => setState(() {}),
-          ),
-          const SizedBox(height: 16),
+              // Custom Image URL field
+              TextFormField(
+                controller: _imageController,
+                style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF23312B)),
+                decoration: _adminInputDecoration('Image URL', Icons.link),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 16),
 
-          // 2. Product Name & Category Row
-          Row(
-            children: [
-              Expanded(
-                flex: 5,
-                child: TextFormField(
+              // 2. Product Name & Category
+              if (isNarrow) ...[
+                TextFormField(
                   controller: _nameController,
                   style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF23312B)),
                   decoration: _adminInputDecoration('Product Name *', Icons.spa_outlined),
                   validator: (v) => (v == null || v.trim().isEmpty) ? 'Product name is required' : null,
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 5,
-                child: DropdownButtonFormField<String>(
-                  isExpanded: true,
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
                   value: ['Vegetables', 'Fruits', 'Grains & Millets', 'Dairy', 'Organic Goods'].contains(_selectedCategory)
                       ? _selectedCategory
                       : 'Vegetables',
@@ -570,62 +571,102 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                     if (val != null) setState(() => _selectedCategory = val);
                   },
                 ),
-              ),
-            ],
-          ),
-          if (_aiCategorySuggestion != null && _aiCategorySuggestion != _selectedCategory) ...[
-            const SizedBox(height: 6),
-            GestureDetector(
-              onTap: () => setState(() => _selectedCategory = _aiCategorySuggestion!),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(color: const Color(0xFFFFF3E0), borderRadius: BorderRadius.circular(8)),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+              ] else
+                Row(
                   children: [
-                    const Icon(Icons.auto_awesome, color: Color(0xFFE28C43), size: 12),
-                    const SizedBox(width: 6),
-                    Text(
-                      'AI Suggestion: Switch category to "$_aiCategorySuggestion"? (Tap to apply)',
-                      style: GoogleFonts.plusJakartaSans(color: const Color(0xFFE28C43), fontSize: 11, fontWeight: FontWeight.bold),
+                    Expanded(
+                      flex: 6,
+                      child: TextFormField(
+                        controller: _nameController,
+                        style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF23312B)),
+                        decoration: _adminInputDecoration('Product Name *', Icons.spa_outlined),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Product name is required' : null,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 4,
+                      child: DropdownButtonFormField<String>(
+                        value: ['Vegetables', 'Fruits', 'Grains & Millets', 'Dairy', 'Organic Goods'].contains(_selectedCategory)
+                            ? _selectedCategory
+                            : 'Vegetables',
+                        decoration: _adminInputDecoration('Category *', Icons.category_outlined),
+                        items: ['Vegetables', 'Fruits', 'Grains & Millets', 'Dairy', 'Organic Goods']
+                            .map((cat) => DropdownMenuItem(
+                                  value: cat,
+                                  child: Text(
+                                    cat,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.plusJakartaSans(fontSize: 12),
+                                  ),
+                                ))
+                            .toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _selectedCategory = val);
+                        },
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ),
-          ],
-          const SizedBox(height: 16),
+              if (_aiCategorySuggestion != null && _aiCategorySuggestion != _selectedCategory) ...[
+                const SizedBox(height: 6),
+                GestureDetector(
+                  onTap: () => setState(() => _selectedCategory = _aiCategorySuggestion!),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(color: const Color(0xFFFFF3E0), borderRadius: BorderRadius.circular(8)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.auto_awesome, color: Color(0xFFE28C43), size: 12),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'AI Suggestion: Switch category to "$_aiCategorySuggestion"? (Tap to apply)',
+                            style: GoogleFonts.plusJakartaSans(color: const Color(0xFFE28C43), fontSize: 11, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
 
-          // 3. Description Field with Auto-Generate AI Button
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Product Description *', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13, color: const Color(0xFF647C72))),
-              TextButton.icon(
-                onPressed: _isGeneratingAi ? null : _handleAutoGenerateDescription,
-                icon: _isGeneratingAi
-                    ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF2E7D32)))
-                    : const Icon(Icons.auto_awesome, size: 14, color: Color(0xFF2E7D32)),
-                label: Text(_isGeneratingAi ? 'Generating...' : 'Auto-generate AI Description', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF2E7D32), fontWeight: FontWeight.bold, fontSize: 12)),
+              // 3. Description Field with Auto-Generate AI Button (Zero Overflow Wrap)
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  Text('Product Description *', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13, color: const Color(0xFF647C72))),
+                  TextButton.icon(
+                    onPressed: _isGeneratingAi ? null : _handleAutoGenerateDescription,
+                    icon: _isGeneratingAi
+                        ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF2E7D32)))
+                        : const Icon(Icons.auto_awesome, size: 14, color: Color(0xFF2E7D32)),
+                    label: Text(
+                      _isGeneratingAi ? 'Generating...' : 'Auto-generate AI Description',
+                      style: GoogleFonts.plusJakartaSans(color: const Color(0xFF2E7D32), fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          TextFormField(
-            controller: _descriptionController,
-            maxLines: 3,
-            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF23312B)),
-            decoration: _adminInputDecoration('Describe fresh produce quality, origin & uses', Icons.description_outlined).copyWith(alignLabelWithHint: true),
-            validator: (v) => (v == null || v.trim().isEmpty) ? 'Description is required' : null,
-          ),
-          const SizedBox(height: 16),
+              const SizedBox(height: 4),
+              TextFormField(
+                controller: _descriptionController,
+                maxLines: 3,
+                style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF23312B)),
+                decoration: _adminInputDecoration('Describe fresh produce quality, origin & uses', Icons.description_outlined).copyWith(alignLabelWithHint: true),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Description is required' : null,
+              ),
+              const SizedBox(height: 16),
 
-          // 4. Pricing & Stock & Unit Size
-          Row(
-            children: [
-              Expanded(
-                flex: 4,
-                child: TextFormField(
+              // 4. Pricing & Stock & Unit Size (Adaptive Layout)
+              if (isNarrow) ...[
+                TextFormField(
                   controller: _priceController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF23312B)),
@@ -635,95 +676,174 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
                   ),
                   validator: (v) => (v == null || v.trim().isEmpty || double.tryParse(v) == null) ? 'Enter valid price' : null,
                 ),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                flex: 4,
-                child: TextFormField(
-                  controller: _stockController,
-                  keyboardType: TextInputType.number,
-                  style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF23312B)),
-                  decoration: _adminInputDecoration('Stock Qty *', Icons.inventory_2_outlined),
-                  validator: (v) => (v == null || v.trim().isEmpty || double.tryParse(v) == null) ? 'Enter stock' : null,
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _stockController,
+                        keyboardType: TextInputType.number,
+                        style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF23312B)),
+                        decoration: _adminInputDecoration('Stock Qty *', Icons.inventory_2_outlined),
+                        validator: (v) => (v == null || v.trim().isEmpty || double.tryParse(v) == null) ? 'Enter stock' : null,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _weightController,
+                        style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF23312B)),
+                        decoration: _adminInputDecoration('Unit Size *', Icons.scale_outlined),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter unit' : null,
+                      ),
+                    ),
+                  ],
+                ),
+              ] else
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: TextFormField(
+                        controller: _priceController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF23312B)),
+                        decoration: _adminInputDecoration('Price *', Icons.currency_rupee).copyWith(
+                          prefixText: '₹ ',
+                          prefixStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFF2E7D32)),
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty || double.tryParse(v) == null) ? 'Enter valid price' : null,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 4,
+                      child: TextFormField(
+                        controller: _stockController,
+                        keyboardType: TextInputType.number,
+                        style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF23312B)),
+                        decoration: _adminInputDecoration('Stock Qty *', Icons.inventory_2_outlined),
+                        validator: (v) => (v == null || v.trim().isEmpty || double.tryParse(v) == null) ? 'Enter stock' : null,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 4,
+                      child: TextFormField(
+                        controller: _weightController,
+                        style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF23312B)),
+                        decoration: _adminInputDecoration('Unit Size *', Icons.scale_outlined),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter unit' : null,
+                      ),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 16),
+
+              // 5. Origin & Availability Status (Adaptive Layout)
+              if (isNarrow) ...[
+                TextFormField(
+                  controller: _originController,
+                  style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF23312B)),
+                  decoration: _adminInputDecoration('Farm Origin', Icons.location_on_outlined),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: _availabilityStatus,
+                  decoration: _adminInputDecoration('Status', Icons.check_circle_outline),
+                  items: AVAILABILITY_OPTIONS
+                      .map((opt) => DropdownMenuItem(value: opt, child: Text(opt.replaceAll('_', ' '), style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.bold))))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => _availabilityStatus = val);
+                  },
+                ),
+              ] else
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _originController,
+                        style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF23312B)),
+                        decoration: _adminInputDecoration('Farm Origin', Icons.location_on_outlined),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: _availabilityStatus,
+                        decoration: _adminInputDecoration('Status', Icons.check_circle_outline),
+                        items: AVAILABILITY_OPTIONS
+                            .map((opt) => DropdownMenuItem(value: opt, child: Text(opt.replaceAll('_', ' '), style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.bold))))
+                            .toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _availabilityStatus = val);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 20),
+
+              // 6. Badges & Switches (Wrap for Zero Overflow)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F9F6),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE2EFE5)),
+                ),
+                child: Wrap(
+                  spacing: 16,
+                  runSpacing: 10,
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    _buildSwitchOption('Organic Certified', _isOrganic, (v) => setState(() => _isOrganic = v)),
+                    _buildSwitchOption('Featured Item', _isFeatured, (v) => setState(() => _isFeatured = v)),
+                    _buildSwitchOption('Seasonal Crop', _isSeasonal, (v) => setState(() => _isSeasonal = v)),
+                  ],
                 ),
               ),
-              const SizedBox(width: 6),
-              Expanded(
-                flex: 4,
-                child: TextFormField(
-                  controller: _weightController,
-                  style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF23312B)),
-                  decoration: _adminInputDecoration('Unit Size *', Icons.scale_outlined),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter unit' : null,
-                ),
+              const SizedBox(height: 28),
+
+              // 7. Submit Action Buttons (Wrap for Zero Overflow)
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  OutlinedButton(
+                    onPressed: () => context.pop(),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      side: const BorderSide(color: Color(0xFFCBD5E1)),
+                    ),
+                    child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64748B), fontWeight: FontWeight.bold)),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: _isSaving ? null : _saveProduct,
+                    icon: _isSaving
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Icon(Icons.publish, color: Colors.white, size: 18),
+                    label: Text(
+                      _isSaving ? 'Saving...' : (_isEditMode ? 'Update Product' : 'Save & Publish Product'),
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.farmerPrimary,
+                      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 2,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 16),
-
-          // 5. Origin
-          TextFormField(
-            controller: _originController,
-            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF23312B)),
-            decoration: _adminInputDecoration('Farm Origin', Icons.location_on_outlined),
-          ),
-          const SizedBox(height: 20),
-
-          // 6. Badges & Switches
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F9F6),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE2EFE5)),
-            ),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              alignment: WrapAlignment.spaceAround,
-              children: [
-                _buildSwitchOption('Organic Certified', _isOrganic, (v) => setState(() => _isOrganic = v)),
-                _buildSwitchOption('Featured Item', _isFeatured, (v) => setState(() => _isFeatured = v)),
-                _buildSwitchOption('Seasonal Crop', _isSeasonal, (v) => setState(() => _isSeasonal = v)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 28),
-
-          // 7. Submit Action Buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              OutlinedButton(
-                onPressed: () => context.pop(),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  side: const BorderSide(color: Color(0xFFCBD5E1)),
-                ),
-                child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64748B), fontWeight: FontWeight.bold)),
-              ),
-              const SizedBox(width: 12),
-              ElevatedButton.icon(
-                onPressed: _isSaving ? null : _saveProduct,
-                icon: _isSaving
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Icon(Icons.publish, color: Colors.white, size: 18),
-                label: Text(
-                  _isSaving ? 'Saving...' : (_isEditMode ? 'Update Product' : 'Save & Publish Product'),
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.farmerPrimary,
-                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 2,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -927,13 +1047,27 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
 
   Widget _buildSwitchOption(String title, bool value, ValueChanged<bool> onChanged) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Switch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: const Color(0xFF2E7D32),
+        Transform.scale(
+          scale: 0.8,
+          child: Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: const Color(0xFF2E7D32),
+          ),
         ),
-        Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF23312B))),
+        Flexible(
+          child: Text(
+            title,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF23312B),
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }

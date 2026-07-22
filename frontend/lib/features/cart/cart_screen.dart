@@ -13,6 +13,7 @@ import '../../providers/tab_provider.dart';
 import '../../models/cart_item_model.dart';
 import '../../models/address_model.dart';
 import '../../core/utils/app_snackbar.dart';
+import '../../models/product_model.dart';
 import '../home/customer_main_screen.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
@@ -533,7 +534,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       ),
     ),
   );
-}
 
   Widget _buildCartItemCard(CartItemModel item) {
     return Container(

@@ -141,6 +141,33 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         automaticallyImplyLeading: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: ElevatedButton.icon(
+              onPressed: () => context.push('/farmer-add-product'),
+              icon: const Icon(Icons.add_rounded, size: 20, color: Colors.white),
+              label: Text(
+                'Add New Product',
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: Colors.white,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2E7D32),
+                foregroundColor: Colors.white,
+                elevation: 2,
+                shadowColor: const Color(0x3D2E7D32),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              ),
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -313,6 +340,7 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
                                       child: product.image.isNotEmpty
                                           ? ProductImageWidget(
                                               imageUrl: product.image,
+                                              productName: product.name,
                                               fit: BoxFit.cover,
                                               width: 60,
                                               height: 60,
@@ -431,15 +459,19 @@ class _FarmerProductsScreenState extends ConsumerState<FarmerProductsScreen> {
           ),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: CustomButton(
-        text: 'Add Crop Harvest',
-        icon: Icons.add_circle_outline,
-        backgroundColor: const Color(0xFF2E7D32),
-        height: 50,
-        width: 270,
-        borderRadius: 25,
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/farmer-add-product'),
+        backgroundColor: const Color(0xFF2E7D32),
+        foregroundColor: Colors.white,
+        elevation: 4,
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: Text(
+          'Add New Product',
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }
