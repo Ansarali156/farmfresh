@@ -8,6 +8,7 @@ import '../../providers/cart_provider.dart';
 import '../../providers/wishlist_provider.dart';
 import '../../core/widgets/product_card.dart';
 import '../../providers/address_provider.dart';
+import '../../providers/customer_notification_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/utils/app_snackbar.dart';
 import '../../core/utils/category_icons.dart';
@@ -409,10 +410,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     ),
                                     Row(
                                       children: [
-                                        GestureDetector(
-                                          onTap: () => context.push('/notifications'),
-                                          child: const Icon(Icons.notifications_outlined, color: Color(0xFF23312B), size: 26),
-                                        ),
+                                         Consumer(
+                                           builder: (context, ref, _) {
+                                             final unreadCount = ref.watch(customerNotificationProvider).unreadCount;
+                                             return GestureDetector(
+                                               onTap: () => context.push('/notifications'),
+                                               child: Stack(
+                                                 clipBehavior: Clip.none,
+                                                 children: [
+                                                   const Icon(Icons.notifications_outlined, color: Color(0xFF23312B), size: 26),
+                                                   if (unreadCount > 0)
+                                                     Positioned(
+                                                       right: -2,
+                                                       top: -2,
+                                                       child: Container(
+                                                         padding: const EdgeInsets.all(4),
+                                                         decoration: const BoxDecoration(
+                                                           color: Color(0xFFFF4D6D),
+                                                           shape: BoxShape.circle,
+                                                         ),
+                                                         constraints: const BoxConstraints(
+                                                           minWidth: 16,
+                                                           minHeight: 16,
+                                                         ),
+                                                         child: Text(
+                                                           '$unreadCount',
+                                                           style: GoogleFonts.plusJakartaSans(
+                                                             color: Colors.white,
+                                                             fontSize: 9,
+                                                             fontWeight: FontWeight.bold,
+                                                           ),
+                                                           textAlign: TextAlign.center,
+                                                         ),
+                                                       ),
+                                                     ),
+                                                 ],
+                                               ),
+                                             );
+                                           },
+                                         ),
                                         const SizedBox(width: 12),
                                         // Wishlist heart icon with badge
                                         GestureDetector(

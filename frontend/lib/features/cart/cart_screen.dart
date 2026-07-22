@@ -12,6 +12,7 @@ import '../../providers/product_provider.dart';
 import '../../providers/tab_provider.dart';
 import '../../models/cart_item_model.dart';
 import '../../models/address_model.dart';
+import '../../models/product_model.dart';
 import '../../core/utils/app_snackbar.dart';
 import '../../models/product_model.dart';
 import '../home/customer_main_screen.dart';
@@ -147,7 +148,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           context.pop();
                         } else {
                           ref.read(customerTabIndexProvider.notifier).state = 0;
-                        }
                         }
                       },
                       child: MouseRegion(

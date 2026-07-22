@@ -38,6 +38,7 @@ import '../models/delivery_model.dart';
 import '../features/delivery/delivery_profile_screen.dart';
 import '../features/admin/admin_main_screen.dart';
 import '../features/support/customer_query_screen.dart';
+import '../features/home/customer_notifications_screen.dart';
 
 import 'package:flutter/foundation.dart';
 
@@ -140,6 +141,11 @@ final appRouter = Provider<GoRouter>((ref) {
         path: '/cart',
         name: 'cart',
         builder: (context, state) => const CartScreen(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        builder: (context, state) => const CustomerNotificationsScreen(),
       ),
       GoRoute(
         path: '/wishlist',

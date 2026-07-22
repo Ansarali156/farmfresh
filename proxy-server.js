@@ -5,7 +5,7 @@ const url = require('url');
 
 const PORT = 8081;
 const BACKEND = 'http://127.0.0.1:3000';
-const STATIC_DIR = path.join(__dirname, 'build', 'web');
+const STATIC_DIR = path.join(__dirname, 'frontend', 'build', 'web');
 
 const MIME_TYPES = {
   '.html': 'text/html',

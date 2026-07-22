@@ -2,8 +2,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const BACKEND_PORT = 3001;
-const PROXY_PORT = 8080;
+const BACKEND_PORT = 3000;
+const PROXY_PORT = 8081;
 const WEB_DIR = path.join(__dirname, 'frontend', 'build', 'web');
 
 const MIME_TYPES = {
