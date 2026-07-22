@@ -172,6 +172,19 @@ class _DeliveryEarningsScreenState extends ConsumerState<DeliveryEarningsScreen>
       return;
     }
 
+    final profileState = ref.read(deliveryProfileProvider);
+    final bankAccount = profileState.profile.bankAccount;
+    
+    if (bankAccount == null || (bankAccount.accountNumber ?? '').isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add your bank details in your profile before requesting a payout.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

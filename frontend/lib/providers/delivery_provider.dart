@@ -647,7 +647,15 @@ class DeliveryProfileNotifier extends StateNotifier<DeliveryProfileState> {
         bankAccount: bankAccount,
       );
       if (!_mounted) return false;
-      state = state.copyWith(profile: updated, actionMessage: 'Profile updated');
+      
+      // Merge local input fields because backend currently does not store these
+      final mergedProfile = updated.copyWith(
+        vehicle: vehicle ?? updated.vehicle ?? state.profile.vehicle,
+        license: license ?? updated.license ?? state.profile.license,
+        bankAccount: bankAccount ?? updated.bankAccount ?? state.profile.bankAccount,
+      );
+      
+      state = state.copyWith(profile: mergedProfile, actionMessage: 'Profile updated');
       return true;
     } catch (e) {
       if (!_mounted) return false;
