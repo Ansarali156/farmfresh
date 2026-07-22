@@ -88,7 +88,7 @@ class PostgresOrderRepository implements OrderRepository {
       throw Exception('Order not found');
     } on DioException catch (e) {
       throw Exception(
-          e.response?.data['message'] ?? e.message ?? 'Failed to load order');
+          (e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to load order');
     }
   }
 
@@ -109,7 +109,7 @@ class PostgresOrderRepository implements OrderRepository {
       }
       throw Exception('Failed to create order');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ??
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ??
           e.message ??
           'Failed to create order');
     }
@@ -127,7 +127,7 @@ class PostgresOrderRepository implements OrderRepository {
       }
       throw Exception('Failed to update order status');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ??
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ??
           e.message ??
           'Failed to update order status');
     }
@@ -141,10 +141,10 @@ class PostgresOrderRepository implements OrderRepository {
       });
 
       if (res.statusCode != 200) {
-        throw Exception(res.data['message'] ?? 'Failed to cancel order');
+        throw Exception((res.data is Map ? res.data['message'] : null) ?? 'Failed to cancel order');
       }
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ??
+      throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ??
           e.message ??
           'Failed to cancel order');
     }

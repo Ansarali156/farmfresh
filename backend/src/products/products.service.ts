@@ -80,7 +80,8 @@ export class ProductsService {
           organic: dto.organic ?? false,
           featured: dto.featured ?? false,
           seasonal: dto.seasonal ?? false,
-          status: 'APPROVED' as any, // Default to APPROVED in this sandbox
+          status: 'PENDING_APPROVAL' as any, // Requires Admin Approval in Admin Portal
+
           harvestDate: dto.harvestDate ? new Date(dto.harvestDate) : null,
           expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
           inventory: {

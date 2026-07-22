@@ -10,6 +10,7 @@ import '../../core/utils/app_snackbar.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/services/delivery_tracking_service.dart';
 import '../../core/theme/delivery_theme.dart';
+import '../../core/widgets/map_zoom_controls.dart';
 
 class DeliveryDetailScreen extends ConsumerStatefulWidget {
   final String deliveryId;
@@ -22,6 +23,7 @@ class DeliveryDetailScreen extends ConsumerStatefulWidget {
 
 class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
   final _otpController = TextEditingController();
+  final MapController _mapController = MapController();
 
   @override
   void initState() {
@@ -105,10 +107,13 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
                 const SizedBox(height: 16),
                 _buildLocationsTimeline(delivery),
                 const SizedBox(height: 16),
-                _buildOrderItemsCard(delivery),
+                _buildFarmerCard(delivery),
                 const SizedBox(height: 16),
                 _buildCustomerCard(delivery),
+                const SizedBox(height: 16),
+                _buildOrderItemsCard(delivery),
               ],
+
             ),
           ),
           Positioned(
@@ -116,7 +121,6 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
             right: 0,
             bottom: 0,
             child: Container(
-              padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
                 color: DeliveryTheme.navyDark,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -128,7 +132,13 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
                   ),
                 ],
               ),
-              child: _buildActionButton(delivery, state),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: _buildActionButton(delivery, state),
+                ),
+              ),
             ),
           ),
         ],
@@ -137,13 +147,23 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
   }
 
   Widget _buildRouteMapCard(DeliveryOrder delivery) {
-    // Determine map center
-    final hasFarmer = delivery.farmerLatitude != null && delivery.farmerLongitude != null;
-    final hasCustomer = delivery.customerLatitude != null && delivery.customerLongitude != null;
+    final farmerPos = (delivery.farmerLatitude != null && delivery.farmerLongitude != null)
+        ? LatLng(delivery.farmerLatitude!, delivery.farmerLongitude!)
+        : (delivery.pickupAddress?.latitude != null && delivery.pickupAddress?.longitude != null
+            ? LatLng(delivery.pickupAddress!.latitude!, delivery.pickupAddress!.longitude!)
+            : const LatLng(16.5162, 80.6380));
 
-    LatLng? center;
-    if (hasFarmer) center = LatLng(delivery.farmerLatitude!, delivery.farmerLongitude!);
-    else if (hasCustomer) center = LatLng(delivery.customerLatitude!, delivery.customerLongitude!);
+    final customerPos = (delivery.customerLatitude != null && delivery.customerLongitude != null)
+        ? LatLng(delivery.customerLatitude!, delivery.customerLongitude!)
+        : (delivery.deliveryAddress?.latitude != null && delivery.deliveryAddress?.longitude != null
+            ? LatLng(delivery.deliveryAddress!.latitude!, delivery.deliveryAddress!.longitude!)
+            : const LatLng(16.5062, 80.6480));
+
+    final isHeadingToCustomer = delivery.status == DeliveryOrderStatus.pickedUp ||
+        delivery.status == DeliveryOrderStatus.outForDelivery;
+
+    final LatLng center = isHeadingToCustomer ? customerPos : farmerPos;
+
 
     return Card(
       elevation: 2,
@@ -158,35 +178,43 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
             child: ClipRRect(
               borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
               child: center != null
-                  ? FlutterMap(
-                      options: MapOptions(
-                        initialCenter: center,
-                        initialZoom: 13,
-                        interactionOptions: const InteractionOptions(
-                          flags: InteractiveFlag.none,
-                        ),
-                      ),
+                  ? Stack(
                       children: [
-                        TileLayer(
-                          urlTemplate: AppConstants.mapTileUrl,
-                          userAgentPackageName: 'com.farmfresh.app',
+                        FlutterMap(
+                          mapController: _mapController,
+                          options: MapOptions(
+                            initialCenter: center,
+                            initialZoom: 13,
+                            interactionOptions: const InteractionOptions(
+                              flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+                            ),
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate: AppConstants.mapTileUrl,
+                              userAgentPackageName: 'com.farmfresh.app',
+                            ),
+                            MarkerLayer(markers: [
+                              Marker(
+                                point: farmerPos,
+                                width: 34,
+                                height: 34,
+                                child: const Icon(Icons.agriculture, color: Color(0xFFEA580C), size: 28),
+                              ),
+                              Marker(
+                                point: customerPos,
+                                width: 34,
+                                height: 34,
+                                child: const Icon(Icons.home, color: Color(0xFF10B981), size: 28),
+                              ),
+                            ]),
+                          ],
                         ),
-                        MarkerLayer(markers: [
-                          if (hasFarmer)
-                            Marker(
-                              point: LatLng(delivery.farmerLatitude!, delivery.farmerLongitude!),
-                              width: 30,
-                              height: 30,
-                              child: const Icon(Icons.agriculture, color: Colors.blue, size: 24),
-                            ),
-                          if (hasCustomer)
-                            Marker(
-                              point: LatLng(delivery.customerLatitude!, delivery.customerLongitude!),
-                              width: 30,
-                              height: 30,
-                              child: const Icon(Icons.home, color: Colors.green, size: 24),
-                            ),
-                        ]),
+                        Positioned(
+                          bottom: 8,
+                          right: 8,
+                          child: MapZoomControls(mapController: _mapController),
+                        ),
                       ],
                     )
                   : Container(
@@ -336,45 +364,169 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
     );
   }
 
-  Widget _buildCustomerCard(DeliveryOrder delivery) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: Colors.green.shade50,
-              child: const Icon(Icons.person, color: Colors.green),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    delivery.customer?.name ?? 'Jane Customer',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    delivery.customer?.phone ?? 'No phone logged',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                  ),
-                ],
+  Widget _buildFarmerCard(DeliveryOrder delivery) {
+    final farmerName = delivery.farmer?.farmName ?? delivery.farmer?.name ?? 'Swarna Organic Farms';
+    final farmerContact = delivery.farmer?.name ?? 'Ramesh Patel (Farmer)';
+    final farmerPhone = (delivery.farmer?.phone != null && delivery.farmer!.phone.isNotEmpty) ? delivery.farmer!.phone : '+91 98480 22338';
+    final pickupStreet = delivery.pickupAddress?.street ?? 'Swarna Organic Farms, NH-16 Bypass, Guntur, AP';
+
+    return Container(
+      decoration: DeliveryTheme.cardDecoration(),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF7ED),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.agriculture_rounded, color: DeliveryTheme.orangePrimary, size: 22),
               ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.phone, color: Colors.green),
-              onPressed: () {
-                // Phone call simulation
-              },
-            ),
-          ],
-        ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'FARMER PICKUP CONTACT',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: DeliveryTheme.orangePrimary,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      farmerName,
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: DeliveryTheme.navyDark),
+                    ),
+                    Text(
+                      'Contact: $farmerContact • $farmerPhone',
+                      style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64748B), fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFDCFCE7),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.phone, color: Color(0xFF10B981), size: 18),
+                ),
+                onPressed: () {
+                  showAppSnackBar(context, 'Calling Farmer: $farmerPhone', type: SnackBarType.info);
+                },
+              ),
+            ],
+          ),
+          const Divider(height: 20),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.location_on_outlined, size: 16, color: Color(0xFF64748B)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  pickupStreet,
+                  style: GoogleFonts.plusJakartaSans(color: const Color(0xFF334155), fontSize: 12, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
+
+  Widget _buildCustomerCard(DeliveryOrder delivery) {
+    final customerName = delivery.customer?.name ?? 'Anil Kumar';
+    final customerPhone = (delivery.customer?.phone != null && delivery.customer!.phone.isNotEmpty) ? delivery.customer!.phone : '+91 91234 56789';
+    final dropStreet = delivery.deliveryAddress?.street ?? 'Flat 402, Koritepadu, Guntur, AP 522001';
+
+    return Container(
+      decoration: DeliveryTheme.cardDecoration(),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFECFDF5),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.person_pin_circle_rounded, color: Color(0xFF10B981), size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'CUSTOMER DROP-OFF CONTACT',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF10B981),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      customerName,
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: DeliveryTheme.navyDark),
+                    ),
+                    Text(
+                      'Phone: $customerPhone',
+                      style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64748B), fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFDCFCE7),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.phone, color: Color(0xFF10B981), size: 18),
+                ),
+                onPressed: () {
+                  showAppSnackBar(context, 'Calling Customer: $customerPhone', type: SnackBarType.info);
+                },
+              ),
+            ],
+          ),
+          const Divider(height: 20),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.home_outlined, size: 16, color: Color(0xFF64748B)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  dropStreet,
+                  style: GoogleFonts.plusJakartaSans(color: const Color(0xFF334155), fontSize: 12, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Widget _buildActionButton(DeliveryOrder delivery, DeliveryOrdersState state) {
     if (state.isPerformingAction) {
@@ -445,24 +597,58 @@ class _DeliveryDetailScreenState extends ConsumerState<DeliveryDetailScreen> {
           ],
         );
       case DeliveryOrderStatus.pickedUp:
-        return SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: ElevatedButton(
-            onPressed: () => _startTransit(delivery.id),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
-            child: const Text('Start Transit to Customer', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          ),
+        return Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push('/delivery-navigation', extra: delivery),
+                  icon: const Icon(Icons.navigation_outlined, color: DeliveryTheme.orangePrimary),
+                  label: Text('Open GPS Map', style: GoogleFonts.plusJakartaSans(color: DeliveryTheme.orangePrimary, fontWeight: FontWeight.bold)),
+                  style: OutlinedButton.styleFrom(side: const BorderSide(color: DeliveryTheme.orangePrimary)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () => _startTransit(delivery.id),
+                  style: ElevatedButton.styleFrom(backgroundColor: DeliveryTheme.orangePrimary, foregroundColor: Colors.white),
+                  child: const Text('Start Transit', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+          ],
         );
       case DeliveryOrderStatus.outForDelivery:
-        return SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: ElevatedButton(
-            onPressed: () => _showOtpDialog(delivery.id),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
-            child: const Text('Verify & Complete Delivery', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          ),
+        return Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push('/delivery-navigation', extra: delivery),
+                  icon: const Icon(Icons.navigation_outlined, color: DeliveryTheme.orangePrimary),
+                  label: Text('Open GPS Map', style: GoogleFonts.plusJakartaSans(color: DeliveryTheme.orangePrimary, fontWeight: FontWeight.bold)),
+                  style: OutlinedButton.styleFrom(side: const BorderSide(color: DeliveryTheme.orangePrimary)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () => _showOtpDialog(delivery.id),
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981), foregroundColor: Colors.white),
+                  child: const Text('Verify Delivery', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+          ],
         );
       case DeliveryOrderStatus.delivered:
         return SizedBox(

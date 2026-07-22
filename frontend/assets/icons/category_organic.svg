@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Wooden pot/crate -->
+  <path d="M18 36L22 52C23 54 25 56 27 56H37C39 56 41 54 42 52L46 36H18Z" fill="#A1887F"/>
+  <path d="M18 36L22 52C23 54 25 56 27 56H32V36H18Z" fill="#8D6E63" opacity="0.3"/>
+  <!-- Pot rim -->
+  <rect x="16" y="32" width="32" height="5" rx="1.5" fill="#8D6E63"/>
+
+  <!-- Sprouting Leaves -->
+  <!-- Left Leaf -->
+  <path d="M32 32C24 32 18 24 20 16C28 14 32 24 32 32Z" fill="#81C784"/>
+  <path d="M32 32C28 32 24 28 24 22" stroke="#4CAF50" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Right Leaf -->
+  <path d="M32 32C40 32 46 24 44 16C36 14 32 24 32 32Z" fill="#4CAF50"/>
+  <path d="M32 32C36 32 40 28 40 22" stroke="#2E7D32" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Center sprout -->
+  <path d="M32 32C32 32 28 20 32 10C36 20 32 32 32 32Z" fill="#66BB6A"/>
+  <path d="M32 32L32 12" stroke="#388E3C" stroke-width="1.5"/>
+
+  <!-- Ladybug accent -->
+  <circle cx="40" cy="46" r="3" fill="#E53935"/>
+  <circle cx="41" cy="45" r="1" fill="black"/>
+  <circle cx="39" cy="47" r="0.5" fill="black"/>
+</svg>

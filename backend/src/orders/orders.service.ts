@@ -263,12 +263,20 @@ export class OrdersService {
             });
           }
         } else if (status === 'CANCELLED') {
+          // Determine if order was previously CONFIRMED (stock already decremented)
+          const wasConfirmed = ['CONFIRMED', 'ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY'].includes(order.status);
           for (const item of order.items) {
+            const updateData: any = {};
+            if (wasConfirmed) {
+              // Restore currentStock that was decremented on CONFIRMED
+              updateData.currentStock = { increment: item.quantity };
+            } else {
+              // Order was only PENDING — release the reserved stock
+              updateData.reservedStock = { decrement: item.quantity };
+            }
             await tx.inventory.update({
               where: { productId: item.productId },
-              data: {
-                reservedStock: { decrement: item.quantity },
-              },
+              data: updateData,
             });
           }
         }
@@ -381,34 +389,11 @@ export class OrdersService {
   }
 
   private async _autoProgressOrder(orderId: string) {
-    const delayMs = this.configService.get<number>('orders.transitionDelayMs') || 120000;
-    const stages = ['PREPARING', 'READY_FOR_PICKUP', 'DELIVERED'];
-
-    this.logger.log(`Starting auto-progression for order ${orderId} (delay: ${delayMs}ms)`);
-
-    for (const stage of stages) {
-      await new Promise(resolve => setTimeout(resolve, delayMs));
-
-      // Check if order was cancelled in the meantime
-      const currentOrder = await this.prisma.order.findUnique({ where: { id: orderId } });
-      if (!currentOrder || currentOrder.status === 'CANCELLED' || currentOrder.status === 'REJECTED') {
-        this.logger.log(`Auto-progression halted for order ${orderId} as it was cancelled/rejected.`);
-        return;
-      }
-
-      await this.prisma.$transaction(async (tx) => {
-        await tx.order.update({
-          where: { id: orderId },
-          data: { status: stage as any },
-        });
-
-        await tx.orderItem.updateMany({
-          where: { orderId: orderId },
-          data: { status: stage as any },
-        });
-      });
-
-      this.logger.log(`Order ${orderId} automatically transitioned to ${stage}`);
-    }
+    // Auto-progression has been disabled.
+    // Order status must be updated manually:
+    //   - FARMER: ACCEPTED → PREPARING → READY_FOR_PICKUP (via PATCH /orders/:id/status)
+    //   - DELIVERY PARTNER: Handles pickup and delivery transitions
+    // This ensures the real-world delivery workflow is preserved.
+    this.logger.log(`Order ${orderId} accepted. Manual status progression required.`);
   }
 }

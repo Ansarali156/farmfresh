@@ -31,7 +31,7 @@ class PostgresAdminRepository implements AdminRepository {
     if (res.statusCode == 200 && res.data['success'] == true) {
       return AdminDashboardModel.fromJson(res.data['data'] as Map<String, dynamic>);
     }
-    throw Exception(res.data['message'] ?? 'Failed to load admin dashboard');
+    throw Exception((res.data is Map ? res.data['message'] : null) ?? 'Failed to load admin dashboard');
   }
 
   @override

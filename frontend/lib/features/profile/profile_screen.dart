@@ -1,17 +1,14 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/app_providers.dart';
-import '../../providers/profile_image_provider.dart';
-import '../../core/widgets/profile_image_picker_dialog.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/services/api_client.dart';
+import '../../core/widgets/user_avatar_widget.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -35,13 +32,13 @@ class ProfileScreen extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        image: DecorationImage(
-          image: const AssetImage('assets/images/basket_vegetables.jpg'),
-          fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(0.3),
-            BlendMode.darken,
-          ),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFFF2F8F4),
+            const Color(0xFFE6F2EA),
+          ],
         ),
       ),
       child: Scaffold(
@@ -64,8 +61,32 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
+  static String _getInitials(String name) {
+    if (name.isEmpty) return 'U';
+    final parts = name.trim().split(' ');
+    if (parts.length > 1) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return name.substring(0, name.length > 1 ? 2 : 1).toUpperCase();
+  }
+
+  static Color _getAvatarColor(String name) {
+    final colors = [
+      const Color(0xFFE50914), // Netflix Red
+      const Color(0xFF0071EB), // Blue
+      const Color(0xFFF4B400), // Yellow
+      const Color(0xFF0F9D58), // Green
+      const Color(0xFF9C27B0), // Purple
+      const Color(0xFFFF5722), // Deep Orange
+    ];
+    int hash = 0;
+    for (int i = 0; i < name.length; i++) {
+      hash = name.codeUnitAt(i) + ((hash << 5) - hash);
+    }
+    return colors[hash.abs() % colors.length];
+  }
+
   static Widget _buildProfileHeader(BuildContext context, dynamic user, WidgetRef ref) {
-    final profileImage = ref.watch(profileImageProvider(user.id));
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
@@ -90,88 +111,10 @@ class ProfileScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              GestureDetector(
-                onTap: () {
-                  ProfileImagePickerDialog.show(
-                    context,
-                    userId: user.id,
-                    onImageSelected: (base64Image, scale, dx, dy) {
-                      ref.read(profileImageProvider(user.id).notifier).updateProfileImage(
-                            base64Image,
-                            scale: scale,
-                            dx: dx,
-                            dy: dy,
-                          );
-                      _uploadProfilePicture(context, ref, user.id, base64Image);
-                    },
-                  );
-                },
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFE8F5E9), width: 3),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x0F2E5C45),
-                            offset: Offset(0, 4),
-                            blurRadius: 10,
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: profileImage != null && profileImage.image.isNotEmpty
-                            ? (profileImage.image.startsWith('http')
-                                ? Image.network(
-                                    profileImage.image,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Transform.translate(
-                                    offset: Offset(profileImage.dx, profileImage.dy),
-                                    child: Transform.scale(
-                                      scale: profileImage.scale,
-                                      child: Image.memory(
-                                        base64Decode(
-                                          profileImage.image.contains(',')
-                                              ? profileImage.image.split(',')[1]
-                                              : profileImage.image,
-                                        ),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ))
-                            : (user.avatar != null && user.avatar!.isNotEmpty && !user.avatar!.contains('dicebear'))
-                                ? Image.network(
-                                    user.avatar!,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Image.network(
-                                    'https://api.dicebear.com/7.x/adventurer/svg?seed=${user.name}',
-                                    fit: BoxFit.cover,
-                                  ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF2E7D32),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          color: Colors.white,
-                          size: 14,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              UserAvatarWidget(
+                user: user,
+                size: 80,
+                onTap: () => context.push('/edit-profile'),
               ),
               const SizedBox(height: 12),
               Text(
@@ -271,6 +214,15 @@ class ProfileScreen extends ConsumerWidget {
                 subtitle: 'Manage your addresses',
                 onTap: () => context.push('/addresses'),
               ),
+              const Divider(height: 1, color: Color(0xFFF3F3F3)),
+              _menuTile(
+                context,
+                icon: Icons.support_agent_outlined,
+                title: 'Help & Support / Queries',
+                subtitle: 'Submit support tickets & track resolution',
+                onTap: () => context.push('/support'),
+              ),
+
               const Divider(height: 1, color: Color(0xFFF3F3F3)),
               _menuTile(
                 context,
@@ -426,7 +378,7 @@ class ProfileScreen extends ConsumerWidget {
 
         ref.read(authProvider.notifier).clearMessages();
       } else {
-        throw Exception(response.data['message'] ?? 'Unknown error occurred');
+        throw Exception((response.data is Map ? response.data['message'] : null) ?? 'Unknown error occurred');
       }
     } catch (e) {
       if (context.mounted) {

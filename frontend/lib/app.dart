@@ -10,15 +10,15 @@ class EcommerceApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouter);
-    final themeMode = ref.watch(themeProvider);
+
 
     return MaterialApp.router(
       title: 'FarmFresh App',
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode,
+      themeMode: ThemeMode.light,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );
+
   }
 }

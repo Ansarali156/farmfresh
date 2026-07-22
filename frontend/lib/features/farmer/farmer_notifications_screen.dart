@@ -133,7 +133,7 @@ class _FarmerNotificationsScreenState
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF23312B)),
             onPressed: () => context.pop(),
           ),
           actions: [

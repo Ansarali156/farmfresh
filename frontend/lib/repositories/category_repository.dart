@@ -39,7 +39,7 @@ class PostgresCategoryRepository implements CategoryRepository {
     if (res.statusCode == 201 && res.data['success'] == true) {
       return CategoryModel.fromJson(res.data['data'] as Map<String, dynamic>);
     }
-    throw Exception(res.data['message'] ?? 'Failed to create category');
+    throw Exception((res.data is Map ? res.data['message'] : null) ?? 'Failed to create category');
   }
 
   @override
@@ -48,14 +48,14 @@ class PostgresCategoryRepository implements CategoryRepository {
     if (res.statusCode == 200 && res.data['success'] == true) {
       return CategoryModel.fromJson(res.data['data'] as Map<String, dynamic>);
     }
-    throw Exception(res.data['message'] ?? 'Failed to update category');
+    throw Exception((res.data is Map ? res.data['message'] : null) ?? 'Failed to update category');
   }
 
   @override
   Future<void> deleteCategory(String id) async {
     final res = await _apiClient.dio.delete('/categories/$id');
     if (res.statusCode != 200) {
-      throw Exception(res.data['message'] ?? 'Failed to delete category');
+      throw Exception((res.data is Map ? res.data['message'] : null) ?? 'Failed to delete category');
     }
   }
 
@@ -65,6 +65,6 @@ class PostgresCategoryRepository implements CategoryRepository {
     if (res.statusCode == 200 && res.data['success'] == true) {
       return CategoryModel.fromJson(res.data['data'] as Map<String, dynamic>);
     }
-    throw Exception(res.data['message'] ?? 'Failed to update category status');
+    throw Exception((res.data is Map ? res.data['message'] : null) ?? 'Failed to update category status');
   }
 }

@@ -1,50 +1,19 @@
-import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../models/product_model.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/category_provider.dart';
+import '../../models/category_model.dart';
 import '../../core/utils/app_snackbar.dart';
-
-String _suggestImage(String name) {
-  final lower = name.toLowerCase();
-  if (lower.contains('tomato')) return 'https://images.unsplash.com/photo-1595855759920-86582396756a?w=400';
-  if (lower.contains('onion')) return 'https://images.unsplash.com/photo-1618512496248-a07fe83766a5?w=400';
-  if (lower.contains('mango')) return 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=400';
-  if (lower.contains('rice')) return 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400';
-  if (lower.contains('apple')) return 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400';
-  if (lower.contains('carrot')) return 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400';
-  if (lower.contains('milk')) return 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400';
-  if (lower.contains('egg')) return 'https://images.unsplash.com/photo-1516448424440-9dbca97779c1?w=400';
-  if (lower.contains('banana')) return 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400';
-  if (lower.contains('potato')) return 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400';
-  if (lower.contains('orange')) return 'https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?w=400';
-  if (lower.contains('lemon')) return 'https://images.unsplash.com/photo-1590502593747-42a996133562?w=400';
-  if (lower.contains('strawberry')) return 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=400';
-  if (lower.contains('grapes')) return 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=400';
-  if (lower.contains('watermelon')) return 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400';
-  if (lower.contains('chili') || lower.contains('chilli')) return 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400';
-  if (lower.contains('cabbage')) return 'https://images.unsplash.com/photo-1582515073490-39981397c445?w=400';
-  if (lower.contains('spinach')) return 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400';
-  if (lower.contains('brinjal') || lower.contains('eggplant')) return 'https://images.unsplash.com/photo-1615484477778-ca3b77940c25?w=400';
-  if (lower.contains('potato')) return 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400';
-  if (lower.contains('chicken')) return 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=400';
-  return 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=400';
-}
-
-const _availabilityOptions = [
-  {'value': 'ACTIVE', 'label': 'Active (Visible & Approved)'},
-  {'value': 'IN_STOCK', 'label': 'In Stock'},
-  {'value': 'OUT_OF_STOCK', 'label': 'Out of Stock'},
-  {'value': 'HIDDEN', 'label': 'Hidden (Archived)'},
-];
+import '../../core/theme/colors.dart';
 
 class FarmerAddEditProductScreen extends ConsumerStatefulWidget {
   final ProductModel? product;
+
   const FarmerAddEditProductScreen({super.key, this.product});
 
   @override
@@ -53,85 +22,200 @@ class FarmerAddEditProductScreen extends ConsumerStatefulWidget {
 
 class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProductScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _priceController = TextEditingController();
-  final _stockController = TextEditingController();
-  final _unitController = TextEditingController();
 
-  String _selectedCategoryId = '';
-  String _selectedCategoryName = '';
-  String _availabilityStatus = 'IN_STOCK';
-  String _imageUrl = '';
-  String _currency = '\u20B9';
+  late final TextEditingController _nameController;
+  late final TextEditingController _descriptionController;
+  late final TextEditingController _priceController;
+  late final TextEditingController _stockController;
+  late final TextEditingController _weightController;
+  late final TextEditingController _originController;
+  late final TextEditingController _imageController;
+  
+  late String _selectedCategory;
+  late String _availabilityStatus;
+
+  bool _isOrganic = false;
+  bool _isFeatured = false;
+  bool _isSeasonal = false;
   bool _isSaving = false;
-  bool _generatingDesc = false;
+  bool _isGeneratingAi = false;
   bool _isUploadingImage = false;
+
   Uint8List? _pickedImageBytes;
   String? _pickedImageFilename;
 
+  // AI Assistant Engine State
+  String _aiSuggestedPrice = '';
+  List<String> _aiKeywords = [];
+  Map<String, String> _aiSpecs = {};
+  int _listingHealthScore = 60;
+  String? _aiCategorySuggestion;
+
   bool get _isEditMode => widget.product != null;
+
+  static const List<String> AVAILABILITY_OPTIONS = [
+    'ACTIVE',
+    'IN_STOCK',
+    'OUT_OF_STOCK',
+    'HIDDEN'
+  ];
+
+  static String suggestImage(String name) {
+    final lower = name.toLowerCase();
+    if (lower.contains('tomato')) return 'https://images.unsplash.com/photo-1595855759920-86582396756a?w=600';
+    if (lower.contains('onion')) return 'https://images.unsplash.com/photo-1618512496248-a07fe83766a5?w=600';
+    if (lower.contains('mango')) return 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=600';
+    if (lower.contains('rice')) return 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600';
+    if (lower.contains('apple')) return 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600';
+    if (lower.contains('carrot')) return 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=600';
+    if (lower.contains('milk')) return 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=600';
+    if (lower.contains('egg')) return 'https://images.unsplash.com/photo-1516448424440-9dbca97779c1?w=600';
+    if (lower.contains('banana')) return 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=600';
+    if (lower.contains('potato')) return 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=600';
+    if (lower.contains('orange')) return 'https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?w=600';
+    if (lower.contains('lemon')) return 'https://images.unsplash.com/photo-1590502593747-42a996133562?w=600';
+    if (lower.contains('strawberry')) return 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=600';
+    if (lower.contains('grapes')) return 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=600';
+    if (lower.contains('watermelon')) return 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600';
+    if (lower.contains('chili') || lower.contains('chilli')) return 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600';
+    if (lower.contains('cabbage')) return 'https://images.unsplash.com/photo-1582515073490-39981397c445?w=600';
+    if (lower.contains('spinach')) return 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=600';
+    return 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=600';
+  }
+
 
   @override
   void initState() {
     super.initState();
     final p = widget.product;
-    if (p != null) {
-      _nameController.text = p.name;
-      _descriptionController.text = p.description;
-      _priceController.text = p.originalPrice.toStringAsFixed(2);
-      _stockController.text = p.stock.toStringAsFixed(0);
-      _unitController.text = p.weight;
-      _selectedCategoryName = p.category;
-      _selectedCategoryId = p.categoryId ?? '';
-      _imageUrl = p.image;
+    _nameController = TextEditingController(text: p?.name ?? '');
+    _descriptionController = TextEditingController(text: p?.description ?? '');
+    _priceController = TextEditingController(text: p != null ? p.originalPrice.toStringAsFixed(0) : '');
+    _stockController = TextEditingController(text: p != null ? p.stock.toStringAsFixed(0) : '');
+    _weightController = TextEditingController(text: p?.weight ?? '1 kg');
+    _originController = TextEditingController(text: p?.origin ?? 'Local Farm');
+    _imageController = TextEditingController(text: p?.image ?? '');
+    _selectedCategory = p?.category ?? 'Vegetables';
+    _availabilityStatus = p?.status ?? 'ACTIVE';
+    _isOrganic = p?.organic ?? true;
+    _isFeatured = p?.featured ?? false;
+    _isSeasonal = p?.seasonal ?? false;
 
-      if (p.stock <= 0) {
-        _availabilityStatus = 'OUT_OF_STOCK';
-      } else if (p.status == 'ARCHIVED') {
-        _availabilityStatus = 'HIDDEN';
-      } else {
-        _availabilityStatus = 'IN_STOCK';
-      }
+    _nameController.addListener(_onNameChanged);
+    _descriptionController.addListener(_recalculateHealthScore);
+    _priceController.addListener(_recalculateHealthScore);
+
+    if (_nameController.text.isNotEmpty) {
+      _runAiAnalysis(_nameController.text);
     }
   }
 
   @override
   void dispose() {
+    _nameController.removeListener(_onNameChanged);
+    _descriptionController.removeListener(_recalculateHealthScore);
+    _priceController.removeListener(_recalculateHealthScore);
     _nameController.dispose();
     _descriptionController.dispose();
     _priceController.dispose();
     _stockController.dispose();
-    _unitController.dispose();
+    _weightController.dispose();
+    _originController.dispose();
+    _imageController.dispose();
     super.dispose();
   }
 
-  void _onNameChanged(String value) {
-    if (value.length > 2 && _pickedImageBytes == null && (_imageUrl.isEmpty || _imageUrl.startsWith('https://images.unsplash.com'))) {
-      setState(() {
-        _imageUrl = _suggestImage(value);
-      });
+  void _onNameChanged() {
+    final name = _nameController.text.trim();
+    if (name.length > 2) {
+      if (_imageController.text.isEmpty || _imageController.text.contains('unsplash')) {
+        _imageController.text = suggestImage(name);
+      }
+      _runAiAnalysis(name);
     }
   }
 
-  void _handleAutoGenerateDescription() {
-    if (_nameController.text.trim().isEmpty) {
-      showAppSnackBar(context, 'Please enter a product name first', type: SnackBarType.error);
-      return;
+  void _runAiAnalysis(String name) {
+    final lower = name.toLowerCase();
+    
+    // Category Auto-suggestion
+    if (lower.contains('apple') || lower.contains('mango') || lower.contains('banana') || lower.contains('orange') || lower.contains('grape')) {
+      _aiCategorySuggestion = 'Fruits';
+    } else if (lower.contains('rice') || lower.contains('wheat') || lower.contains('millet') || lower.contains('grain')) {
+      _aiCategorySuggestion = 'Grains & Millets';
+    } else if (lower.contains('milk') || lower.contains('curd') || lower.contains('paneer') || lower.contains('cheese') || lower.contains('ghee')) {
+      _aiCategorySuggestion = 'Dairy';
+    } else {
+      _aiCategorySuggestion = 'Vegetables';
     }
-    setState(() => _generatingDesc = true);
-    Future.delayed(const Duration(milliseconds: 850), () {
-      if (!mounted) return;
-      final name = _nameController.text.trim();
-      _descriptionController.text =
-          'Fresh organic $name, hand-harvested directly from local farms. Naturally grown without harmful chemical pesticides, rich in essential vitamins, minerals, and flavor. Ideal for healthy daily meals, salads, or cooking.';
-      setState(() => _generatingDesc = false);
-      showAppSnackBar(context, 'Description generated successfully!', type: SnackBarType.success);
+
+    // AI Pricing range suggestion
+    if (lower.contains('tomato')) {
+      _aiSuggestedPrice = '₹35 - ₹55 / kg';
+    } else if (lower.contains('mango')) {
+      _aiSuggestedPrice = '₹120 - ₹180 / kg';
+    } else if (lower.contains('rice')) {
+      _aiSuggestedPrice = '₹60 - ₹95 / kg';
+    } else if (lower.contains('milk')) {
+      _aiSuggestedPrice = '₹50 - ₹70 / L';
+    } else {
+      _aiSuggestedPrice = '₹40 - ₹80 / unit';
+    }
+
+    // AI Smart Tags
+    _aiKeywords = [
+      '#FarmFresh',
+      '#100%Organic',
+      if (_isOrganic) '#PesticideFree',
+      '#A-GradeQuality',
+      '#LocallyHarvested',
+      if (_isSeasonal) '#SeasonalSpecial'
+    ];
+
+    // AI Specs auto fill
+    _aiSpecs = {
+      'Calories': lower.contains('mango') ? '60 kcal/100g' : (lower.contains('rice') ? '130 kcal/100g' : '18 kcal/100g'),
+      'Vitamins': 'Vitamin A, C, Potassium',
+      'Shelf Life': lower.contains('milk') ? '3 Days (Refrigerated)' : '7 - 10 Days',
+      'Harvest Date': 'Harvested Fresh Today'
+    };
+
+    _recalculateHealthScore();
+  }
+
+  void _recalculateHealthScore() {
+    int score = 40;
+    if (_nameController.text.trim().length > 3) score += 15;
+    if (_descriptionController.text.trim().length > 20) score += 20;
+    if (_priceController.text.trim().isNotEmpty && double.tryParse(_priceController.text) != null && double.parse(_priceController.text) > 0) score += 15;
+    if (_imageController.text.trim().isNotEmpty) score += 10;
+    setState(() {
+      _listingHealthScore = score.clamp(0, 100);
     });
   }
 
+  Future<void> _handleAutoGenerateDescription() async {
+    if (_nameController.text.trim().isEmpty) {
+      showAppSnackBar(context, 'Please enter a product name first', type: SnackBarType.warning);
+      return;
+    }
+    setState(() => _isGeneratingAi = true);
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+
+    final name = _nameController.text.trim();
+    final generated = 'Fresh, premium quality $name sourced directly from verified local farms. Hand-harvested at peak ripeness, naturally grown without synthetic pesticides or harmful chemicals. Rich in vital nutrients, vitamins, and natural flavor. Perfect for healthy daily home meals, gourmet cooking, and family wellness.';
+    
+    setState(() {
+      _descriptionController.text = generated;
+      _isGeneratingAi = false;
+    });
+
+    showAppSnackBar(context, 'AI Description generated successfully!', type: SnackBarType.success);
+  }
+
   static const _allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
-  static const _maxFileSize = 5 * 1024 * 1024; // 5MB
+  static const _maxFileSize = 5 * 1024 * 1024;
 
   Future<void> _pickProductImage() async {
     try {
@@ -151,11 +235,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
 
       if (!_allowedMimeTypes.contains(mimeType)) {
         if (mounted) {
-          showAppSnackBar(
-            context,
-            'Unsupported file type. Please choose JPG, PNG, or WebP.',
-            type: SnackBarType.error,
-          );
+          showAppSnackBar(context, 'Unsupported file type. Please choose JPG, PNG, or WebP.', type: SnackBarType.error);
         }
         setState(() => _isUploadingImage = false);
         return;
@@ -163,11 +243,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
 
       if (bytes.length > _maxFileSize) {
         if (mounted) {
-          showAppSnackBar(
-            context,
-            'File too large. Maximum size is 5MB.',
-            type: SnackBarType.error,
-          );
+          showAppSnackBar(context, 'File too large. Maximum size is 5MB.', type: SnackBarType.error);
         }
         setState(() => _isUploadingImage = false);
         return;
@@ -179,7 +255,7 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
       setState(() {
         _pickedImageBytes = bytes;
         _pickedImageFilename = filename;
-        _imageUrl = '';
+        _imageController.text = '';
         _isUploadingImage = false;
       });
 
@@ -194,44 +270,41 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
     }
   }
 
-  String _resolveCategoryId(List categories) {
-    if (_selectedCategoryId.isNotEmpty) return _selectedCategoryId;
-    for (final c in categories) {
-      if (c.name.toLowerCase() == _selectedCategoryName.toLowerCase()) {
-        return c.id;
-      }
-    }
-    return categories.isNotEmpty ? categories.first.id : '';
-  }
-
   Future<void> _saveProduct() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      showAppSnackBar(context, 'Please fix validation errors first', type: SnackBarType.error);
+      return;
+    }
+
     setState(() => _isSaving = true);
 
     final categories = ref.read(categoryProvider).categories;
-    final catId = _resolveCategoryId(categories);
+    final matchedCategory = categories.firstWhere(
+      (c) => c.name.toLowerCase() == _selectedCategory.toLowerCase(),
+      orElse: () => categories.isNotEmpty ? categories.first : CategoryModel(id: '', name: '', slug: ''),
+    );
 
     final product = ProductModel(
       id: widget.product?.id ?? '',
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
-      price: double.tryParse(_priceController.text) ?? 0,
-      originalPrice: widget.product?.originalPrice ?? (double.tryParse(_priceController.text) ?? 0),
-      stock: double.tryParse(_stockController.text) ?? 0,
-      weight: _unitController.text.trim(),
-      category: _selectedCategoryName.isNotEmpty
-          ? _selectedCategoryName
-          : (categories.isNotEmpty ? categories.first.name : ''),
-      origin: widget.product?.origin ?? '',
-      organic: widget.product?.organic ?? false,
-      featured: widget.product?.featured ?? false,
-      seasonal: widget.product?.seasonal ?? false,
-      image: _imageUrl.isNotEmpty ? _imageUrl : _suggestImage(_nameController.text),
-      farmName: widget.product?.farmName ?? '',
+      price: double.parse(_priceController.text),
+      originalPrice: widget.product?.originalPrice ?? double.parse(_priceController.text),
+      stock: double.parse(_stockController.text),
+      weight: _weightController.text.trim(),
+      category: _selectedCategory,
+      origin: _originController.text.trim(),
+      organic: _isOrganic,
+      featured: _isFeatured,
+      seasonal: _isSeasonal,
+      image: _pickedImageBytes != null
+          ? (_imageController.text.trim().isNotEmpty ? _imageController.text.trim() : suggestImage(_nameController.text.trim()))
+          : (_imageController.text.trim().isNotEmpty ? _imageController.text.trim() : suggestImage(_nameController.text.trim())),
+      farmName: widget.product?.farmName ?? 'Green Valley Organic Farms',
       farmerId: widget.product?.farmerId,
       slug: widget.product?.slug ?? '',
-      categoryId: catId.isNotEmpty ? catId : widget.product?.categoryId,
-      status: widget.product?.status ?? 'PENDING_APPROVAL',
+      categoryId: matchedCategory.id.isNotEmpty ? matchedCategory.id : widget.product?.categoryId,
+      status: _isEditMode ? (_availabilityStatus == 'HIDDEN' ? 'ARCHIVED' : (widget.product?.status ?? 'APPROVED')) : 'PENDING_APPROVAL',
     );
 
     bool success;
@@ -255,112 +328,103 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
     if (success) {
       showAppSnackBar(
         context,
-        _isEditMode ? 'Product updated successfully' : 'Product created successfully',
+        _isEditMode ? 'Product updated successfully' : 'Product submitted for Admin Approval!',
         type: SnackBarType.success,
       );
       context.pop();
-    } else {
-      showAppSnackBar(context, 'Failed to save product', type: SnackBarType.error);
+    }
+ else {
+      showAppSnackBar(context, 'Failed to save product. Please try again.', type: SnackBarType.error);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth > 900;
     final categoryState = ref.watch(categoryProvider);
-    final categories = categoryState.categories;
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFFF2F8F4), Color(0xFFE6F2EA)],
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAF8),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 1,
+        shadowColor: const Color(0x0F000000),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF23312B)),
+          onPressed: () => context.pop(),
         ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
-            onPressed: () => context.pop(),
-          ),
-          title: Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  _isEditMode ? 'Edit Product' : 'Add New Product',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: const Color(0xFF23312B),
+                  ),
                 ),
-                child: const Icon(Icons.auto_awesome, size: 18, color: Color(0xFF10B981)),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                _isEditMode ? 'Modify Product Details' : 'Add New Product Crop',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 20, color: const Color(0xFF23312B)),
-              ),
-            ],
-          ),
-        ),
-        body: Form(
-          key: _formKey,
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  offset: const Offset(0, 10),
-                  blurRadius: 30,
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F5E9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.auto_awesome, color: Color(0xFF2E7D32), size: 12),
+                      const SizedBox(width: 4),
+                      Text(
+                        'AI Powered',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF2E7D32),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: ListView(
-                padding: const EdgeInsets.all(20),
-                children: [
-                  _buildImageSection(),
-                  const SizedBox(height: 20),
-                  _buildTextField(
-                    controller: _nameController,
-                    label: 'Product Name',
-                    icon: Icons.spa_outlined,
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Product name is required' : null,
-                    onChanged: _onNameChanged,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildDescriptionSection(),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(child: _buildPriceField()),
-                      const SizedBox(width: 16),
-                      Expanded(child: _buildStockField()),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _unitController,
-                    label: 'Unit Size',
-                    icon: Icons.scale_outlined,
-                    hint: 'e.g. 1 kg, 500 g, 1 Dozen',
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Unit size is required' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildCategoryDropdown(categories),
-                  const SizedBox(height: 16),
-                  _buildAvailabilityDropdown(),
-                  const SizedBox(height: 28),
-                  _buildSaveButton(),
-                ],
+            Text(
+              'Publish fresh agricultural produce with automated AI listing optimization',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 11,
+                color: const Color(0xFF647C72),
               ),
+            ),
+          ],
+        ),
+      ),
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1200),
+
+              child: isDesktop
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 7, child: _buildFormCard(categoryState)),
+                        const SizedBox(width: 24),
+                        Expanded(flex: 5, child: _buildAiAssistantPanel()),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        _buildAiAssistantPanel(),
+                        const SizedBox(height: 20),
+                        _buildFormCard(categoryState),
+                      ],
+                    ),
             ),
           ),
         ),
@@ -368,340 +432,511 @@ class _FarmerAddEditProductScreenState extends ConsumerState<FarmerAddEditProduc
     );
   }
 
-  void _removePickedImage() {
-    setState(() {
-      _pickedImageBytes = null;
-      _pickedImageFilename = null;
-      _imageUrl = _suggestImage(_nameController.text);
-    });
-  }
-
-  Widget _buildImageSection() {
+  Widget _buildFormCard(dynamic categoryState) {
     final hasPickedBytes = _pickedImageBytes != null && _pickedImageBytes!.isNotEmpty;
-    final hasNetworkUrl = _imageUrl.isNotEmpty && _imageUrl.startsWith('http');
-    final hasImage = hasPickedBytes || hasNetworkUrl;
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFAFBF9),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5EDE7), width: 1.5),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFECECEC)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A2E5C45),
+            offset: Offset(0, 8),
+            blurRadius: 24,
+          ),
+        ],
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Product Cover Image',
-            style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 14, color: const Color(0xFF23312B)),
+          // 1. Cover Image Upload Box (Admin Portal Style)
+          Text('Product Cover Image', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: const Color(0xFF23312B))),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FBF9),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFD8E8DC), style: BorderStyle.solid),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 90,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: Colors.white,
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: hasPickedBytes
+                        ? Image.memory(_pickedImageBytes!, fit: BoxFit.cover)
+                        : _imageController.text.isNotEmpty
+                            ? Image.network(
+                                _imageController.text,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Icon(Icons.cloud_upload_outlined, color: Color(0xFF647C72), size: 36),
+                              )
+                            : const Icon(Icons.cloud_upload_outlined, color: Color(0xFF647C72), size: 36),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Cover Image Preview', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13, color: const Color(0xFF23312B))),
+                      const SizedBox(height: 2),
+                      Text(
+                        hasPickedBytes ? 'Custom image selected' : 'Auto-suggested from produce name or upload custom image',
+                        style: GoogleFonts.plusJakartaSans(fontSize: 11, color: const Color(0xFF647C72)),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: _isUploadingImage ? null : _pickProductImage,
+                            icon: _isUploadingImage
+                                ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFF2E7D32)))
+                                : Icon(hasPickedBytes ? Icons.swap_horiz : Icons.photo_camera, size: 16, color: const Color(0xFF2E7D32)),
+                            label: Text(_isUploadingImage ? 'Selecting...' : (hasPickedBytes ? 'Replace Image' : 'Choose File'), style: GoogleFonts.plusJakartaSans(color: const Color(0xFF2E7D32), fontWeight: FontWeight.bold, fontSize: 12)),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xFF2E7D32)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Custom Image URL field
+          TextFormField(
+            controller: _imageController,
+            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF23312B)),
+            decoration: _adminInputDecoration('Image URL', Icons.link),
+            onChanged: (_) => setState(() {}),
+          ),
+          const SizedBox(height: 16),
+
+          // 2. Product Name & Category Row
+          Row(
+            children: [
+              Expanded(
+                flex: 6,
+                child: TextFormField(
+                  controller: _nameController,
+                  style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF23312B)),
+                  decoration: _adminInputDecoration('Product Name *', Icons.spa_outlined),
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Product name is required' : null,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 4,
+                child: DropdownButtonFormField<String>(
+                  value: _selectedCategory,
+                  decoration: _adminInputDecoration('Category *', Icons.category_outlined),
+                  items: ['Vegetables', 'Fruits', 'Grains & Millets', 'Dairy', 'Organic Goods']
+                      .map((cat) => DropdownMenuItem(value: cat, child: Text(cat, style: GoogleFonts.plusJakartaSans(fontSize: 13))))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => _selectedCategory = val);
+                  },
+                ),
+              ),
+            ],
+          ),
+          if (_aiCategorySuggestion != null && _aiCategorySuggestion != _selectedCategory) ...[
+            const SizedBox(height: 6),
+            GestureDetector(
+              onTap: () => setState(() => _selectedCategory = _aiCategorySuggestion!),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: const Color(0xFFFFF3E0), borderRadius: BorderRadius.circular(8)),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.auto_awesome, color: Color(0xFFE28C43), size: 12),
+                    const SizedBox(width: 6),
+                    Text(
+                      'AI Suggestion: Switch category to "$_aiCategorySuggestion"? (Tap to apply)',
+                      style: GoogleFonts.plusJakartaSans(color: const Color(0xFFE28C43), fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+
+          // 3. Description Field with Auto-Generate AI Button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Product Description *', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13, color: const Color(0xFF647C72))),
+              TextButton.icon(
+                onPressed: _isGeneratingAi ? null : _handleAutoGenerateDescription,
+                icon: _isGeneratingAi
+                    ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF2E7D32)))
+                    : const Icon(Icons.auto_awesome, size: 14, color: Color(0xFF2E7D32)),
+                label: Text(_isGeneratingAi ? 'Generating...' : 'Auto-generate AI Description', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF2E7D32), fontWeight: FontWeight.bold, fontSize: 12)),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
-          Text(
-            hasImage ? 'Image selected — tap remove to replace' : 'Auto-suggested from name, or choose a custom file',
-            style: GoogleFonts.plusJakartaSans(fontSize: 12, color: const Color(0xFF647C72)),
+          TextFormField(
+            controller: _descriptionController,
+            maxLines: 3,
+            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF23312B)),
+            decoration: _adminInputDecoration('Describe fresh produce quality, origin & uses', Icons.description_outlined).copyWith(alignLabelWithHint: true),
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Description is required' : null,
           ),
-          const SizedBox(height: 12),
-          // Image preview with remove button
+          const SizedBox(height: 16),
+
+          // 4. Pricing & Stock & Unit Size
+          Row(
+            children: [
+              Expanded(
+                flex: 4,
+                child: TextFormField(
+                  controller: _priceController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF23312B)),
+                  decoration: _adminInputDecoration('Price *', Icons.currency_rupee).copyWith(
+                    prefixText: '₹ ',
+                    prefixStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFF2E7D32)),
+                  ),
+                  validator: (v) => (v == null || v.trim().isEmpty || double.tryParse(v) == null) ? 'Enter valid price' : null,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 4,
+                child: TextFormField(
+                  controller: _stockController,
+                  keyboardType: TextInputType.number,
+                  style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF23312B)),
+                  decoration: _adminInputDecoration('Stock Qty *', Icons.inventory_2_outlined),
+                  validator: (v) => (v == null || v.trim().isEmpty || double.tryParse(v) == null) ? 'Enter stock' : null,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 4,
+                child: TextFormField(
+                  controller: _weightController,
+                  style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF23312B)),
+                  decoration: _adminInputDecoration('Unit Size *', Icons.scale_outlined),
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter unit' : null,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // 5. Origin & Availability Status
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _originController,
+                  style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF23312B)),
+                  decoration: _adminInputDecoration('Farm Origin', Icons.location_on_outlined),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  value: _availabilityStatus,
+                  decoration: _adminInputDecoration('Status', Icons.check_circle_outline),
+                  items: AVAILABILITY_OPTIONS
+                      .map((opt) => DropdownMenuItem(value: opt, child: Text(opt.replaceAll('_', ' '), style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.bold))))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => _availabilityStatus = val);
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // 6. Badges & Switches
           Container(
-            width: double.infinity,
-            height: 180,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE5EDE7)),
-              color: Colors.white,
+              color: const Color(0xFFF5F9F6),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFE2EFE5)),
             ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              fit: StackFit.expand,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Image content
-                if (hasPickedBytes)
-                  Image.memory(_pickedImageBytes!, fit: BoxFit.cover)
-                else if (hasNetworkUrl)
-                  Image.network(
-                    _imageUrl,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (ctx, child, progress) {
-                      if (progress == null) return child;
-                      return const Center(child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF10B981)));
-                    },
-                    errorBuilder: (_, __, ___) => _imagePlaceholder(),
-                  )
-                else
-                  _imagePlaceholder(),
-                // Remove button (top-right)
-                if (hasImage)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: GestureDetector(
-                      onTap: _removePickedImage,
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.6),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.close, color: Colors.white, size: 16),
+                _buildSwitchOption('Organic Certified', _isOrganic, (v) => setState(() => _isOrganic = v)),
+                _buildSwitchOption('Featured Item', _isFeatured, (v) => setState(() => _isFeatured = v)),
+                _buildSwitchOption('Seasonal Crop', _isSeasonal, (v) => setState(() => _isSeasonal = v)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+
+          // 7. Submit Action Buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              OutlinedButton(
+                onPressed: () => context.pop(),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  side: const BorderSide(color: Color(0xFFCBD5E1)),
+                ),
+                child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64748B), fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton.icon(
+                onPressed: _isSaving ? null : _saveProduct,
+                icon: _isSaving
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Icon(Icons.publish, color: Colors.white, size: 18),
+                label: Text(
+                  _isSaving ? 'Saving...' : (_isEditMode ? 'Update Product' : 'Save & Publish Product'),
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.farmerPrimary,
+                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 2,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAiAssistantPanel() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF1E293B),
+            Color(0xFF0F172A),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x1F000000),
+            offset: Offset(0, 10),
+            blurRadius: 28,
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E7D32).withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF4ADE80), width: 1.5),
+                ),
+                child: const Icon(Icons.auto_awesome, color: Color(0xFF4ADE80), size: 20),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'FarmFresh AI Assistant',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    'Smart listing optimization & quality analysis',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      color: const Color(0xFF94A3B8),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Listing Quality Health Score Bar
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF334155).withOpacity(0.5),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFF475569)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Listing Quality Score', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 12, color: const Color(0xFFE2E8F0))),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: _listingHealthScore >= 80 ? const Color(0xFF16A34A) : const Color(0xFFD97706),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$_listingHealthScore% Excellent',
+                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
                       ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: _listingHealthScore / 100,
+                    minHeight: 8,
+                    backgroundColor: const Color(0xFF475569),
+                    color: _listingHealthScore >= 80 ? const Color(0xFF4ADE80) : const Color(0xFFFBBF24),
                   ),
-                // Loading overlay
-                if (_isUploadingImage)
-                  Container(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    child: const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Market Price Recommendation Card
+          if (_aiSuggestedPrice.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0284C7).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.4)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.insights, color: Color(0xFF38BDF8), size: 22),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('AI Market Pricing Guidance', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 11, color: const Color(0xFF7DD3FC))),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Estimated Market Rate: $_aiSuggestedPrice',
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
+                        ),
+                      ],
                     ),
                   ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Choose file button
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _isUploadingImage ? null : _pickProductImage,
-              icon: _isUploadingImage
-                  ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFF10B981)))
-                  : Icon(hasImage ? Icons.swap_horiz : Icons.photo_camera_outlined, size: 16),
-              label: Text(
-                _isUploadingImage
-                    ? 'Selecting...'
-                    : hasImage
-                        ? 'Replace Image'
-                        : 'Choose file',
-                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 12),
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF2E7D32),
-                side: const BorderSide(color: Color(0xFF2E7D32)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+            const SizedBox(height: 16),
+          ],
 
-  Widget _imagePlaceholder() {
-    return Container(
-      color: const Color(0xFFF5F7F5),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.cloud_upload_outlined, size: 40, color: const Color(0xFF8D99AE).withValues(alpha: 0.6)),
+          // SEO Keywords & Smart Tags
+          Text('AI Smart Tags & SEO Keywords', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 12, color: const Color(0xFF94A3B8))),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: _aiKeywords.map((tag) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF334155),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFF475569)),
+              ),
+              child: Text(tag, style: GoogleFonts.plusJakartaSans(fontSize: 11, color: const Color(0xFF38BDF8), fontWeight: FontWeight.bold)),
+            )).toList(),
+          ),
+          const SizedBox(height: 16),
+
+          // Auto-filled Nutritional Specifications Card
+          if (_aiSpecs.isNotEmpty) ...[
+            Text('Auto-filled Produce Specifications', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 12, color: const Color(0xFF94A3B8))),
             const SizedBox(height: 8),
-            Text('No image selected', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: const Color(0xFF8D99AE))),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDescriptionSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Product Description', style: GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 13, color: const Color(0xFF647C72))),
-            TextButton.icon(
-              onPressed: _generatingDesc ? null : _handleAutoGenerateDescription,
-              icon: _generatingDesc
-                  ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFF10B981)))
-                  : const Icon(Icons.auto_awesome, size: 14, color: Color(0xFF10B981)),
-              label: Text(
-                _generatingDesc ? 'Generating...' : 'Auto-generate',
-                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 12, color: const Color(0xFF10B981)),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFF334155)),
               ),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              child: Column(
+                children: _aiSpecs.entries.map((e) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(e.key, style: GoogleFonts.plusJakartaSans(fontSize: 11, color: const Color(0xFF94A3B8))),
+                      Text(e.value, style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFFF1F5F9))),
+                    ],
+                  ),
+                )).toList(),
               ),
             ),
           ],
-        ),
-        TextFormField(
-          controller: _descriptionController,
-          maxLines: 3,
-          style: GoogleFonts.plusJakartaSans(color: const Color(0xFF23312B), fontSize: 13, fontWeight: FontWeight.w600),
-          decoration: _inputDecoration('Describe your product...', null),
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) return 'Description is required';
-            if (value.trim().length < 10) return 'Description must be at least 10 characters';
-            return null;
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPriceField() {
-    return TextFormField(
-      controller: _priceController,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      style: GoogleFonts.plusJakartaSans(color: const Color(0xFF23312B), fontSize: 13, fontWeight: FontWeight.w600),
-      decoration: _inputDecoration('Price', null).copyWith(
-        prefixIcon: Container(
-          padding: const EdgeInsets.only(left: 12, right: 4),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _currency,
-              isDense: true,
-              style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 14, color: const Color(0xFF23312B)),
-              items: const [
-                DropdownMenuItem(value: '\u20B9', child: Text('\u20B9')),
-                DropdownMenuItem(value: '\$', child: Text('\$')),
-                DropdownMenuItem(value: '\u20AC', child: Text('\u20AC')),
-                DropdownMenuItem(value: '\u00A3', child: Text('\u00A3')),
-              ],
-              onChanged: (v) => setState(() => _currency = v ?? '\u20B9'),
-            ),
-          ),
-        ),
-        prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) return 'Required';
-        if (double.tryParse(value) == null) return 'Invalid';
-        if ((double.tryParse(value) ?? 0) <= 0) return 'Must be > 0';
-        return null;
-      },
-    );
-  }
-
-  Widget _buildStockField() {
-    return TextFormField(
-      controller: _stockController,
-      keyboardType: TextInputType.number,
-      style: GoogleFonts.plusJakartaSans(color: const Color(0xFF23312B), fontSize: 13, fontWeight: FontWeight.w600),
-      decoration: _inputDecoration('Stock Level', Icons.warehouse_outlined),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) return 'Required';
-        if (double.tryParse(value) == null) return 'Invalid';
-        if ((double.tryParse(value) ?? 0) < 0) return 'Must be >= 0';
-        return null;
-      },
-    );
-  }
-
-  Widget _buildCategoryDropdown(List categories) {
-    final validValue = categories.any((c) => c.name == _selectedCategoryName)
-        ? _selectedCategoryName
-        : (categories.isNotEmpty ? categories.first.name : null);
-
-    if (validValue != null && validValue != _selectedCategoryName) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() => _selectedCategoryName = validValue);
-      });
-    }
-
-    return DropdownButtonFormField<String>(
-      initialValue: validValue,
-      dropdownColor: Colors.white,
-      style: GoogleFonts.plusJakartaSans(color: const Color(0xFF23312B), fontWeight: FontWeight.w700, fontSize: 13),
-      decoration: _inputDecoration('Category', Icons.category_outlined),
-      items: categories.map<DropdownMenuItem<String>>((c) {
-        return DropdownMenuItem<String>(value: c.name, child: Text(c.name));
-      }).toList(),
-      onChanged: (val) {
-        if (val != null) setState(() => _selectedCategoryName = val);
-      },
-      validator: (v) => (v == null || v.isEmpty) ? 'Category is required' : null,
-    );
-  }
-
-  Widget _buildAvailabilityDropdown() {
-    return DropdownButtonFormField<String>(
-      initialValue: _availabilityStatus,
-      dropdownColor: Colors.white,
-      style: GoogleFonts.plusJakartaSans(color: const Color(0xFF23312B), fontWeight: FontWeight.w700, fontSize: 13),
-      decoration: _inputDecoration('Availability Status', Icons.visibility_outlined),
-      items: _availabilityOptions.map<DropdownMenuItem<String>>((opt) {
-        return DropdownMenuItem<String>(value: opt['value'], child: Text(opt['label']!));
-      }).toList(),
-      onChanged: (val) {
-        if (val != null) setState(() => _availabilityStatus = val);
-      },
-    );
-  }
-
-  Widget _buildSaveButton() {
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.3), offset: const Offset(0, 8), blurRadius: 16),
         ],
       ),
-      child: ElevatedButton(
-        onPressed: _isSaving ? null : _saveProduct,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        child: _isSaving
-            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-            : Text(
-                _isEditMode ? 'Save Product' : 'Save Product',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 14),
-              ),
-      ),
     );
   }
 
-  InputDecoration _inputDecoration(String label, IconData? icon) {
+  InputDecoration _adminInputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      labelStyle: GoogleFonts.plusJakartaSans(color: const Color(0xFF647C72), fontSize: 12, fontWeight: FontWeight.w500),
-      hintText: null,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE5EDE7))),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE5EDE7))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF10B981), width: 1.5)),
-      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFEF4444))),
-      focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5)),
-      prefixIcon: icon != null ? Icon(icon, color: const Color(0xFF647C72), size: 20) : null,
-      fillColor: const Color(0xFFFAFBF9),
+      labelStyle: GoogleFonts.plusJakartaSans(fontSize: 12, color: const Color(0xFF647C72)),
+      prefixIcon: Icon(icon, color: const Color(0xFF2E7D32), size: 18),
       filled: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      fillColor: const Color(0xFFF9FBF9),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2E7D32), width: 1.5)),
     );
   }
 
-  InputDecoration _inputDecorationWithHint(String label, IconData? icon, String? hint) {
-    return _inputDecoration(label, icon).copyWith(
-      hintText: hint,
-      hintStyle: GoogleFonts.plusJakartaSans(color: const Color(0xFF8D99AE), fontSize: 12),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    IconData? icon,
-    String? hint,
-    String? Function(String?)? validator,
-    int maxLines = 1,
-    ValueChanged<String>? onChanged,
-  }) {
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
-      onChanged: onChanged,
-      style: GoogleFonts.plusJakartaSans(color: const Color(0xFF23312B), fontSize: 13, fontWeight: FontWeight.w600),
-      decoration: _inputDecorationWithHint(label, icon, hint),
-      validator: validator,
+  Widget _buildSwitchOption(String title, bool value, ValueChanged<bool> onChanged) {
+    return Row(
+      children: [
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: const Color(0xFF2E7D32),
+        ),
+        Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF23312B))),
+      ],
     );
   }
 }

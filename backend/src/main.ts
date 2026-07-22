@@ -2,8 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import * as helmet from 'helmet';
-import * as compression from 'compression';
+import helmet from 'helmet';
+import compression from 'compression';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -14,7 +14,7 @@ async function bootstrap() {
 
   // Apply Config properties
   const config = app.get(ConfigService);
-  const port = config.get<number>('port') || 3000;
+  const port = config.get<number>('port') || 3001;
 
   // Global Route Prefix & API Versioning
   app.setGlobalPrefix('api');
@@ -32,27 +32,20 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       transform: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false,
       transformOptions: {
         enableImplicitConversion: true,
       },
     }),
   );
 
+
   // Security Middleware - CORS
-  const corsOrigins = config.get<string[]>('cors.origins') || ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8080'];
   app.enableCors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      const cleanOrigin = origin.replace(/\/$/, '');
-      if (corsOrigins.includes(cleanOrigin)) return callback(null, true);
-      if (cleanOrigin.startsWith('http://localhost:') || cleanOrigin.startsWith('http://127.0.0.1:')) {
-        return callback(null, true);
-      }
-      callback(null, false);
-    },
+    origin: true,
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'ngrok-skip-browser-warning'],
   });
   
   // Security headers

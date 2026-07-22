@@ -13,7 +13,7 @@ class FarmerProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final user = authState.user;
-    final themeMode = ref.watch(themeProvider);
+
 
     if (user == null) {
       return Scaffold(
@@ -183,36 +183,6 @@ class FarmerProfileScreen extends ConsumerWidget {
                       icon: Icons.lock_outline,
                       title: 'Change Password',
                       onTap: () => context.push('/change-password'),
-                    ),
-                    const Divider(height: 1, color: Color(0xFFF3F3F3)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.dark_mode_outlined, color: Color(0xFF647C72), size: 20),
-                              const SizedBox(width: 12),
-                              Text(
-                                'Dark Mode',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
-                                  color: const Color(0xFF23312B),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Switch(
-                            value: themeMode == ThemeMode.dark,
-                            activeColor: const Color(0xFF2E7D32),
-                            onChanged: (val) {
-                              ref.read(themeProvider.notifier).toggleTheme(val ? ThemeMode.dark : ThemeMode.light);
-                            },
-                          ),
-                        ],
-                      ),
                     ),
                     const Divider(height: 1, color: Color(0xFFF3F3F3)),
                     _MenuTile(

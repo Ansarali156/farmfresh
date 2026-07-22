@@ -27,4 +27,9 @@ export class RegisterCustomerDto {
   @IsNotEmpty()
   @MinLength(8)
   password: string;
+
+  @ApiProperty({ example: 'password123', description: 'Confirm account password' })
+  @IsNotEmpty()
+  @MinLength(8)
+  confirmPassword: string;
 }

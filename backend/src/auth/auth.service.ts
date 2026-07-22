@@ -180,17 +180,32 @@ export class AuthService {
 
     const tokens = await this._generateTokens(user.id, user.email, user.role);
     return {
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, phone: user.phone, avatar: user.avatar },
       ...tokens,
     };
   }
 
-  async logout(refreshToken: string) {
-    const tokenHash = await bcrypt.hash(refreshToken, 12);
-    
-    await this.prisma.refreshToken.deleteMany({
-      where: { tokenHash },
+  async logout(userId: string, refreshToken: string) {
+    // Find all tokens for this user and delete the matching one
+    const tokens = await this.prisma.refreshToken.findMany({
+      where: { userId },
     });
+
+    let deleted = false;
+    for (const t of tokens) {
+      const match = await bcrypt.compare(refreshToken, t.tokenHash);
+      if (match) {
+        await this.prisma.refreshToken.delete({ where: { id: t.id } });
+        deleted = true;
+        break;
+      }
+    }
+
+    // If no specific token found, clear all tokens for this user as fallback
+    if (!deleted) {
+      await this.prisma.refreshToken.deleteMany({ where: { userId } });
+    }
+
     return { success: true };
   }
 
@@ -354,12 +369,15 @@ export class AuthService {
     if (phone !== undefined) data.phone = phone;
     if (avatar !== undefined) data.avatar = avatar;
 
-    // Support updating the nested FarmerProfile record
+    // Only update FarmerProfile if user is actually a farmer
     if (farmName !== undefined || farmAddress !== undefined) {
-      const profileData: any = {};
-      if (farmName !== undefined) profileData.farmName = farmName;
-      if (farmAddress !== undefined) profileData.farmAddress = farmAddress;
-      data.farmerProfile = { update: profileData };
+      const farmerProfile = await this.prisma.farmerProfile.findUnique({ where: { userId } });
+      if (farmerProfile) {
+        const profileData: any = {};
+        if (farmName !== undefined) profileData.farmName = farmName;
+        if (farmAddress !== undefined) profileData.farmAddress = farmAddress;
+        data.farmerProfile = { update: profileData };
+      }
     }
 
     const updatedUser = await this.prisma.user.update({

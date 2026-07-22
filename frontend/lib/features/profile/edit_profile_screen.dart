@@ -1,9 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/widgets/custom_button.dart';
 
@@ -19,17 +17,129 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late TextEditingController _nameController;
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
+  String? _selectedAvatar;
   bool _isSaving = false;
-  File? _selectedImage;
 
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-      });
+  static String _getInitials(String name) {
+    if (name.isEmpty) return 'U';
+    final parts = name.trim().split(' ');
+    if (parts.length > 1) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
+    return name.substring(0, name.length > 1 ? 2 : 1).toUpperCase();
+  }
+
+  static Color _getAvatarColor(String name) {
+    final colors = [
+      const Color(0xFFE50914), // Netflix Red
+      const Color(0xFF0071EB), // Blue
+      const Color(0xFFF4B400), // Yellow
+      const Color(0xFF0F9D58), // Green
+      const Color(0xFF9C27B0), // Purple
+      const Color(0xFFFF5722), // Deep Orange
+    ];
+    int hash = 0;
+    for (int i = 0; i < name.length; i++) {
+      hash = name.codeUnitAt(i) + ((hash << 5) - hash);
+    }
+    return colors[hash.abs() % colors.length];
+  }
+
+  void _showAvatarPicker() {
+    final List<String> presetAvatars = [
+      '', // Initials
+      'https://api.dicebear.com/7.x/notionists/png?seed=Felix&backgroundColor=b6e3f4',
+      'https://api.dicebear.com/7.x/notionists/png?seed=Aneka&backgroundColor=c0aede',
+      'emoji:🍅',
+      'emoji:🥦',
+      'emoji:🥕',
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Choose an Avatar',
+                  style: GoogleFonts.outfit(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF23312B),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                  ),
+                  itemCount: presetAvatars.length,
+                  itemBuilder: (context, index) {
+                    final avatarUrl = presetAvatars[index];
+                    final isInitials = avatarUrl.isEmpty;
+                    final isEmoji = avatarUrl.startsWith('emoji:');
+                    
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedAvatar = isInitials ? null : avatarUrl;
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isInitials || isEmoji ? _getAvatarColor(_nameController.text.trim().isEmpty ? 'U' : _nameController.text).withOpacity(isEmoji ? 0.2 : 1.0) : null,
+                          border: Border.all(
+                            color: _selectedAvatar == (isInitials ? null : avatarUrl)
+                                ? const Color(0xFF2E7D32)
+                                : const Color(0xFFE5EDE7),
+                            width: _selectedAvatar == (isInitials ? null : avatarUrl) ? 3 : 1,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: isInitials
+                            ? Text(
+                                _getInitials(_nameController.text.trim().isEmpty ? 'U' : _nameController.text),
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              )
+                            : isEmoji
+                                ? Text(
+                                    avatarUrl.substring(6),
+                                    style: const TextStyle(fontSize: 32),
+                                  )
+                                : ClipOval(
+                                    child: Image.network(
+                                      avatarUrl,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -39,6 +149,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _nameController = TextEditingController(text: user?.name ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
     _phoneController = TextEditingController(text: user?.phone ?? '');
+    _selectedAvatar = (user?.avatar != null && user!.avatar!.isNotEmpty && !user.avatar!.contains('dicebear'))
+        ? user.avatar
+        : null;
+    
+    // Add listener to update avatar initials when name changes
+    _nameController.addListener(() {
+      if (_selectedAvatar == null) {
+        setState(() {}); // Re-render the initials
+      }
+    });
   }
 
   @override
@@ -74,7 +194,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF23312B)),
             onPressed: () => context.pop(),
           ),
         ),
@@ -102,7 +222,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   children: [
                     Center(
                       child: GestureDetector(
-                        onTap: _pickImage,
+                        onTap: _showAvatarPicker,
                         child: Stack(
                           children: [
                             Container(
@@ -110,6 +230,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               height: 90,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
+                                color: _selectedAvatar == null ? _getAvatarColor(_nameController.text.trim().isEmpty ? 'User' : _nameController.text) : null,
                                 border: Border.all(color: const Color(0xFFE8F5E9), width: 3),
                                 boxShadow: const [
                                   BoxShadow(
@@ -119,14 +240,29 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                   ),
                                 ],
                               ),
-                              child: ClipOval(
-                                child: _selectedImage != null
-                                    ? Image.file(_selectedImage!, fit: BoxFit.cover)
-                                    : Image.network(
-                                        'https://api.dicebear.com/7.x/adventurer/svg?seed=Lucky',
-                                        fit: BoxFit.cover,
-                                      ),
-                              ),
+                              alignment: Alignment.center,
+                              child: _selectedAvatar != null && _selectedAvatar!.isNotEmpty
+                                ? (_selectedAvatar!.startsWith('emoji:')
+                                    ? Text(
+                                        _selectedAvatar!.substring(6),
+                                        style: const TextStyle(fontSize: 40),
+                                      )
+                                    : ClipOval(
+                                        child: Image.network(
+                                          _selectedAvatar!,
+                                          fit: BoxFit.cover,
+                                          width: 90,
+                                          height: 90,
+                                        ),
+                                      ))
+                                : Text(
+                                    _getInitials(_nameController.text.trim().isEmpty ? 'U' : _nameController.text),
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                             ),
                             Positioned(
                               bottom: 0,
@@ -137,7 +273,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                   color: Color(0xFF2E7D32),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                                child: const Icon(
+                                  Icons.edit,
+                                  color: Colors.white,
+                                  size: 14,
+                                ),
                               ),
                             ),
                           ],
@@ -289,6 +429,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           phone: _phoneController.text.trim().isNotEmpty
               ? _phoneController.text.trim()
               : null,
+          avatar: _selectedAvatar,
         );
 
     setState(() => _isSaving = false);

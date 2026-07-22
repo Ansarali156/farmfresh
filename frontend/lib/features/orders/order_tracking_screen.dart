@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_map/flutter_map.dart';
+import '../../core/widgets/map_zoom_controls.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -164,7 +166,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF23312B)),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -197,9 +199,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
               children: [
-                isOutForDelivery
-                    ? _buildLiveMap(order)
-                    : _buildPlaceholderMap(order),
+                _buildDeliveryStatusCard(order),
                 const SizedBox(height: 16),
                 _buildOtpCard(order),
                 const SizedBox(height: 16),
@@ -219,214 +219,130 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
     );
   }
 
-  Widget _buildLiveMap(OrderModel order) {
-    // Parse customer coordinates from address if available
-    // For now we use a default; in production, parse from order
-    _customerPosition ??= const LatLng(16.5062, 80.6480);
+  Widget _buildDeliveryStatusCard(OrderModel order) {
+    final isOutForDelivery = order.status.toUpperCase() == 'OUT_FOR_DELIVERY';
+    final isDelivered = order.status.toUpperCase() == 'DELIVERED';
 
     return Container(
       width: double.infinity,
-      height: 250,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0A2E5C45),
+            color: Color(0x0F2E5C45),
             offset: Offset(0, 4),
-            blurRadius: 10,
+            blurRadius: 16,
           ),
         ],
+        border: Border.all(color: const Color(0xFFE5ECE8)),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          children: [
-            FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                initialCenter: _customerPosition!,
-                initialZoom: 14,
-                onMapReady: () {
-                  _mapInitialized = true;
-                  if (_driverPosition != null) _fitMapToAll();
-                },
-                interactionOptions: const InteractionOptions(
-                  flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDelivered
+                      ? const Color(0xFFDCFCE7)
+                      : isOutForDelivery
+                          ? const Color(0xFFE0F2FE)
+                          : const Color(0xFFFFF7ED),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isDelivered
+                      ? Icons.check_circle_rounded
+                      : isOutForDelivery
+                          ? Icons.local_shipping_rounded
+                          : Icons.inventory_2_rounded,
+                  color: isDelivered
+                      ? const Color(0xFF16A34A)
+                      : isOutForDelivery
+                          ? const Color(0xFF0284C7)
+                          : const Color(0xFFEA580C),
+                  size: 26,
                 ),
               ),
-              children: [
-                TileLayer(
-                  urlTemplate: AppConstants.mapTileUrl,
-                  userAgentPackageName: 'com.farmfresh.app',
-                ),
-                if (_driverRoute != null)
-                  PolylineLayer(
-                    polylines: [
-                      Polyline(
-                        points: _driverRoute!.points,
-                        strokeWidth: 3,
-                        color: const Color(0xFF2E7D32),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isDelivered
+                          ? 'Delivered to your door'
+                          : isOutForDelivery
+                              ? 'Rider is on the way!'
+                              : 'Order is being prepared',
+                      style: GoogleFonts.outfit(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1B2E25),
                       ),
-                    ],
-                  ),
-                MarkerLayer(markers: _buildTrackingMarkers()),
-              ],
-            ),
-            // Driver info overlay
-            if (_driverPosition != null && _driverRoute != null)
-              Positioned(
-                top: 8,
-                left: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.local_shipping,
-                          color: Color(0xFF2E7D32), size: 18),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _driverName != null
-                              ? '$_driverName is on the way'
-                              : 'Driver is on the way',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF23312B),
-                          ),
-                        ),
-                      ),
-                      Text(
-                        '${_driverRoute!.formattedDistance} away',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF2E7D32),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  List<Marker> _buildTrackingMarkers() {
-    final markers = <Marker>[];
-
-    if (_driverPosition != null) {
-      markers.add(
-        Marker(
-          point: _driverPosition!,
-          width: 40,
-          height: 40,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.blue,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-            ),
-            child: const Icon(Icons.local_shipping,
-                color: Colors.white, size: 18),
-          ),
-        ),
-      );
-    }
-
-    if (_customerPosition != null) {
-      markers.add(
-        Marker(
-          point: _customerPosition!,
-          width: 40,
-          height: 40,
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF2E7D32),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-            ),
-            child: const Icon(Icons.home, color: Colors.white, size: 18),
-          ),
-        ),
-      );
-    }
-
-    return markers;
-  }
-
-  Widget _buildPlaceholderMap(OrderModel order) {
-    return Container(
-      width: double.infinity,
-      height: 200,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A2E5C45),
-            offset: Offset(0, 4),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          children: [
-            Container(
-              color: const Color(0xFFFAFBF9),
-              child: Center(
-                child: Opacity(
-                  opacity: 0.05,
-                  child: Icon(Icons.map_outlined,
-                      size: 180, color: const Color(0xFF2E7D32)),
-                ),
-              ),
-            ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE8F5E9),
-                      shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.navigation_outlined,
-                        size: 30, color: Color(0xFF2E7D32)),
-                  ),
-                  const SizedBox(height: 12),
+                    const SizedBox(height: 2),
+                    Text(
+                      _driverName != null
+                          ? 'Delivery Partner: $_driverName'
+                          : 'Assigned FarmFresh Express Agent',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        color: const Color(0xFF647C72),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(height: 1),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    'Live tracking available when\norder is out for delivery',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.outfit(
-                      fontSize: 13,
+                    'ESTIMATED DELIVERY',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF23312B),
+                      color: const Color(0xFF9E9E9E),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    isDelivered ? 'Delivered' : 'Today, within 45 mins',
+                    style: GoogleFonts.outfit(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF2E7D32),
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
+              ElevatedButton.icon(
+                onPressed: () => context.push('/support', extra: order.id),
+                icon: const Icon(Icons.help_outline_rounded, size: 16),
+                label: Text('Need Help?', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2E7D32),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  elevation: 0,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

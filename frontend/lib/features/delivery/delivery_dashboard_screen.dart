@@ -43,36 +43,43 @@ class _DeliveryDashboardScreenState extends ConsumerState<DeliveryDashboardScree
     return Scaffold(
       backgroundColor: DeliveryTheme.bgCanvas,
       appBar: AppBar(
+        titleSpacing: 12,
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
                 gradient: DeliveryTheme.orangeGradient,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.local_shipping, color: Colors.white, size: 20),
+              child: const Icon(Icons.local_shipping, color: Colors.white, size: 18),
             ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Logistics Hub',
-                  style: GoogleFonts.outfit(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: Colors.white,
+            const SizedBox(width: 8),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Logistics Hub',
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                Text(
-                  'Express Fleet Delivery',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 10,
-                    color: const Color(0xFF94A3B8),
+                  Text(
+                    'Express Fleet',
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 9,
+                      color: const Color(0xFF94A3B8),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

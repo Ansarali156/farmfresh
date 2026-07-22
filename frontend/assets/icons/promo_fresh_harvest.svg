@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- Tomato -->
+  <circle cx="85" cy="70" r="22" fill="#EF5350"/>
+  <circle cx="85" cy="70" r="22" fill="url(#tg)" opacity="0.3"/>
+  <path d="M85 48C82 46 80 48 82 50C84 52 86 52 88 50C90 48 88 46 85 48Z" fill="#43A047"/>
+  <ellipse cx="78" cy="62" rx="4" ry="6" fill="#E57373" opacity="0.4"/>
+  <!-- Carrot -->
+  <path d="M36 30L26 80L46 80Z" fill="#FF7043"/>
+  <path d="M36 30L26 80L36 80Z" fill="#E64A19" opacity="0.3"/>
+  <path d="M36 30C36 30 30 22 26 20C30 20 34 26 36 30Z" fill="#43A047"/>
+  <path d="M36 30C36 30 42 22 46 20C42 20 38 26 36 30Z" fill="#66BB6A"/>
+  <line x1="30" y1="50" x2="42" y2="50" stroke="#BF360C" stroke-width="1" opacity="0.2" stroke-linecap="round"/>
+  <line x1="28" y1="62" x2="44" y2="62" stroke="#BF360C" stroke-width="1" opacity="0.2" stroke-linecap="round"/>
+  <!-- Cabbage/lettuce leaf -->
+  <path d="M58 90C58 90 42 100 50 110C58 120 72 110 72 100C72 90 58 90 58 90Z" fill="#66BB6A"/>
+  <path d="M58 90C58 90 42 100 50 110C58 120 62 110 62 100Z" fill="#43A047" opacity="0.5"/>
+  <!-- Small leaf accent -->
+  <ellipse cx="100" cy="40" rx="8" ry="12" fill="#A5D6A7" transform="rotate(30 100 40)"/>
+  <ellipse cx="100" cy="40" rx="8" ry="12" fill="#66BB6A" opacity="0.3" transform="rotate(30 100 40)"/>
+  <defs>
+    <radialGradient id="tg" cx="0.3" cy="0.3" r="0.7">
+      <stop offset="0%" stop-color="white" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+  </defs>
+</svg>

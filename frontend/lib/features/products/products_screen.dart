@@ -12,8 +12,9 @@ import '../../core/widgets/custom_button.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {
   final String? initialCategory;
+  final String? initialSearch;
 
-  const ProductsScreen({super.key, this.initialCategory});
+  const ProductsScreen({super.key, this.initialCategory, this.initialSearch});
 
   @override
   ConsumerState<ProductsScreen> createState() => _ProductsScreenState();
@@ -39,8 +40,12 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialCategory != null) {
+    if (widget.initialCategory != null && widget.initialCategory!.isNotEmpty) {
       _selectedCategory = widget.initialCategory!;
+    }
+    if (widget.initialSearch != null && widget.initialSearch!.isNotEmpty) {
+      _searchQuery = widget.initialSearch!;
+      _searchController.text = widget.initialSearch!;
     }
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -71,14 +76,10 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       _isLazyLoading = false;
     });
 
-    // Request fresh catalog query
-    await ref.read(productProvider.notifier).loadProducts(
-      search: _searchQuery,
-      category: _selectedCategory,
-      sortBy: _sortBy,
-    );
-
+    // Fetch fresh complete product catalog
+    await ref.read(productProvider.notifier).loadProducts();
     final productState = ref.read(productProvider);
+
     _applyLocalFiltersAndSorting(productState.products);
   }
 
@@ -87,7 +88,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       _isLazyLoading = true;
     });
 
-    await Future.delayed(const Duration(milliseconds: 600)); // Simulates network latency pagination
+    await Future.delayed(const Duration(milliseconds: 400));
 
     final productState = ref.read(productProvider);
     final allItems = productState.products;
@@ -98,7 +99,12 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   void _applyLocalFiltersAndSorting(List<ProductModel> allItems, {bool append = false}) {
     // 1. Filtering
     var filtered = allItems.where((p) {
-      final matchesCategory = _selectedCategory == 'All' || p.category.toLowerCase() == _selectedCategory.toLowerCase();
+      final catLower = _selectedCategory.toLowerCase();
+      final matchesCategory = catLower == 'all' ||
+          catLower.isEmpty ||
+          p.category.toLowerCase().contains(catLower) ||
+          catLower.contains(p.category.toLowerCase()) ||
+          (catLower == 'organic' && p.organic);
       final matchesSearch = p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
                             p.farmName.toLowerCase().contains(_searchQuery.toLowerCase());
       final matchesOrganic = !_organicOnly || p.organic;
@@ -300,7 +306,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.chevron_left, color: Color(0xFF23312B)),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF23312B)),
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: [
@@ -460,7 +466,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                                       return ProductCard(
                                         product: prod,
                                         onTap: () {
-                                          context.push('/product-details', extra: prod);
+                                          context.push('/product-details/${prod.id}', extra: prod);
                                         },
                                         onAddToCart: () {
                                           ref.read(cartProvider.notifier).addItem(prod);
@@ -500,7 +506,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: InkWell(
         onTap: () {
-          context.push('/product-details', extra: prod);
+          context.push('/product-details/${prod.id}', extra: prod);
         },
         child: Row(
           children: [
