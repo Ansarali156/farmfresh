@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength, Matches } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, Matches, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterCustomerDto {
@@ -7,10 +7,10 @@ export class RegisterCustomerDto {
   @IsString()
   firstName: string;
 
-  @ApiProperty({ example: 'Doe', description: 'Last name' })
-  @IsNotEmpty()
+  @ApiProperty({ example: 'Doe', description: 'Last name', required: false })
+  @IsOptional()
   @IsString()
-  lastName: string;
+  lastName?: string;
 
   @ApiProperty({ example: 'customer@farmfresh.com', description: 'Email address' })
   @IsNotEmpty()
@@ -20,7 +20,7 @@ export class RegisterCustomerDto {
   @ApiProperty({ example: '+911234567890', description: 'Contact phone number' })
   @IsNotEmpty()
   @IsString()
-  @Matches(/^\+91\d{10}$/, { message: 'Phone must be a valid Indian mobile number with +91 prefix and 10 digits (e.g., +911234567890)' })
+  @Matches(/^\+?(?:91)?[6-9]\d{9}$/, { message: 'Phone must be a valid 10-digit mobile number' })
   phone: string;
 
   @ApiProperty({ example: 'password123', description: 'Account password (minimum 8 characters)' })
@@ -28,8 +28,8 @@ export class RegisterCustomerDto {
   @MinLength(8)
   password: string;
 
-  @ApiProperty({ example: 'password123', description: 'Confirm account password' })
-  @IsNotEmpty()
-  @MinLength(8)
-  confirmPassword: string;
+  @ApiProperty({ example: 'password123', description: 'Confirm account password', required: false })
+  @IsOptional()
+  @IsString()
+  confirmPassword?: string;
 }

@@ -15,7 +15,7 @@ export class RegisterFarmerDto {
   @ApiProperty({ example: '+911234567891', description: 'Contact phone number' })
   @IsNotEmpty()
   @IsString()
-  @Matches(/^\+91\d{10}$/, { message: 'Phone must be a valid Indian mobile number with +91 prefix and 10 digits (e.g., +911234567891)' })
+  @Matches(/^\+?(?:91)?[6-9]\d{9}$/, { message: 'Phone must be a valid 10-digit mobile number' })
   phone: string;
 
   @ApiProperty({ example: 'password123', description: 'Account password (minimum 8 characters)' })
@@ -23,25 +23,25 @@ export class RegisterFarmerDto {
   @MinLength(8)
   password: string;
 
-  @ApiProperty({ example: 'Green Valley Farms', description: 'Name of the farm entity' })
-  @IsNotEmpty()
+  @ApiProperty({ example: 'Green Valley Farms', description: 'Name of the farm entity', required: false })
+  @IsOptional()
   @IsString()
-  farmName: string;
+  farmName?: string;
 
-  @ApiProperty({ example: '123 Santorini Road, Greece', description: 'Physical address of the farm' })
-  @IsNotEmpty()
+  @ApiProperty({ example: '123 Santorini Road, Greece', description: 'Physical address of the farm', required: false })
+  @IsOptional()
   @IsString()
-  farmAddress: string;
+  farmAddress?: string;
 
-  @ApiProperty({ example: 'TAXID-8829-GR', description: 'Government registered Tax ID or license number' })
-  @IsNotEmpty()
+  @ApiProperty({ example: 'TAXID-8829-GR', description: 'Government registered Tax ID or license number', required: false })
+  @IsOptional()
   @IsString()
-  governmentId: string;
+  governmentId?: string;
 
-  @ApiProperty({ example: 'State Bank - routing 021000021 - acct 12345678', description: 'Bank transfer details for payouts' })
-  @IsNotEmpty()
+  @ApiProperty({ example: 'State Bank - routing 021000021 - acct 12345678', description: 'Bank transfer details for payouts', required: false })
+  @IsOptional()
   @IsString()
-  bankAccountDetails: string;
+  bankAccountDetails?: string;
 
   @ApiProperty({ example: 'https://images.unsplash.com/profile-photo', description: 'Profile picture URL', required: false })
   @IsOptional()

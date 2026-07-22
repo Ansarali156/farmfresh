@@ -50,7 +50,13 @@ function formatCurrency(amount: number): string {
 }
 
 function formatDate(dateStr: string): string {
-  return format(new Date(dateStr), 'dd MMM yyyy, hh:mm a');
+  if (!dateStr) return 'N/A';
+  try {
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? 'N/A' : format(d, 'dd MMM yyyy, hh:mm a');
+  } catch {
+    return 'N/A';
+  }
 }
 
 export default function OrdersPage() {

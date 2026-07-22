@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/widgets/custom_button.dart';
+import '../../core/widgets/user_avatar_widget.dart';
+import '../../models/user_model.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -47,66 +49,87 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   void _showAvatarPicker() {
     final List<String> presetAvatars = [
-      '', // Initials
-      'https://api.dicebear.com/7.x/notionists/png?seed=Felix&backgroundColor=b6e3f4',
-      'https://api.dicebear.com/7.x/notionists/png?seed=Aneka&backgroundColor=c0aede',
+      '', // Initials (e.g. RO)
+      'https://api.dicebear.com/7.x/notionists/png?seed=Sophia&backgroundColor=f1d2e7', // Female 1
+      'https://api.dicebear.com/7.x/notionists/png?seed=Daisy&backgroundColor=ffd5c8', // Female 2
+      'https://api.dicebear.com/7.x/notionists/png?seed=Zoe&backgroundColor=c0aede',   // Female 3
+      'https://api.dicebear.com/7.x/notionists/png?seed=Lily&backgroundColor=b6e3f4',  // Female 4
+      'https://api.dicebear.com/7.x/notionists/png?seed=Felix&backgroundColor=d1e7dd', // Male 1
+      'https://api.dicebear.com/7.x/notionists/png?seed=Aneka&backgroundColor=fff3cd', // Male 2
       'emoji:🍅',
       'emoji:🥦',
       'emoji:🥕',
+      'emoji:🍓',
+      'emoji:🥑',
     ];
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
         return Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE0E0E0),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Text(
                   'Choose an Avatar',
                   style: GoogleFonts.outfit(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF23312B),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
                   ),
                   itemCount: presetAvatars.length,
                   itemBuilder: (context, index) {
                     final avatarUrl = presetAvatars[index];
                     final isInitials = avatarUrl.isEmpty;
                     final isEmoji = avatarUrl.startsWith('emoji:');
+                    final isCurrentSelected = isInitials 
+                        ? (_selectedAvatar == null || _selectedAvatar!.isEmpty)
+                        : _selectedAvatar == avatarUrl;
                     
                     return GestureDetector(
                       onTap: () {
                         setState(() {
-                          _selectedAvatar = isInitials ? null : avatarUrl;
+                          _selectedAvatar = isInitials ? '' : avatarUrl;
                         });
                         Navigator.pop(context);
                       },
                       child: Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: isInitials || isEmoji ? _getAvatarColor(_nameController.text.trim().isEmpty ? 'U' : _nameController.text).withOpacity(isEmoji ? 0.2 : 1.0) : null,
+                          color: isInitials || isEmoji
+                              ? _getAvatarColor(_nameController.text.trim().isEmpty ? 'U' : _nameController.text).withOpacity(isEmoji ? 0.2 : 1.0)
+                              : null,
                           border: Border.all(
-                            color: _selectedAvatar == (isInitials ? null : avatarUrl)
+                            color: isCurrentSelected
                                 ? const Color(0xFF2E7D32)
                                 : const Color(0xFFE5EDE7),
-                            width: _selectedAvatar == (isInitials ? null : avatarUrl) ? 3 : 1,
+                            width: isCurrentSelected ? 3 : 1,
                           ),
                         ),
                         alignment: Alignment.center,
@@ -115,19 +138,21 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 _getInitials(_nameController.text.trim().isEmpty ? 'U' : _nameController.text),
                                 style: GoogleFonts.outfit(
                                   color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               )
                             : isEmoji
                                 ? Text(
                                     avatarUrl.substring(6),
-                                    style: const TextStyle(fontSize: 32),
+                                    style: const TextStyle(fontSize: 26),
                                   )
                                 : ClipOval(
                                     child: Image.network(
                                       avatarUrl,
                                       fit: BoxFit.cover,
+                                      width: 56,
+                                      height: 56,
                                     ),
                                   ),
                       ),
@@ -223,70 +248,38 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     Center(
                       child: GestureDetector(
                         onTap: _showAvatarPicker,
-                        child: Hero(
-                          tag: 'profile-avatar',
-                          child: Material(
-                            type: MaterialType.transparency,
-                            child: Stack(
-                              children: [
-                                Container(
-                                  width: 90,
-                                  height: 90,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: _selectedAvatar == null ? _getAvatarColor(_nameController.text.trim().isEmpty ? 'User' : _nameController.text) : null,
-                                    border: Border.all(color: const Color(0xFFE8F5E9), width: 3),
-                                    boxShadow: const [
-                                      BoxShadow(
-                                        color: Color(0x0F2E5C45),
-                                        offset: Offset(0, 4),
-                                        blurRadius: 10,
-                                      ),
-                                    ],
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: _selectedAvatar != null && _selectedAvatar!.isNotEmpty
-                                    ? (_selectedAvatar!.startsWith('emoji:')
-                                        ? Text(
-                                            _selectedAvatar!.substring(6),
-                                            style: const TextStyle(fontSize: 40),
-                                          )
-                                        : ClipOval(
-                                            child: Image.network(
-                                              _selectedAvatar!,
-                                              fit: BoxFit.cover,
-                                              width: 90,
-                                              height: 90,
-                                            ),
-                                          ))
-                                    : Text(
-                                        _getInitials(_nameController.text.trim().isEmpty ? 'U' : _nameController.text),
-                                        style: GoogleFonts.outfit(
-                                          color: Colors.white,
-                                          fontSize: 36,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF2E7D32),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.edit,
-                                      color: Colors.white,
-                                      size: 14,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                        child: Stack(
+                          children: [
+                            UserAvatarWidget(
+                              user: UserModel(
+                                id: authState.user?.id ?? '',
+                                name: _nameController.text.trim().isEmpty ? 'User' : _nameController.text.trim(),
+                                email: authState.user?.email ?? '',
+                                role: authState.user?.role ?? 'customer',
+                                avatar: _selectedAvatar,
+                              ),
+                              size: 70,
                             ),
-                          ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: _showAvatarPicker,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF2E7D32),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.edit,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -435,7 +428,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           phone: _phoneController.text.trim().isNotEmpty
               ? _phoneController.text.trim()
               : null,
-          avatar: _selectedAvatar,
+          avatar: _selectedAvatar ?? '',
         );
 
     setState(() => _isSaving = false);

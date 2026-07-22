@@ -29,8 +29,6 @@ class _FarmerMainScreenState extends ConsumerState<FarmerMainScreen> {
   Widget build(BuildContext context) {
     final selectedIndex = ref.watch(farmerTabIndexProvider);
     debugPrint('FarmerMainScreen rebuilding! Selected index is now $selectedIndex');
-    final notifState = ref.watch(farmerNotificationProvider);
-    final unreadCount = notifState.unreadCount;
 
     return Container(
       decoration: BoxDecoration(
@@ -102,67 +100,9 @@ class _FarmerMainScreenState extends ConsumerState<FarmerMainScreen> {
                   activeIcon: Icon(Icons.account_balance_wallet),
                   label: 'Earnings',
                 ),
-                BottomNavigationBarItem(
-                  icon: Stack(
-                    children: [
-                      const Icon(Icons.person_outline),
-                      if (unreadCount > 0)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFFF4D6D),
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 14,
-                              minHeight: 14,
-                            ),
-                            child: Text(
-                              unreadCount > 9 ? '9+' : '$unreadCount',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.white,
-                                fontSize: 8,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  activeIcon: Stack(
-                    children: [
-                      const Icon(Icons.person),
-                      if (unreadCount > 0)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFFF4D6D),
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 14,
-                              minHeight: 14,
-                            ),
-                            child: Text(
-                              unreadCount > 9 ? '9+' : '$unreadCount',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.white,
-                                fontSize: 8,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outline),
+                  activeIcon: Icon(Icons.person),
                   label: 'Profile',
                 ),
               ],

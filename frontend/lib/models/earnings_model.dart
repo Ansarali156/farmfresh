@@ -1,6 +1,7 @@
 import '../core/utils/helpers.dart';
 
 class EarningsModel {
+  final double walletBalance;
   final double totalEarnings;
   final double monthlyEarnings;
   final double weeklyEarnings;
@@ -9,6 +10,7 @@ class EarningsModel {
   final double completedWithdrawals;
 
   const EarningsModel({
+    this.walletBalance = 0,
     this.totalEarnings = 0,
     this.monthlyEarnings = 0,
     this.weeklyEarnings = 0,
@@ -18,13 +20,19 @@ class EarningsModel {
   });
 
   factory EarningsModel.fromJson(Map<String, dynamic> json) {
+    final total = (json['totalEarnings'] as num?)?.toDouble() ?? 0;
+    final pending = (json['pendingWithdrawals'] as num?)?.toDouble() ?? 0;
+    final completed = (json['completedWithdrawals'] as num?)?.toDouble() ?? 0;
+    final rawBalance = total - pending - completed;
+
     return EarningsModel(
-      totalEarnings: (json['totalEarnings'] as num?)?.toDouble() ?? 0,
+      walletBalance: (json['walletBalance'] as num?)?.toDouble() ?? (rawBalance < 0 ? 0 : rawBalance),
+      totalEarnings: total,
       monthlyEarnings: (json['monthlyEarnings'] as num?)?.toDouble() ?? 0,
       weeklyEarnings: (json['weeklyEarnings'] as num?)?.toDouble() ?? 0,
       dailyEarnings: (json['dailyEarnings'] as num?)?.toDouble() ?? 0,
-      pendingWithdrawals: (json['pendingWithdrawals'] as num?)?.toDouble() ?? 0,
-      completedWithdrawals: (json['completedWithdrawals'] as num?)?.toDouble() ?? 0,
+      pendingWithdrawals: pending,
+      completedWithdrawals: completed,
     );
   }
 }

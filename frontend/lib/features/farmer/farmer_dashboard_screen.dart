@@ -37,6 +37,8 @@ class _FarmerDashboardScreenState extends ConsumerState<FarmerDashboardScreen> {
     final dashboardState = ref.watch(farmerDashboardProvider);
     final orderState = ref.watch(farmerOrderProvider);
     final productState = ref.watch(farmerProductsProvider);
+    final notifState = ref.watch(farmerNotificationProvider);
+    final unreadCount = notifState.unreadCount;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     
@@ -109,24 +111,65 @@ class _FarmerDashboardScreenState extends ConsumerState<FarmerDashboardScreen> {
                   ),
                   GestureDetector(
                     onTap: () => context.push('/farmer-notifications'),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.farmerPrimary, // Solid green background
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.farmerPrimary.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.farmerPrimary, // Solid green background
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.farmerPrimary.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.notifications_none_outlined,
-                        color: Colors.white, // White icon for contrast
-                        size: 24,
-                      ),
+                          child: const Icon(
+                            Icons.notifications_none_outlined,
+                            color: Colors.white, // White icon for contrast
+                            size: 24,
+                          ),
+                        ),
+                        if (unreadCount > 0)
+                          Positioned(
+                            right: -2,
+                            top: -2,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF4D6D),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x40FF4D6D),
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 20,
+                                minHeight: 20,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  unreadCount > 99 ? '99+' : '$unreadCount',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ],

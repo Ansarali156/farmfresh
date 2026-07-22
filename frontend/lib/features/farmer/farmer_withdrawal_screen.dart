@@ -200,6 +200,11 @@ class _FarmerWithdrawalScreenState extends ConsumerState<FarmerWithdrawalScreen>
     final state = ref.watch(farmerWithdrawalProvider);
 
     ref.listen<FarmerWithdrawalState>(farmerWithdrawalProvider, (prev, next) {
+      if (next.bankAccount != null && (prev?.bankAccount != next.bankAccount || _bankNameController.text.isEmpty)) {
+        if (_bankNameController.text.isEmpty) _bankNameController.text = next.bankAccount!.bankName;
+        if (_accountNumberController.text.isEmpty) _accountNumberController.text = next.bankAccount!.accountNumber;
+        if (_accountHolderController.text.isEmpty) _accountHolderController.text = next.bankAccount!.accountHolder;
+      }
       if (next.actionMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(next.actionMessage!), backgroundColor: const Color(0xFF2E7D32)),

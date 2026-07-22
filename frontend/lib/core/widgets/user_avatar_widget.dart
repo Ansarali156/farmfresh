@@ -62,36 +62,11 @@ class UserAvatarWidget extends StatelessWidget {
             ),
           ),
         );
-      } else if (avatarStr.startsWith('http')) {
-        avatarContent = CachedNetworkImage(
-          imageUrl: avatarStr,
+      } else if (avatarStr.startsWith('data:') || avatarStr.startsWith('http')) {
+        avatarContent = Image.network(
+          avatarStr,
           fit: BoxFit.cover,
-          placeholder: (context, url) => Container(
-            color: bgColor,
-            child: Center(
-              child: Text(
-                initials,
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: size * 0.4,
-                ),
-              ),
-            ),
-          ),
-          errorWidget: (context, url, err) => Container(
-            color: bgColor,
-            child: Center(
-              child: Text(
-                initials,
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: size * 0.4,
-                ),
-              ),
-            ),
-          ),
+          errorBuilder: (_, __, ___) => _buildInitials(initials, bgColor),
         );
       } else if (avatarStr.contains(',') || avatarStr.length > 50) {
         try {

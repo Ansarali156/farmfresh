@@ -111,13 +111,10 @@ class ProfileScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              Hero(
-                tag: 'profile-avatar',
-                child: UserAvatarWidget(
-                  user: user,
-                  size: 80,
-                  onTap: () => context.push('/edit-profile'),
-                ),
+              UserAvatarWidget(
+                user: user,
+                size: 70,
+                onTap: () => context.push('/edit-profile'),
               ),
               const SizedBox(height: 12),
               Text(
@@ -225,6 +222,8 @@ class ProfileScreen extends ConsumerWidget {
                 subtitle: 'Submit support tickets & track resolution',
                 onTap: () => context.push('/support'),
               ),
+
+
               const Divider(height: 1, color: Color(0xFFF3F3F3)),
               _menuTile(
                 context,
@@ -238,14 +237,14 @@ class ProfileScreen extends ConsumerWidget {
                 context,
                 icon: Icons.description_outlined,
                 title: 'Terms & Conditions',
-                onTap: () => context.push('/terms-conditions'),
+                onTap: () => _showPlaceholderPage(context, 'Terms & Conditions'),
               ),
               const Divider(height: 1, color: Color(0xFFF3F3F3)),
               _menuTile(
                 context,
                 icon: Icons.privacy_tip_outlined,
                 title: 'Privacy Policy',
-                onTap: () => context.push('/privacy-policy'),
+                onTap: () => _showPlaceholderPage(context, 'Privacy Policy'),
               ),
             ],
           ),

@@ -12,6 +12,11 @@ export class LoginDto {
   @IsString()
   username?: string;
 
+  @ApiPropertyOptional({ example: 'CUSTOMER', description: 'Selected portal role' })
+  @IsOptional()
+  @IsString()
+  role?: string;
+
   @ApiProperty({ example: 'password123', description: 'Account password' })
   @IsNotEmpty()
   @IsString()

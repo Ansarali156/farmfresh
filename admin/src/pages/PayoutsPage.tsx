@@ -27,13 +27,26 @@ const statusOptions = [
   { value: 'FAILED', label: 'Failed' },
 ];
 
-const formatCurrency = (amount: number) => {
+const formatCurrency = (amount: any) => {
+  const num = Number(amount);
+  if (isNaN(num)) return '₹0';
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(num);
+};
+
+const formatDateSafe = (dateVal: any, formatStr: string, fallback = 'N/A') => {
+  if (!dateVal) return fallback;
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return fallback;
+    return format(d, formatStr);
+  } catch {
+    return fallback;
+  }
 };
 
 export default function PayoutsPage() {
@@ -74,8 +87,18 @@ export default function PayoutsPage() {
   };
 
   const columns = [
-    { key: 'id', label: 'ID', width: 100 },
-    { key: 'farmerName', label: 'Farmer Name', width: 150 },
+    {
+      key: 'id',
+      label: 'ID',
+      width: 100,
+      render: (row: any) => (row.id ? String(row.id).substring(0, 8) : 'N/A'),
+    },
+    {
+      key: 'farmerName',
+      label: 'Farmer Name',
+      width: 150,
+      render: (row: any) => row.farmerName || row.user?.name || row.farmer?.name || 'N/A',
+    },
     {
       key: 'amount',
       label: 'Amount',
@@ -86,21 +109,28 @@ export default function PayoutsPage() {
       key: 'period',
       label: 'Period',
       width: 150,
-      render: (row: any) => `${format(new Date(row.periodStart), 'MMM dd')} - ${format(new Date(row.periodEnd), 'MMM dd, yyyy')}`,
+      render: (row: any) => {
+        if (row.periodStart && row.periodEnd) {
+          const start = formatDateSafe(row.periodStart, 'MMM dd');
+          const end = formatDateSafe(row.periodEnd, 'MMM dd, yyyy');
+          if (start !== 'N/A' && end !== 'N/A') {
+            return `${start} - ${end}`;
+          }
+        }
+        return row.period || 'N/A';
+      },
     },
     {
       key: 'status',
       label: 'Status',
       width: 120,
-      render: (row: any) => (
-        <StatusChip status={row.status} />
-      ),
+      render: (row: any) => <StatusChip status={row.status || 'PENDING'} />,
     },
     {
       key: 'createdAt',
       label: 'Created',
       width: 150,
-      render: (row: any) => format(new Date(row.createdAt), 'MMM dd, yyyy HH:mm'),
+      render: (row: any) => formatDateSafe(row.createdAt, 'MMM dd, yyyy HH:mm'),
     },
     {
       key: 'actions',
@@ -143,9 +173,9 @@ export default function PayoutsPage() {
         columns={columns}
         data={data?.items || []}
         total={data?.total || 0}
-        page={page}
+        page={page - 1}
         rowsPerPage={limit}
-        onPageChange={setPage}
+        onPageChange={(p) => setPage(p + 1)}
         loading={isLoading}
       />
 
@@ -155,7 +185,7 @@ export default function PayoutsPage() {
           <Typography>
             Are you sure you want to process the payout of{' '}
             {selectedPayout && formatCurrency(selectedPayout.amount)} for{' '}
-            {selectedPayout?.farmerName}?
+            {selectedPayout?.farmerName || selectedPayout?.user?.name || 'Farmer'}?
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -172,3 +202,4 @@ export default function PayoutsPage() {
     </Box>
   );
 }
+

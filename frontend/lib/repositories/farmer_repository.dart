@@ -23,6 +23,7 @@ abstract class FarmerRepository {
 
   Future<List<WithdrawalModel>> getWithdrawals({int page = 1, int limit = 20});
   Future<WithdrawalModel> requestWithdrawal(double amount, {String? bankAccountId});
+  Future<BankAccountModel?> getBankAccount();
   Future<BankAccountModel> updateBankAccount(BankAccountModel account);
 
   Future<List<AppNotificationModel>> getNotifications({int page = 1, int limit = 20});
@@ -163,6 +164,17 @@ class PostgresFarmerRepository implements FarmerRepository {
     } on DioException catch (e) {
       throw Exception((e.response?.data is Map ? e.response?.data['message'] : null) ?? e.message ?? 'Failed to request withdrawal');
     }
+  }
+
+  @override
+  Future<BankAccountModel?> getBankAccount() async {
+    try {
+      final res = await _apiClient.dio.get('/farmer/bank-account');
+      if (res.statusCode == 200 && res.data['success'] == true && res.data['data'] != null) {
+        return BankAccountModel.fromJson(res.data['data'] as Map<String, dynamic>);
+      }
+    } catch (_) {}
+    return null;
   }
 
   @override

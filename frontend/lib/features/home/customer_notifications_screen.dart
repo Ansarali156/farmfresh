@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/notification_model.dart';
 import '../../providers/customer_notification_provider.dart';
+import '../../core/widgets/responsive_layout.dart';
 
 class CustomerNotificationsScreen extends ConsumerStatefulWidget {
   const CustomerNotificationsScreen({super.key});
@@ -165,7 +166,8 @@ class _CustomerNotificationsScreenState
           const SizedBox(width: 8),
         ],
       ),
-      body: Column(
+      body: ResponsiveContainer(
+        child: Column(
         children: [
           // Filter pills
           Container(
@@ -225,6 +227,7 @@ class _CustomerNotificationsScreenState
                   ),
           ),
         ],
+      ),
       ),
     );
   }

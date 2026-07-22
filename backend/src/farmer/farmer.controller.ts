@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, UseGuards, Req, Body } from '@nestjs/common';
+import { Controller, Get, Patch, Put, UseGuards, Req, Body } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -49,6 +49,20 @@ export class FarmerController {
   async updateLocation(@Req() req: any, @Body() body: { latitude: number; longitude: number }) {
     const data = await this.farmerService.updateLocation(req.user.id, body.latitude, body.longitude);
     return new SuccessResponseDto('Farm location updated successfully', data);
+  }
+
+  @Get('bank-account')
+  @ApiOperation({ summary: 'Get farmer bank account details' })
+  async getBankAccount(@Req() req: any) {
+    const data = await this.farmerService.getBankAccount(req.user.id);
+    return new SuccessResponseDto('Bank account loaded successfully', data);
+  }
+
+  @Put('bank-account')
+  @ApiOperation({ summary: 'Update farmer bank account details' })
+  async updateBankAccount(@Req() req: any, @Body() body: any) {
+    const data = await this.farmerService.updateBankAccount(req.user.id, body);
+    return new SuccessResponseDto('Bank account updated successfully', data);
   }
 }
 

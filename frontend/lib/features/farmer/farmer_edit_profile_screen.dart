@@ -74,13 +74,13 @@ class _FarmerEditProfileScreenState
         phone: _phoneController.text.trim(),
         farmName: _farmNameController.text.trim(),
         farmAddress: _farmAddressController.text.trim(),
-        avatar: _selectedAvatar,
+        avatar: _selectedAvatar ?? '',
       );
 
       await ref.read(authProvider.notifier).updateProfile(
             name: _nameController.text.trim(),
             phone: _phoneController.text.trim(),
-            avatar: _selectedAvatar,
+            avatar: _selectedAvatar ?? '',
           );
 
       if (!mounted) return;

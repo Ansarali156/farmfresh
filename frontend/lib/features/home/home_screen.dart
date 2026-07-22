@@ -351,169 +351,178 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   ],
                                 ),
                               ),
-                              padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 32.0),
+                              padding: const EdgeInsets.fromLTRB(14.0, 16.0, 14.0, 24.0),
                               child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () => context.push('/addresses'),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            width: 38,
-                                            height: 38,
-                                            decoration: const BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.white,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Color(0x0F2E5C45),
-                                                  offset: Offset(0, 4),
-                                                  blurRadius: 10,
-                                                ),
-                                              ],
-                                            ),
-                                            child: const Icon(Icons.location_on, color: Color(0xFFE28C43), size: 18),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Text(
-                                                    'Delivering to',
-                                                    style: GoogleFonts.plusJakartaSans(
-                                                      fontSize: 9,
-                                                      color: const Color(0xFF647C72),
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  const Icon(Icons.keyboard_arrow_down, size: 12, color: Color(0xFF647C72)),
-                                                ],
-                                              ),
-                                              Text(
-                                                locationLabel,
-                                                style: GoogleFonts.outfit(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: const Color(0xFF23312B),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                         Consumer(
-                                           builder: (context, ref, _) {
-                                             final unreadCount = ref.watch(customerNotificationProvider).unreadCount;
-                                             return GestureDetector(
-                                               onTap: () => context.push('/notifications'),
-                                               child: Stack(
-                                                 clipBehavior: Clip.none,
-                                                 children: [
-                                                   const Icon(Icons.notifications_outlined, color: Color(0xFF23312B), size: 26),
-                                                   if (unreadCount > 0)
-                                                     Positioned(
-                                                       right: -2,
-                                                       top: -2,
-                                                       child: Container(
-                                                         padding: const EdgeInsets.all(4),
-                                                         decoration: const BoxDecoration(
-                                                           color: Color(0xFFFF4D6D),
-                                                           shape: BoxShape.circle,
-                                                         ),
-                                                         constraints: const BoxConstraints(
-                                                           minWidth: 16,
-                                                           minHeight: 16,
-                                                         ),
-                                                         child: Text(
-                                                           '$unreadCount',
-                                                           style: GoogleFonts.plusJakartaSans(
-                                                             color: Colors.white,
-                                                             fontSize: 9,
-                                                             fontWeight: FontWeight.bold,
-                                                           ),
-                                                           textAlign: TextAlign.center,
-                                                         ),
-                                                       ),
-                                                     ),
-                                                 ],
-                                               ),
-                                             );
-                                           },
-                                         ),
-                                        const SizedBox(width: 12),
-                                        // Wishlist heart icon with badge
-                                        GestureDetector(
-                                          onTap: () => context.push('/wishlist'),
-                                          child: Stack(
-                                            clipBehavior: Clip.none,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () => context.push('/addresses'),
+                                          child: Row(
                                             children: [
                                               Container(
-                                                width: 36,
-                                                height: 36,
+                                                width: 34,
+                                                height: 34,
                                                 decoration: const BoxDecoration(
                                                   shape: BoxShape.circle,
                                                   color: Colors.white,
                                                   boxShadow: [
                                                     BoxShadow(
                                                       color: Color(0x0F2E5C45),
-                                                      offset: Offset(0, 2),
-                                                      blurRadius: 6,
+                                                      offset: Offset(0, 4),
+                                                      blurRadius: 10,
                                                     ),
                                                   ],
                                                 ),
-                                                child: const Center(
-                                                  child: Icon(Icons.favorite_border_rounded, color: Color(0xFFE63946), size: 18),
+                                                child: const Icon(Icons.location_on, color: Color(0xFFE28C43), size: 16),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Text(
+                                                          'Delivering to',
+                                                          style: GoogleFonts.plusJakartaSans(
+                                                            fontSize: 9,
+                                                            color: const Color(0xFF647C72),
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                        const Icon(Icons.keyboard_arrow_down, size: 12, color: Color(0xFF647C72)),
+                                                      ],
+                                                    ),
+                                                    Text(
+                                                      locationLabel,
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      style: GoogleFonts.outfit(
+                                                        fontSize: 13,
+                                                        fontWeight: FontWeight.w700,
+                                                        color: const Color(0xFF23312B),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                              if (wishlistCount > 0)
-                                                Positioned(
-                                                  top: -2,
-                                                  right: -2,
-                                                  child: Container(
-                                                    padding: const EdgeInsets.all(3),
-                                                    decoration: const BoxDecoration(
-                                                      color: Color(0xFFE63946),
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    constraints: const BoxConstraints(
-                                                      minWidth: 14,
-                                                      minHeight: 14,
-                                                    ),
-                                                    child: Text(
-                                                      '$wishlistCount',
-                                                      style: const TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 8,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                      textAlign: TextAlign.center,
-                                                    ),
-                                                  ),
-                                                ),
                                             ],
                                           ),
                                         ),
-                                        const SizedBox(width: 8),
-                                        UserAvatarWidget(
-                                          user: user,
-                                          size: 38,
-                                          onTap: () => context.push('/profile'),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                 const SizedBox(height: 16),
-                                 // Search Bar (matches reference image)
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Consumer(
+                                            builder: (context, ref, _) {
+                                              final unreadCount = ref.watch(customerNotificationProvider).unreadCount;
+                                              return GestureDetector(
+                                                onTap: () => context.push('/notifications'),
+                                                child: Stack(
+                                                  clipBehavior: Clip.none,
+                                                  children: [
+                                                    const Icon(Icons.notifications_outlined, color: Color(0xFF23312B), size: 22),
+                                                    if (unreadCount > 0)
+                                                      Positioned(
+                                                        right: -2,
+                                                        top: -2,
+                                                        child: Container(
+                                                          padding: const EdgeInsets.all(3),
+                                                          decoration: const BoxDecoration(
+                                                            color: Color(0xFFFF4D6D),
+                                                            shape: BoxShape.circle,
+                                                          ),
+                                                          constraints: const BoxConstraints(
+                                                            minWidth: 14,
+                                                            minHeight: 14,
+                                                          ),
+                                                          child: Text(
+                                                            '$unreadCount',
+                                                            style: GoogleFonts.plusJakartaSans(
+                                                              color: Colors.white,
+                                                              fontSize: 8,
+                                                              fontWeight: FontWeight.bold,
+                                                            ),
+                                                            textAlign: TextAlign.center,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                          const SizedBox(width: 6),
+                                          // Wishlist heart icon with badge
+                                          GestureDetector(
+                                            onTap: () => context.push('/wishlist'),
+                                            child: Stack(
+                                              clipBehavior: Clip.none,
+                                              children: [
+                                                Container(
+                                                  width: 32,
+                                                  height: 32,
+                                                  decoration: const BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: Colors.white,
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Color(0x0F2E5C45),
+                                                        offset: Offset(0, 2),
+                                                        blurRadius: 6,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: const Center(
+                                                    child: Icon(Icons.favorite_border_rounded, color: Color(0xFFE63946), size: 16),
+                                                  ),
+                                                ),
+                                                if (wishlistCount > 0)
+                                                  Positioned(
+                                                    top: -2,
+                                                    right: -2,
+                                                    child: Container(
+                                                      padding: const EdgeInsets.all(3),
+                                                      decoration: const BoxDecoration(
+                                                        color: Color(0xFFE63946),
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      constraints: const BoxConstraints(
+                                                        minWidth: 12,
+                                                        minHeight: 12,
+                                                      ),
+                                                      child: Text(
+                                                        '$wishlistCount',
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 8,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                        textAlign: TextAlign.center,
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          UserAvatarWidget(
+                                            user: user,
+                                            size: 32,
+                                            onTap: () => context.push('/profile'),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Search Bar (matches reference image)
                                  Container(
                                    decoration: BoxDecoration(
                                      color: const Color(0xFFEAF3EB),
@@ -583,29 +592,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                              crossAxisAlignment: CrossAxisAlignment.start,
                              children: [
                                Container(
-                                 decoration: BoxDecoration(
-                                   color: Colors.white,
-                                   borderRadius: BorderRadius.circular(24),
-                                   boxShadow: [
-                                     BoxShadow(
-                                       color: const Color(0xFF2E7D32).withOpacity(0.05),
-                                       blurRadius: 12,
-                                       offset: const Offset(0, 4),
-                                     ),
-                                   ],
-                                 ),
-                                 padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-                                 child: Row(
-                                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                   children: [
-                                     _buildExactCategoryItem('All', true),
-                                     _buildExactCategoryItem('Fruits', false),
-                                     _buildExactCategoryItem('Vegetables', false),
-                                     _buildExactCategoryItem('Meat', false),
-                                     _buildExactCategoryItem('Dairy', false),
-                                   ],
-                                 ),
-                               ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(24),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF2E7D32).withOpacity(0.05),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    physics: const BouncingScrollPhysics(),
+                                    child: Row(
+                                      children: [
+                                        const SizedBox(width: 6),
+                                        _buildExactCategoryItem('All', true),
+                                        const SizedBox(width: 10),
+                                        _buildExactCategoryItem('Fruits', false),
+                                        const SizedBox(width: 10),
+                                        _buildExactCategoryItem('Vegetables', false),
+                                        const SizedBox(width: 10),
+                                        _buildExactCategoryItem('Meat', false),
+                                        const SizedBox(width: 10),
+                                        _buildExactCategoryItem('Dairy', false),
+                                        const SizedBox(width: 6),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                                const SizedBox(height: 24),
 
                                // Promo Banners Carousel (matches reference image)

@@ -12,6 +12,8 @@ import '../../providers/cart_provider.dart';
 import '../../core/widgets/product_card.dart';
 import '../../core/utils/app_snackbar.dart';
 
+import '../../core/widgets/responsive_layout.dart';
+
 class ProductDetailsScreen extends ConsumerWidget {
   final ProductModel? product;
   final String? productId;
@@ -66,7 +68,8 @@ class ProductDetailsScreen extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
-          child: SingleChildScrollView(
+          child: ResponsiveContainer(
+            child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -521,6 +524,7 @@ class ProductDetailsScreen extends ConsumerWidget {
             ),
               ],
             ),
+          ),
           ),
         ),
       ),

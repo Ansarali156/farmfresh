@@ -43,6 +43,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   void _handleSignup() async {
+    if (ref.read(authProvider).isLoading) return;
     if (!_formKey.currentState!.validate()) return;
 
     String phone = _phoneController.text.trim();
@@ -61,7 +62,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       drivingLicenseNumber: _licenseController.text.trim().isNotEmpty ? _licenseController.text.trim() : 'DL-2026-FF889',
     );
 
-
     if (success) {
       // GoRouter redirect handles navigation on auth state change
     } else {
@@ -69,7 +69,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       final error = ref.read(authProvider).errorMessage ?? 'Registration failed. Please check your details.';
       showAppSnackBar(context, error, type: SnackBarType.error);
     }
-
   }
 
   @override

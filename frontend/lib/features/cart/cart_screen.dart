@@ -16,6 +16,7 @@ import '../../models/product_model.dart';
 import '../../core/utils/app_snackbar.dart';
 import '../../models/product_model.dart';
 import '../home/customer_main_screen.dart';
+import '../../core/widgets/responsive_layout.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -133,7 +134,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
-          child: SingleChildScrollView(
+          child: ResponsiveContainer(
+            child: SingleChildScrollView(
             child: Column(
               children: [
               // Custom AppBar Header
@@ -533,7 +535,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         ),
       ),
     ),
-  );
+  ),
+);
 }
 
   Widget _buildCartItemCard(CartItemModel item) {

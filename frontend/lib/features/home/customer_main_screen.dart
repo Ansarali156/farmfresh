@@ -9,6 +9,8 @@ import '../orders/orders_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../core/theme/app_theme.dart';
 
+import '../../core/widgets/responsive_layout.dart';
+
 /// Provider to control the active tab in CustomerMainScreen from anywhere in the app.
 final mainTabProvider = StateProvider<int>((ref) => 0);
 
@@ -31,6 +33,7 @@ class _CustomerMainScreenState extends ConsumerState<CustomerMainScreen> {
   Widget build(BuildContext context) {
     final cartItemCount = ref.watch(cartProvider).itemCount;
     final selectedIndex = ref.watch(customerTabIndexProvider);
+    final isDesktop = ResponsiveLayout.isDesktop(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -38,17 +41,20 @@ class _CustomerMainScreenState extends ConsumerState<CustomerMainScreen> {
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: IndexedStack(
-          index: selectedIndex,
-          children: _screens,
-        ),
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardTheme.color?.withOpacity(0.85) ?? Colors.white.withOpacity(0.85),
-            border: Border(
-              top: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.1), width: 1),
-            ),
+        body: ResponsiveContainer(
+          child: IndexedStack(
+            index: selectedIndex,
+            children: _screens,
           ),
+        ),
+        bottomNavigationBar: ResponsiveContainer(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardTheme.color?.withOpacity(0.85) ?? Colors.white.withOpacity(0.85),
+              border: Border(
+                top: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.1), width: 1),
+              ),
+            ),
           child: BottomNavigationBar(
             currentIndex: selectedIndex,
             onTap: (index) {
@@ -102,6 +108,7 @@ class _CustomerMainScreenState extends ConsumerState<CustomerMainScreen> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

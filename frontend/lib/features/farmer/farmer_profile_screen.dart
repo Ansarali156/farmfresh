@@ -215,9 +215,10 @@ class FarmerProfileScreen extends ConsumerWidget {
                     ),
                     const Divider(height: 1, color: Color(0xFFF3F3F3)),
                     _MenuTile(
-                      icon: Icons.notifications_none_outlined,
-                      title: 'Notification Settings',
-                      onTap: () => context.push('/farmer-notifications'),
+                      icon: Icons.headset_mic_outlined,
+                      title: 'Help & Support / Queries',
+                      subtitle: 'Submit support tickets & track resolution',
+                      onTap: () => context.push('/support'),
                     ),
                   const Divider(height: 1, color: Color(0xFFF3F3F3)),
                   _MenuTile(
@@ -249,38 +250,6 @@ class FarmerProfileScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            ),
-            const SizedBox(height: 20),
-
-            // Switch to Customer Mode
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  ref.read(authProvider.notifier).switchRole('Customer');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Switched to Customer Marketplace Mode',
-                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
-                      ),
-                      backgroundColor: const Color(0xFF2E7D32),
-                    ),
-                  );
-                  context.go('/customer-main');
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF2E7D32),
-                  side: const BorderSide(color: Color(0xFF2E7D32)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                icon: const Icon(Icons.swap_horiz, size: 16),
-                label: Text(
-                  'Switch to Customer Marketplace',
-                  style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold, fontSize: 13),
-                ),
-              ),
             ),
             const SizedBox(height: 12),
 
@@ -375,11 +344,13 @@ class _InfoRow extends StatelessWidget {
 class _MenuTile extends StatelessWidget {
   final IconData icon;
   final String title;
+  final String? subtitle;
   final VoidCallback onTap;
 
   const _MenuTile({
     required this.icon,
     required this.title,
+    this.subtitle,
     required this.onTap,
   });
 
@@ -395,6 +366,15 @@ class _MenuTile extends StatelessWidget {
           color: const Color(0xFF23312B),
         ),
       ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle!,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 10,
+                color: const Color(0xFF647C72),
+              ),
+            )
+          : null,
       trailing: const Icon(Icons.chevron_right, size: 16, color: Color(0xFF647C72)),
       onTap: onTap,
     );

@@ -238,7 +238,7 @@ class _FarmerEarningsScreenState extends ConsumerState<FarmerEarningsScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          '₹${state.earnings.totalEarnings.toStringAsFixed(2)}',
+                          '₹${state.earnings.walletBalance.toStringAsFixed(2)}',
                           style: GoogleFonts.outfit(
                             fontSize: 32,
                             fontWeight: FontWeight.w900,
